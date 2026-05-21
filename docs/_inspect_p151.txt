@@ -1,0 +1,159 @@
+=== P151 (2024.xlsx / sheet=league_data.csv, 처음 5000행 표본) ===
+shape: (5000, 94)
+columns (94):
+  - game_id  (int64)
+  - game_start_utc  (datetime64[ns])
+  - game_duration  (int64)
+  - game_mode  (object)
+  - game_type  (object)
+  - game_version  (object)
+  - map_id  (int64)
+  - platform_id  (object)
+  - queue_id  (int64)
+  - participant_id  (int64)
+  - puuid  (object)
+  - summoner_name  (object)
+  - summoner_id  (object)
+  - summoner_level  (int64)
+  - champion_id  (int64)
+  - champion_name  (object)
+  - team_id  (int64)
+  - win  (bool)
+  - individual_position  (object)
+  - team_position  (object)
+  - lane  (object)
+  - role  (object)
+  - kills  (int64)
+  - deaths  (int64)
+  - assists  (int64)
+  - baron_kills  (int64)
+  - dragon_kills  (int64)
+  - gold_earned  (int64)
+  - gold_spent  (int64)
+  - total_damage_dealt  (int64)
+  - total_damage_dealt_to_champions  (int64)
+  - physical_damage_dealt_to_champions  (int64)
+  - magic_damage_dealt_to_champions  (int64)
+  - true_damage_dealt_to_champions  (int64)
+  - damage_dealt_to_objectives  (int64)
+  - damage_dealt_to_turrets  (int64)
+  - total_damage_taken  (int64)
+  - physical_damage_taken  (int64)
+  - magic_damage_taken  (int64)
+  - true_damage_taken  (int64)
+  - time_ccing_others  (int64)
+  - vision_score  (int64)
+  - wards_placed  (int64)
+  - wards_killed  (int64)
+  - vision_wards_bought_in_game  (int64)
+  - item0  (int64)
+  - item1  (int64)
+  - item2  (int64)
+  - item3  (int64)
+  - item4  (int64)
+  - item5  (int64)
+  - item6  (int64)
+  - solo_tier  (object)
+  - solo_rank  (object)
+  - solo_lp  (float64)
+  - solo_wins  (float64)
+  - solo_losses  (float64)
+  - flex_tier  (object)
+  - flex_rank  (object)
+  - flex_lp  (float64)
+  - flex_wins  (float64)
+  - flex_losses  (float64)
+  - champion_mastery_level  (int64)
+  - champion_mastery_points  (int64)
+  - champion_mastery_lastPlayTime  (int64)
+  - champion_mastery_lastPlayTime_utc  (datetime64[ns])
+  - champion_mastery_pointsSinceLastLevel  (int64)
+  - champion_mastery_pointsUntilNextLevel  (int64)
+  - champion_mastery_tokensEarned  (int64)
+  - final_abilityHaste  (int64)
+  - final_abilityPower  (int64)
+  - final_armor  (int64)
+  - final_armorPen  (int64)
+  - final_armorPenPercent  (int64)
+  - final_attackDamage  (int64)
+  - final_attackSpeed  (int64)
+  - final_bonusArmorPenPercent  (int64)
+  - final_bonusMagicPenPercent  (int64)
+  - final_ccReduction  (int64)
+  - final_cooldownReduction  (int64)
+  - final_health  (int64)
+  - final_healthMax  (int64)
+  - final_healthRegen  (int64)
+  - final_lifesteal  (int64)
+  - final_magicPen  (int64)
+  - final_magicPenPercent  (int64)
+  - final_magicResist  (int64)
+  - final_movementSpeed  (int64)
+  - final_omnivamp  (int64)
+  - final_physicalVamp  (int64)
+  - final_power  (int64)
+  - final_powerMax  (int64)
+  - final_powerRegen  (int64)
+  - final_spellVamp  (int64)
+
+head(2):
+      game_id      game_start_utc  game_duration game_mode     game_type   game_version  map_id platform_id  queue_id  participant_id                                                                           puuid summoner_name                                      summoner_id  summoner_level  champion_id champion_name  team_id    win individual_position team_position    lane     role  kills  deaths  assists  baron_kills  dragon_kills  gold_earned  gold_spent  total_damage_dealt  total_damage_dealt_to_champions  physical_damage_dealt_to_champions  magic_damage_dealt_to_champions  true_damage_dealt_to_champions  damage_dealt_to_objectives  damage_dealt_to_turrets  total_damage_taken  physical_damage_taken  magic_damage_taken  true_damage_taken  time_ccing_others  vision_score  wards_placed  wards_killed  vision_wards_bought_in_game  item0  item1  item2  item3  item4  item5  item6 solo_tier solo_rank  solo_lp  solo_wins  solo_losses flex_tier flex_rank  flex_lp  flex_wins  flex_losses  champion_mastery_level  champion_mastery_points  champion_mastery_lastPlayTime champion_mastery_lastPlayTime_utc  champion_mastery_pointsSinceLastLevel  champion_mastery_pointsUntilNextLevel  champion_mastery_tokensEarned  final_abilityHaste  final_abilityPower  final_armor  final_armorPen  final_armorPenPercent  final_attackDamage  final_attackSpeed  final_bonusArmorPenPercent  final_bonusMagicPenPercent  final_ccReduction  final_cooldownReduction  final_health  final_healthMax  final_healthRegen  final_lifesteal  final_magicPen  final_magicPenPercent  final_magicResist  final_movementSpeed  final_omnivamp  final_physicalVamp  final_power  final_powerMax  final_powerRegen  final_spellVamp
+0  3727443167 2025-01-15 14:56:00           1714   CLASSIC  MATCHED_GAME  15.1.649.4112      11        EUN1       420               5  oBSMg0aQ0Mx35IXI1-jj1M-atjvgTvEdBdutN_YX8jBFzWYj_RZHClv7MUl5HddP3inD680PotdKgQ  Moaning Gwen  8w6pbOajcaSi7ASzTLsuCmg8jCpAVUJN3uxW2FUzUTE3x6g            2065          267          Nami      100   True             UTILITY       UTILITY  BOTTOM  SUPPORT      0       3       22            0             0         8477        7700               22110                             9899                                 898                             8888                             113                        4041                     1696               11672                   6991                4608                 72                 34            50            21             6                            0   3222   3870   4005   3916   1004   3171   3364    MASTER         I    143.0       45.0         43.0       NaN       NaN      NaN        NaN          NaN                      77                   889610                  1737320000000               2025-01-19 20:56:00                                  77010                                 -66010                              0                   0                 155           97               0                      0                  91                131                           0                           0                  0                        0          2138             2138                 42                0               0                      0                 48                  385               0                   0          799            1134               147                0
+1  3726377460 2025-01-13 10:50:00           1300   CLASSIC  MATCHED_GAME  15.1.648.3927      11        EUN1       420               5  oBSMg0aQ0Mx35IXI1-jj1M-atjvgTvEdBdutN_YX8jBFzWYj_RZHClv7MUl5HddP3inD680PotdKgQ  Moaning Gwen  8w6pbOajcaSi7ASzTLsuCmg8jCpAVUJN3uxW2FUzUTE3x6g            2064          117          Lulu      100  False             UTILITY       UTILITY  BOTTOM  SUPPORT      1       6        2            0             0         5251        5100                7746                             4207                                 316                             3891                               0                           0                        0               12062                   5946                5797                319                 22            43            21             7                            0   6617   3870   3114   3113      0   3158   3364    MASTER         I    143.0       45.0         43.0       NaN       NaN      NaN        NaN          NaN                      69                   852655                  1737290000000               2025-01-19 13:57:00                                 128055                                -117055                              0                   0                 117           59               0                      0                  64                115                           0                           0                  0                        0          1680             1680                 35                0               0                      0                 38                  390               0                   0          970             970               105                0
+
+value_counts[game_version] (top10):
+game_version
+15.1.649.4112     4097
+15.1.648.3927      612
+14.24.644.2327     197
+15.1.647.8644       36
+14.23.636.9832      15
+14.22.633.1362       8
+14.24.642.1879       7
+14.24.643.5128       6
+14.18.616.8335       5
+14.16.609.8277       4
+
+value_counts[queue_id] (top10):
+queue_id
+420    3551
+450     707
+440     516
+400     151
+480      69
+490       3
+700       1
+870       1
+890       1
+
+value_counts[team_position] (top10):
+team_position
+BOTTOM     1005
+UTILITY     988
+MIDDLE      817
+TOP         792
+nan         710
+JUNGLE      688
+
+value_counts[team_id] (top10):
+team_id
+200    2502
+100    2498
+
+value_counts[win] (top10):
+win
+False    2562
+True     2438
+
+value_counts[solo_tier] (top10):
+solo_tier
+DIAMOND        1502
+MASTER          970
+nan             772
+EMERALD         487
+PLATINUM        359
+GOLD            323
+GRANDMASTER     304
+SILVER          134
+BRONZE           59
+CHALLENGER       51

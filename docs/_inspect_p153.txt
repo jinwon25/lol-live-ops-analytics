@@ -1,0 +1,113 @@
+=== P153 (2025.csv, 처음 5000행 표본) ===
+shape: (5000, 69)
+columns (69):
+  - game_id  (int64)
+  - start_utc  (object)
+  - duration  (int64)
+  - queue  (object)
+  - platform_id  (object)
+  - map_id  (int64)
+  - game_mode  (object)
+  - game_version  (object)
+  - participant_id  (int64)
+  - champion_id  (int64)
+  - champion_name  (object)
+  - position  (object)
+  - win  (bool)
+  - kills  (int64)
+  - deaths  (int64)
+  - assists  (int64)
+  - kda_ratio  (float64)
+  - kill_participation  (float64)
+  - gold_earned  (int64)
+  - gold_spent  (int64)
+  - gold_per_min  (float64)
+  - damage_dealt  (int64)
+  - damage_per_min  (float64)
+  - damage_to_champ  (int64)
+  - damage_champ_per_min  (float64)
+  - damage_taken  (int64)
+  - vision_score  (int64)
+  - item0  (object)
+  - item1  (object)
+  - item2  (object)
+  - item3  (object)
+  - item4  (object)
+  - item5  (object)
+  - item6  (object)
+  - solo_tier  (object)
+  - solo_rank  (object)
+  - solo_lp  (int64)
+  - solo_wins  (int64)
+  - solo_losses  (int64)
+  - flex_tier  (object)
+  - flex_rank  (object)
+  - flex_lp  (int64)
+  - flex_wins  (int64)
+  - flex_losses  (int64)
+  - mastery_level  (int64)
+  - mastery_points  (int64)
+  - mastery_lastPlayTime  (int64)
+  - mastery_pointsSinceLastLevel  (int64)
+  - mastery_pointsUntilNextLevel  (int64)
+  - mastery_tokens  (int64)
+  - final_abilityHaste  (int64)
+  - final_abilityPower  (int64)
+  - final_armor  (int64)
+  - final_attackDamage  (int64)
+  - final_attackSpeed  (int64)
+  - final_movementSpeed  (int64)
+  - final_health  (int64)
+  - final_healthMax  (int64)
+  - final_lifesteal  (int64)
+  - final_omnivamp  (int64)
+  - final_power  (int64)
+  - final_powerMax  (int64)
+  - final_spellVamp  (int64)
+  - team_baronKills  (int64)
+  - team_dragonKills  (int64)
+  - team_towerKills  (int64)
+  - team_champKills  (int64)
+  - team_riftHeraldKills  (int64)
+  - team_inhibitorKills  (int64)
+
+head(2):
+      game_id             start_utc  duration            queue platform_id  map_id game_mode   game_version  participant_id  champion_id champion_name position   win  kills  deaths  assists  kda_ratio  kill_participation  gold_earned  gold_spent  gold_per_min  damage_dealt  damage_per_min  damage_to_champ  damage_champ_per_min  damage_taken  vision_score               item0            item1                item2          item3            item4          item5         item6 solo_tier solo_rank  solo_lp  solo_wins  solo_losses flex_tier flex_rank  flex_lp  flex_wins  flex_losses  mastery_level  mastery_points  mastery_lastPlayTime  mastery_pointsSinceLastLevel  mastery_pointsUntilNextLevel  mastery_tokens  final_abilityHaste  final_abilityPower  final_armor  final_attackDamage  final_attackSpeed  final_movementSpeed  final_health  final_healthMax  final_lifesteal  final_omnivamp  final_power  final_powerMax  final_spellVamp  team_baronKills  team_dragonKills  team_towerKills  team_champKills  team_riftHeraldKills  team_inhibitorKills
+0  3746362208  2025-02-19T23:59:41Z      2551  Ranked Solo/Duo        EUN1      11   CLASSIC  15.3.656.4086               1          266        Aatrox      TOP  True     17       3       18  11.666667            0.522388        18548       17600    436.252450        229756     5403.904351            53631           1261.411211         64095            23  Voltaic Cyclosword  Spear of Shojin  Chainlaced Crushers  Sterak's Gage    Spirit Visage  Black Cleaver  Stealth Ward      GOLD         I       13         40           34       NaN       NaN        0          0            0             31          357243         1740012134000                         50643                             0               0                   0                   0          131                 384                142                  395          4418             4418                0               0            0               0                0                0                 4               10               67                     0                    4
+1  3746362208  2025-02-19T23:59:41Z      2551  Ranked Solo/Duo        EUN1      11   CLASSIC  15.3.656.4086               2          141          Kayn   JUNGLE  True     10       9       16   2.888889            0.388060        16373       14875    385.096041        387559     9115.460604            29204            686.883575         69209            32     Armored Advance          Eclipse        Black Cleaver  Death's Dance  Spear of Shojin     Long Sword   Oracle Lens  PLATINUM        IV       65        101          103       NaN       NaN        0          0            0              4           20196         1740012134000                          7596                          1404               2                   0                   0          224                 372                145                  400          1673             3538                0               0          757            1260                0                0                 4               10               67                     0                    4
+
+value_counts[game_version] (top10):
+game_version
+15.3.656.4086    4340
+15.2.652.1536     260
+15.3.654.407      210
+15.1.649.4112      70
+15.1.648.3927      60
+15.4.657.5386      60
+
+value_counts[position] (top10):
+position
+JUNGLE     1006
+SUPPORT    1002
+TOP         999
+MIDDLE      998
+BOTTOM      995
+
+value_counts[win] (top10):
+win
+True     2500
+False    2500
+
+value_counts[solo_tier] (top10):
+solo_tier
+GOLD        2394
+PLATINUM    1662
+SILVER       632
+EMERALD      186
+BRONZE        65
+nan           55
+DIAMOND        5
+IRON           1
+
+
+FULL_COLUMNS(69): ['game_id', 'start_utc', 'duration', 'queue', 'platform_id', 'map_id', 'game_mode', 'game_version', 'participant_id', 'champion_id', 'champion_name', 'position', 'win', 'kills', 'deaths', 'assists', 'kda_ratio', 'kill_participation', 'gold_earned', 'gold_spent', 'gold_per_min', 'damage_dealt', 'damage_per_min', 'damage_to_champ', 'damage_champ_per_min', 'damage_taken', 'vision_score', 'item0', 'item1', 'item2', 'item3', 'item4', 'item5', 'item6', 'solo_tier', 'solo_rank', 'solo_lp', 'solo_wins', 'solo_losses', 'flex_tier', 'flex_rank', 'flex_lp', 'flex_wins', 'flex_losses', 'mastery_level', 'mastery_points', 'mastery_lastPlayTime', 'mastery_pointsSinceLastLevel', 'mastery_pointsUntilNextLevel', 'mastery_tokens', 'final_abilityHaste', 'final_abilityPower', 'final_armor', 'final_attackDamage', 'final_attackSpeed', 'final_movementSpeed', 'final_health', 'final_healthMax', 'final_lifesteal', 'final_omnivamp', 'final_power', 'final_powerMax', 'final_spellVamp', 'team_baronKills', 'team_dragonKills', 'team_towerKills', 'team_champKills', 'team_riftHeraldKills', 'team_inhibitorKills']

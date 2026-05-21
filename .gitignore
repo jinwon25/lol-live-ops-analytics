@@ -1,0 +1,32 @@
+# Secrets
+.env
+.env.*
+!.env.example
+api/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# SQLite DB (대용량, 재생성 가능)
+*.db
+*.sqlite
+*.sqlite3
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Outputs (재생성 가능, 일부만 추적)
+outputs/*.png
+outputs/_tmp/
+
+# 원본 데이터는 추적하지 않음 (용량 큼, 외부 출처)
+data/raw/*.xlsx
+data/raw/*.csv
