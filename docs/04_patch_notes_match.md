@@ -2,6 +2,7 @@
 
 > 데이터 출처: League of Legends Wiki [V15.1](https://wiki.leagueoflegends.com/en-us/V15.1) / [V15.3](https://wiki.leagueoflegends.com/en-us/V15.3) — 라이엇 공식 패치 노트 정리본.
 > 분석 출처: 본 프로젝트 `13_patch_drift.sql`, `12_flagging.sql` (코호트 = PLAT+EM+DIA).
+> 본문에서 사용하는 약어·게임 용어 정의는 [README §4 — 본문에 자주 등장하는 용어](../README.md#본문에-자주-등장하는-용어)를 참고.
 
 ## 1. 강한 매칭 — 분석 신호가 실제 라이엇 조정과 일치
 
