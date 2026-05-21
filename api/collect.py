@@ -36,6 +36,28 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from riot_client import RiotClient
 
+
+def _load_dotenv(path: Path) -> None:
+    """python-dotenv 의존성 없이 간단한 KEY=VALUE 로더.
+    이미 export 된 env 가 우선(setdefault) — 의도된 환경변수 덮어쓰기 방지.
+    값에 둘러싼 큰/작은 따옴표는 벗긴다.
+    """
+    if not path.exists():
+        return
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        k, v = line.split("=", 1)
+        k = k.strip()
+        v = v.strip().strip('"').strip("'")
+        if k and k not in os.environ:
+            os.environ[k] = v
+
+
+# 모듈 import 시점에 api/.env 자동 로드 (있을 때만).
+_load_dotenv(Path(__file__).resolve().parent / ".env")
+
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
