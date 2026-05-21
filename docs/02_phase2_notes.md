@@ -83,20 +83,49 @@
 
 **포트폴리오 멘트**: "통제 없는 픽률 변화는 패치 효과와 티어 분포 효과가 섞여 있다. Ezreal은 naïve로 보면 Top5 떠오른 챔프지만, 같은 티어 구간에서는 30위로 떨어진다 — 즉 Ezreal의 픽률 상승은 패치 영향보다 표본의 티어대 차이가 더 컸을 가능성이 높다."
 
-## 6. 너프/버프 후보 요약 — `12_flagging_summary`
+## 6. 너프/버프 후보 — `12_flagging_summary` (정의 조정 후)
+
+### 6.1 정의가 왜 NERF/BUFF에서 달라야 했나
+
+초기 정의 (`pick_count >= 30 + win_rate >= 52% + NTILE quartile`)로 돌리면 **BUFF_HIDDEN_STRONG = 0건**이 나옴. 진단해보면:
+
+```
+patch=15.3, role=BOT, NTILE 분포:
+  quartile 1: 22 챔프, pick_count 1~1
+  quartile 2: 22 챔프, pick_count 1~4
+  quartile 3: 22 챔프, pick_count 5~100
+  quartile 4: 22 챔프, pick_count 109~1171
+```
+
+**quartile=1에 pick_count ≥ 15가 구조적으로 0건**. "사장됐으니 표본이 적다"는 정의의 본질을 컷 `>=30`이 자기모순으로 제거하고 있었다. NERF에는 표본도 자연히 따라오니 같은 컷을 적용해도 무방하지만, BUFF에는 별도 설계가 필요.
+
+### 6.2 조정된 정의
+
+| 라벨 | 인기 컷 | 표본 컷 | 강함 컷 |
+|---|---|---|---|
+| **NERF** | `pop_quartile = 4` (top 25% 인기) | `pick_count >= 30` | `win_rate >= 52%` (점추정) |
+| **BUFF_HIDDEN_STRONG** | `pop_quartile != 4` (비주류) | `pick_count >= 15` | **`Wilson 95% lower bound >= 50%`** (CI 하한) |
+
+핵심 통찰: 표본이 작으면 점추정(평균 승률) 대신 **신뢰구간 하한**으로 강함을 정의한다. "표본은 작지만 95% 확률로 50%를 넘는다"는 보장이 곧 "표본 작음 + 진짜 강함"의 통계적 정의. SQL Wilson 공식: `( p + z²/(2n) − z·sqrt(p(1-p)/n + z²/(4n²)) ) / (1 + z²/n)`, z=1.96.
+
+### 6.3 결과 (조정 후)
 
 | patch | role | NERF | BUFF |
 |---|---|---|---|
-| 15.1 | TOP | 9 | 0 |
-| 15.3 | TOP | 13 | 0 |
-| 15.3 | MID | 12 | 0 |
-| 15.3 | JUNGLE | 11 | 0 |
-| 15.3 | SUPPORT | 9 | 0 |
-| 15.3 | BOT | 7 | 0 |
+| 15.1 | TOP / BOT / SUPPORT | 9 / 6 / 6 | 0 / 0 / **1** (Maokai) |
+| 15.1 | MID / JUNGLE | 7 / 5 | **1** (Swain) / **1** (Warwick) |
+| 15.3 | TOP | 13 | **2** (Akshan, Kennen) |
+| 15.3 | MID | 12 | **3** (Zilean, Diana, Anivia) |
+| 15.3 | BOT | 7 | **2** (Karthus, Brand) |
+| 15.3 | JUNGLE / SUPPORT | 11 / 9 | 0 / 0 |
 
-- **BUFF_HIDDEN_STRONG은 0건** — 우리 데이터에서 "강력하지만 사장된 챔프"는 안 잡힘.
-- 가능한 해석: NTILE 하위 25% 챔프는 표본도 적어 `pick_count >= 30` 컷에서 대부분 걸러짐. 임계를 낮추거나(예: `>=15`) 다른 정의가 필요할 수 있음. PHASE 6 인사이트 정리 시 한계 명시.
-- NERF 후보는 15.3가 모든 라인에서 늘었음 — 메타 OP 챔프가 더 많아짐(혹은 표본이 커서 더 잘 잡힘).
+총 10건. **롤 상식과 일치**: Karthus·Brand BOT, Swain MID, Maokai SUP 같은 "비주류 픽으로 강한" 케이스가 정확히 잡힘.
+
+### 6.4 분석 판단 메모
+
+- NERF는 표본 컷 30 유지 — 인기 챔프 중 강캐를 보는 게 목적이라 임계를 낮출 필요 없음.
+- BUFF는 정의 자체가 "사장된" — 컷이 그 정의를 죽이면 안 됨. **컷을 라벨별로 분리한 것이 분석가의 판단력.**
+- 16번 줄에서 단순 `>=30`으로 0건을 두는 대신, "왜 0이 나왔는가?"를 통계적으로 분해해 컷을 재설계 → 면접 어필 포인트.
 
 ## 7. 산출물 (outputs/, Looker Studio 연결 후보)
 
