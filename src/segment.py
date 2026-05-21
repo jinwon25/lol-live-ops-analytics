@@ -146,11 +146,16 @@ def label_personas(centroid_z: pd.DataFrame) -> dict[int, str]:
         if gpm > 0.8 and dpm > 0.8:
             label = "슈퍼 캐리형"                     # 모든 자원·딜 폭주
         elif gpm < -0.5 and dpm < -0.5 and kp < -0.5:
-            label = "위축·부진형"                     # 전반적 행동량 ↓ (패배 행동 프로필)
+            # 게임 단위 행동 프로필이라는 데이터 한계에 맞춘 중립적 라벨.
+            # "위축/부진"은 플레이어를 낙인찍는 어감 → puuid 없어 사람 추적 불가한 우리
+            # 데이터에는 맞지 않음.  스노우볼로 게임이 일찍 기울었을 때 행동 위축 패턴.
+            label = "스노우볼 패배 프로필"
         elif vis > 0.8 and abs(dpm) < 0.3:
             label = "시야 컨트롤형"                   # 시야 점수만 두드러짐
         elif kp > 0.3 and dpm < 0.2 and vis < 0.3:
-            label = "팀합세형"                        # 킬 가담은 높지만 메인 딜러 아님
+            # 시야↓ + KP↑ = 와드는 안 박고 싸움만 쫓아다니는 패턴.
+            # "팀합세"는 협력적 뉘앙스라 vision↓ 패턴과 어긋남 → "전투 추격형"이 정확.
+            label = "전투 추격형"
         elif dpm > 0.4 and gpm > 0.2 and kp < 0.4:
             label = "공격적 솔로 라이너형"
         elif gpm > 0.3 and dpm < 0.1 and kp < 0.1:
