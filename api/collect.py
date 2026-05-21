@@ -147,18 +147,26 @@ CREATE INDEX ix_part_puuid ON participants(puuid);   -- ★ puuid 인덱스 (캐
 """
 
 
-def collect(seed_name: str, match_limit: int = 20, queue: int = 420) -> None:
+def collect(seed_riot_id: str, match_limit: int = 20, queue: int = 420) -> None:
     client = RiotClient(
         platform=os.environ.get("RIOT_REGION_PLATFORM", "EUN1"),
         region=os.environ.get("RIOT_REGION_ROUTING", "europe"),
     )
 
-    print(f"[1] 시드 소환사 조회: {seed_name!r}")
-    seed = client.summoner_by_name(seed_name)
-    print(f"    puuid = {seed['puuid'][:12]}…  level = {seed['summonerLevel']}")
+    if "#" not in seed_riot_id:
+        raise SystemExit(
+            "--seed 는 Riot ID 형식이어야 합니다 (예: 'Hide on bush#KR1'). "
+            "2024년부터 summoner-by-name API 는 deprecated 되었습니다."
+        )
+    game_name, tag_line = seed_riot_id.rsplit("#", 1)
+
+    print(f"[1] Riot ID 조회: {game_name}#{tag_line}")
+    acc = client.account_by_riot_id(game_name, tag_line)
+    puuid = acc["puuid"]
+    print(f"    puuid = {puuid[:12]}…")
 
     print(f"[2] 최근 {match_limit} 경기 ID 수집 (queue={queue})")
-    match_ids = client.matches_by_puuid(seed["puuid"], queue=queue, count=match_limit)
+    match_ids = client.matches_by_puuid(puuid, queue=queue, count=match_limit)
     print(f"    수집된 match_ids = {len(match_ids)}")
 
     print(f"[3] 매치 상세 호출 (rate-limited)…")
@@ -195,7 +203,9 @@ def collect(seed_name: str, match_limit: int = 20, queue: int = 420) -> None:
     with sqlite3.connect(DB) as con:
         con.executescript(SCHEMA)
         df_match.to_sql("matches", con, if_exists="append", index=False)
-        out_cols = [c for c in df_part.columns if c != "team_side"]
+        # participants 테이블 스키마에 없는 컬럼은 사전 제거 (duration_sec → matches, team_side → 계산 보조)
+        non_part_cols = {"team_side", "duration_sec"}
+        out_cols = [c for c in df_part.columns if c not in non_part_cols]
         df_part[out_cols].to_sql("participants", con, if_exists="append", index=False)
         print(f"    matches = {len(df_match)}  participants = {len(df_part)}")
 
@@ -230,14 +240,16 @@ def collect(seed_name: str, match_limit: int = 20, queue: int = 420) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Riot API 소량 수집 PoC")
-    ap.add_argument("--seed", required=False, default=os.environ.get("RIOT_SEED_SUMMONER", ""),
-                    help="시드 소환사명 (또는 env RIOT_SEED_SUMMONER)")
+    ap.add_argument("--seed", required=False,
+                    default=os.environ.get("RIOT_SEED_RIOT_ID",
+                                           os.environ.get("RIOT_SEED_SUMMONER", "")),
+                    help="시드 Riot ID 'GameName#TagLine' (또는 env RIOT_SEED_RIOT_ID)")
     ap.add_argument("--matches", type=int, default=20, help="수집할 매치 수 (rate limit 고려, 권장 ≤ 30)")
     ap.add_argument("--queue", type=int, default=420, help="큐 ID (기본 420 = 솔로/듀오)")
     args = ap.parse_args()
 
     if not args.seed:
-        raise SystemExit("--seed <소환사명> 또는 env RIOT_SEED_SUMMONER 필요")
+        raise SystemExit("--seed 'GameName#TagLine' 또는 env RIOT_SEED_RIOT_ID 필요")
 
     collect(args.seed, args.matches, args.queue)
 

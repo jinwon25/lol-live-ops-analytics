@@ -112,9 +112,12 @@ class RiotClient:
         raise RuntimeError(f"GET {path} 6회 재시도 모두 실패")
 
     # ── 공개 API ───────────────────────────────────────────────────────
-    def summoner_by_name(self, summoner_name: str) -> dict:
-        path = f"/lol/summoner/v4/summoners/by-name/{requests.utils.quote(summoner_name)}"
-        return self._get(self.platform_host, path)
+    def account_by_riot_id(self, game_name: str, tag_line: str) -> dict:
+        """Riot ID(GameName#TagLine) → puuid. 2024년 이후 by-name 대체 표준 경로."""
+        from urllib.parse import quote
+        path = (f"/riot/account/v1/accounts/by-riot-id/"
+                f"{quote(game_name)}/{quote(tag_line)}")
+        return self._get(self.region_host, path)
 
     def matches_by_puuid(self, puuid: str, *, queue: int = 420,
                         count: int = 20, start: int = 0) -> list[str]:
