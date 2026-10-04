@@ -25,7 +25,7 @@
 # 옵션 A — 셸 export (간단)
 export RIOT_API_KEY="RGAPI-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
-# 옵션 B — api/.env 파일 (python-dotenv 사용 시)
+# 옵션 B — api/.env 파일 (collect.py의 내장 로더가 자동으로 읽음)
 cp api/.env.example api/.env
 # 편집기로 api/.env 열어 키 입력
 ```
@@ -35,7 +35,7 @@ cp api/.env.example api/.env
 ### 3. 실행
 
 ```bash
-python api/collect.py --seed "Hide on bush" --matches 20
+python api/collect.py --seed "GameName#TagLine" --matches 20
 ```
 
 `--matches` 는 rate limit 고려 **권장 ≤ 30**.
@@ -76,4 +76,4 @@ PHASE 3 의 군집화는 puuid 부재(P153 데이터 한계)로 *게임 단위 �
 확장 방안:
 1. 시드 소환사를 BFS 큐로 두고 participant 의 puuid 를 다음 시드로 — 표본 다양성 확보.
 2. 일정 puuid 마다 동일 절차 수집 → 한 플레이어의 최근 50경기 프로필 평균.
-3. 이걸 PHASE 3 의 K-means 입력으로 사용 → "부진 위축형이 잦은 *플레이어*" 와 같은 진짜 페르소나 산출.
+3. 이걸 PHASE 3 의 K-means 입력으로 사용 → "부진 위축형이 잦은 *플레이어*" 와 같은 플레이어 단위 행동 유형 산출.

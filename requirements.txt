@@ -1,0 +1,7 @@
+# 분석 및 선택적인 API 수집 환경 (Python 3.11)
+numpy>=1.24,<3
+pandas>=2.0,<3
+scikit-learn>=1.3,<2
+matplotlib>=3.7,<4
+openpyxl>=3.1,<4
+requests>=2.31,<3

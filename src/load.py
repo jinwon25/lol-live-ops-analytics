@@ -1,6 +1,6 @@
 """PHASE 1 — 두 원본을 공통 스키마로 하모나이즈하여 SQLite에 정규화 적재.
 
-설계는 CLAUDE.md와 docs/_inspect_*.txt 참조.
+설계와 입력 점검은 docs/01_phase1_notes.md 참조.
 
 산출:
     data/processed/lol.db  (테이블: matches, participants)
