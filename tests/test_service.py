@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta, timezone
 from fastapi.testclient import TestClient
 from service.main import app
 
@@ -53,8 +54,36 @@ class ServiceTests(unittest.TestCase):
         payload = dict(role='BOT', duration_minutes=20, gold=8000, damage=10000, vision=5,
                        kills=8, assists=5, team_kills=10)
         self.assertEqual(self.client.post('/api/review', json=payload).status_code, 422)
+
         payload.update(kills=0, assists=0, duration_minutes=0)
         self.assertEqual(self.client.post('/api/review', json=payload).status_code, 422)
+
+    def test_personal_record_requires_context_and_excludes_examples(self):
+        payload = dict(role='BOT', duration_minutes=20, gold=8000, damage=12000, vision=15,
+                       kills=0, assists=0, team_kills=0)
+        self.assertFalse(self.client.post('/api/review', json=payload).json()['personal_record_eligible'])
+        payload.update(champion_id='Ezreal', region='KR', queue='RANKED_SOLO', tier='SILVER',
+                       patch='16.19', played_at='2026-09-25T20:00:00+09:00', focus='resource')
+        data = self.client.post('/api/review', json=payload).json()
+        self.assertTrue(data['personal_record_eligible'])
+        self.assertEqual(data['focus']['id'], 'resource')
+        payload['is_example'] = True
+        self.assertFalse(self.client.post('/api/review', json=payload).json()['personal_record_eligible'])
+
+    def test_review_time_zone_future_and_unknown_champion(self):
+        payload = dict(role='BOT', duration_minutes=20, gold=8000, damage=12000, vision=15,
+                       kills=0, assists=0, team_kills=0, played_at='2026-09-25T20:00:00')
+        self.assertEqual(self.client.post('/api/review', json=payload).status_code, 422)
+        payload['played_at'] = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
+        self.assertEqual(self.client.post('/api/review', json=payload).status_code, 422)
+        payload.update(played_at=None, champion_id='not-valid')
+        self.assertEqual(self.client.post('/api/review', json=payload).status_code, 404)
+
+    def test_personal_question_does_not_use_historic_cohort(self):
+        result = self.client.post('/api/assistant', json={'question':'내 전적에서 팀운이 문제야?'}).json()
+        self.assertEqual(result['status'], 'insufficient_data')
+        self.assertEqual(result['scope']['patches'], [])
+        self.assertNotIn('EUN', result['answer'])
 
 
 if __name__ == '__main__':

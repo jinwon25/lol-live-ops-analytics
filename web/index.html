@@ -4,6 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>LoL 인사이트 노트</title>
   <link rel="stylesheet" href="/assets/styles.css">
+  <script defer src="/assets/journal.js"></script>
   <script defer src="/assets/app.js"></script>
 </head>
 <body>
@@ -25,9 +26,11 @@
   <div id="data-status" class="data-status" role="status">자료 기준을 확인하는 중입니다.</div>
   <div id="error-banner" class="error-banner" role="alert" hidden><span id="error-text"></span><button id="retry">다시 불러오기</button></div>
   <section id="overview" role="tabpanel" aria-labelledby="tab-overview">
-    <div class="heading"><p class="eyebrow">INSIGHT BOARD</p><h1>근거부터, 다음 플레이까지.</h1><p>관측한 신호 · 비교할 조건 · 다음 경기에서 확인할 행동을 하나의 흐름으로.</p></div>
+    <div class="heading"><p class="eyebrow">MY RANKED REVIEW</p><h1>한 장면을 복기하고,<br>다음 선택을 바꾸기.</h1><p>랭크를 진지하게 복기하는 나를 위한 공간. 수치와 장면에서 확인한 사실을 구분하고 행동 하나를 정합니다.</p></div>
     <div class="metrics" id="overview-metrics"></div>
-    <div class="section-title"><h2>오늘 살펴볼 분석 질문</h2><span>과거 표본에서 찾은 검토 출발점</span></div>
+    <p id="personal-context" class="muted">개인 기본 조건은 경기 입력에서 선택할 수 있습니다.</p>
+    <article class="card notebook"><div class="section-title"><h2>내 경기 기록</h2><button class="text-button" data-open="review">완료 경기 복기 시작 ↗</button></div><p class="muted">직접 입력 · 이 브라우저에만 저장. 전적 조회와 자동 리플레이 분석은 아직 연결되지 않았습니다.</p><label class="search-label" for="comparison-group">비교할 경기 조건</label><select id="comparison-group"></select><div id="self-comparison" aria-live="polite"></div><p class="muted">지역·큐·패치·티어·챔피언·포지션이 모두 같은 내 경기만 비교합니다. 최근 3경기와 직전 3경기의 기술 통계이며 실력 향상이나 행동의 효과를 판정하지 않습니다.</p><ul id="session-list"></ul><p id="journal-status" role="status" class="muted"></p></article>
+    <div class="section-title"><h2>참고 분석 · 2025년 EUN 표본</h2><span>내 전적과 별개의 분석 자료</span></div>
     <div class="insight-grid">
       <article class="card insight"><span class="number">01 / PATCH</span><h3>메타 변화는 표본에 얼마나 민감할까?</h3><p>이즈리얼의 픽 비중 변화는 전체 +0.35%p, 공통 티어 +0.13%p였습니다.</p><div class="evidence-note">관측 범위: EUN · 15.1→15.3<br>비교 조건에 민감한 신호. 인과효과는 미추정.</div><button class="text-button" data-question="패치 변화와 비교 조건을 설명해줘">분석 근거 확인 ↗</button></article>
       <article class="card insight"><span class="number">02 / BEHAVIOR</span><h3>한 경기의 행동은 어떻게 나뉠까?</h3><p>역할 안에서 표준화한 행동 지표로 네 가지 경기별 유형을 살펴봅니다.</p><div class="evidence-note">관측 단위: 경기×참여자<br>군집에는 승패와 경기 흐름의 영향도 남습니다.</div><button class="text-button" data-question="행동 유형과 군집의 한계는?">유형의 해석 범위 ↗</button></article>
@@ -42,9 +45,17 @@
   </section>
   <section id="review" role="tabpanel" aria-labelledby="tab-review" hidden>
     <div class="heading"><p class="eyebrow">POST-MATCH REVIEW</p><h1>한 경기에서, 한 가지 질문.</h1><p>완료된 경기 수치를 직접 입력해 요약하고 다음 플레이에서 확인할 행동을 남겨보세요.</p></div>
-    <div class="two-column"><article class="card"><div class="section-title"><h2>경기 입력</h2><button id="fill-example" class="text-button">합성 예제 불러오기</button></div><p class="muted" id="review-source">직접 입력 · 실시간 전적 연동 준비 중</p>
+    <article class="card notebook"><h2>공식 API로 최근 전적 불러오기</h2><p id="riot-status" class="muted">연결 설정 확인 중</p><a href="https://github.com/jinwon25/lol-live-ops-analytics/blob/main/service/README.md" target="_blank" rel="noopener noreferrer">연결 설정·실행 안내 ↗</a><form id="riot-form" class="form-grid"><label>Riot ID 게임 이름<input name="game_name" maxlength="70" required autocomplete="off" placeholder="GameName"></label><label>태그<input name="tag_line" maxlength="16" required autocomplete="off" placeholder="KR1"></label><button type="submit" class="primary wide">KR 솔로듀오 최근 5경기 조회</button></form><p class="muted">입력한 ID는 조회를 위해 로컬 서버와 Riot에만 전달됩니다. 이 화면에서는 ID·원본 전적을 디스크에 저장하지 않습니다. 키는 서버의 환경 변수로 설정합니다.</p><p id="riot-error" role="alert" class="error-text"></p><div id="riot-matches" aria-live="polite"></div></article>
+    <div class="two-column"><article class="card"><div class="section-title"><h2>경기 입력</h2><button id="fill-example" class="text-button">합성 예제 불러오기</button></div><button id="start-personal" class="text-button">입력 초기화 · 내 경기 입력 시작</button><p class="muted" id="review-source">직접 입력 · 전적 검증 전</p>
       <form id="review-form" class="form-grid">
+        <label>챔피언<select name="champion_id" id="review-champion"><option value="">선택해 주세요</option></select></label>
+        <label>지역<select name="region"><option value="">선택해 주세요</option><option>KR</option><option>EUN</option><option>EUW</option><option>NA</option></select></label>
+        <label>랭크 큐<select name="queue"><option value="">선택해 주세요</option><option value="RANKED_SOLO">솔로듀오</option><option value="RANKED_FLEX">자유랭크</option></select></label>
+        <label>경기 당시 티어<select name="tier"><option value="">선택해 주세요</option><option>IRON</option><option>BRONZE</option><option>SILVER</option><option>GOLD</option><option>PLATINUM</option><option>EMERALD</option><option>DIAMOND</option><option>MASTER</option><option>GRANDMASTER</option><option>CHALLENGER</option></select></label>
+        <label>경기 게임 버전(앞 두 자리)<input name="patch" placeholder="예: 16.19" pattern="[0-9]{2}\.[0-9]{1,2}" maxlength="5"></label>
+        <label>완료 경기 일시(현재 기기 시간대)<input name="played_at" type="datetime-local"></label>
         <label>포지션<select name="role"><option>TOP</option><option>JUNGLE</option><option selected>MID</option><option>BOT</option><option>SUPPORT</option></select></label>
+        <label>오늘의 복기 초점<select name="focus" id="review-focus"><option value="vision">오브젝트 전 시야 준비</option><option value="fight_setup">교전 전 합류와 자원</option><option value="resource">파밍과 귀환 선택</option><option value="matchup">라인전 상대와 선택</option></select></label>
         <label>경기 시간(분)<input name="duration_minutes" type="number" min="5" max="90" step="0.1" required></label>
         <label>획득 골드<input name="gold" type="number" min="0" max="100000" required></label>
         <label>챔피언 대상 피해량<input name="damage" type="number" min="0" max="500000" required></label>
@@ -54,7 +65,7 @@
         <label>내 도움<input name="assists" type="number" min="0" max="300" required></label>
         <button class="primary wide" type="submit">경기 요약과 복기 질문 보기</button>
       </form><p id="review-error" role="alert" class="error-text"></p></article>
-      <article class="card"><h2>복기 결과</h2><div id="review-result" aria-live="polite"><div class="empty-state">입력한 경기의 요약이 여기에 표시됩니다.<small>동티어 백분위와 개인 진단은 전적·비교 표본 연결 후 검증합니다.</small></div></div></article></div>
+      <article class="card"><h2>복기 결과</h2><div id="review-result" aria-live="polite"><div class="empty-state">입력한 경기의 요약이 여기에 표시됩니다.<small>동티어 백분위와 개인 진단은 전적·비교 표본 연결 후 검증합니다.</small></div></div><div class="journal-fields"><label for="scene-note">장면에서 확인한 사실 · 시각</label><textarea id="scene-note" maxlength="400" placeholder="예: 18:20 귀환 후 드래곤 앞에 도착했을 때 아군 둘이 아직 이동 중이었다."></textarea><label for="next-action">다음 경기에서 확인할 행동 한 가지</label><textarea id="next-action" maxlength="200" placeholder="예: 오브젝트 쪽으로 이동하기 전 아군의 합류 위치를 확인한다."></textarea><button id="save-session" class="primary" disabled>내 경기와 행동 기록 저장</button><p id="save-status" role="status" class="muted">조건과 일시를 채운 직접 입력 경기만 저장할 수 있습니다. 같은 조건·일시는 기존 기록을 갱신합니다.</p></div></article></div>
     <article class="card notebook"><div class="section-title"><h2>다음 경기에서 확인할 행동</h2><span>이 브라우저에만 저장</span></div><form id="note-form"><label class="search-label" for="practice-note">복기 질문 또는 행동 한 가지</label><div class="note-input"><input id="practice-note" maxlength="200" required placeholder="예: 첫 드래곤 전 시야를 확보한 시점과 경로를 되짚기"><button class="primary" type="submit">기록</button></div></form><ul id="practice-list"></ul><p id="note-status" role="status" class="muted"></p><button id="clear-notes" class="text-button">이 브라우저의 복기 기록 지우기</button></article>
   </section>
   <section id="assistant" role="tabpanel" aria-labelledby="tab-assistant" hidden>

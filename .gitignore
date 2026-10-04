@@ -31,3 +31,4 @@ data/raw/*.xlsx
 data/raw/*.csv
 .pytest_cache/
 *.log
+.local/

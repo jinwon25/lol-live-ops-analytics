@@ -38,6 +38,8 @@ def main():
             page = browser.new_page(viewport={'width': 1440, 'height': 1050})
             errors = []
             page.on('pageerror', lambda error: errors.append(str(error)))
+            # 개인 기본값을 공개 스크린샷·모의 테스트에서 제외한다.
+            page.route('**/api/riot/preferences', lambda route: route.fulfill(json={}))
             page.goto(base)
             page.wait_for_function("document.getElementById('data-status').textContent.includes('실시간 전적 미연결')")
             assert page.locator('#overview-metrics .metric').count() == 3
@@ -53,6 +55,11 @@ def main():
             page.locator('#review-form button[type=submit]').click()
             page.wait_for_function("document.getElementById('review-result').textContent.includes('합성 예제')")
             assert page.locator('#review-result').get_by_text('400', exact=True).count() == 1
+            assert page.locator('#save-session').is_disabled()
+            page.locator('input[name=gold]').fill('12500')
+            page.locator('#review-form button[type=submit]').click()
+            page.wait_for_function("document.getElementById('review-result').textContent.includes('416.7')")
+            assert page.locator('#save-session').is_disabled(), '수정한 예제도 개인 기록에서 제외'
             page.locator('input[name=team_kills]').fill('1')
             page.locator('#review-form button[type=submit]').click()
             page.wait_for_function("document.getElementById('review-error').textContent.length > 0")
@@ -65,11 +72,72 @@ def main():
             assert '<img' in page.locator('#practice-list').inner_text()
             page.locator('#clear-notes').click()
             assert page.locator('#practice-list li').count() == 0
+            # 저장 순서와 경기 일시가 다르고 다른 챔피언·패치가 섞인 모의 기록.
+            result = page.evaluate('''() => {
+              const j = window.ReviewJournal;
+              const base = {context:{region:'KR',queue:'RANKED_SOLO',patch:'16.19',tier:'GOLD',role:'BOT',champion_id:'Ezreal',champion_name:'이즈리얼',played_at:'2026-09-20T12:00:00Z'},metrics:{gpm:100,dpm:200,vision_per_minute:1,kill_participation:null},focus:'vision',is_example:false,scene:'모의 관찰',action:'모의 행동'};
+              localStorage.setItem('lol-ranked-reviews-v1', '[]');
+              for (const day of [5,0,4,1,3,2]) { const r = structuredClone(base); r.context.played_at = `2026-09-${20+day}T12:00:00Z`; r.metrics.gpm = (day+1)*100; j.save(r); }
+              const foreign = structuredClone(base); foreign.context.patch = '16.18'; foreign.metrics.gpm=9999; j.save(foreign);
+              const different = structuredClone(base); different.context.champion_id='Lucian'; j.save(different);
+              let exampleRejected = false;
+              try {j.save({...base,is_example:true});} catch {exampleRejected=true;}
+              const updated = j.save(base), all = j.read(), comparison = j.compare(all,j.group(base.context));
+              localStorage.setItem('lol-ranked-reviews-v1',JSON.stringify([...all,{garbage:true},{...base,is_example:true}]));
+              return {count:j.read().length, matching:comparison.count,recent:comparison.metrics.gpm.recent.value,previous:comparison.metrics.gpm.previous.value,kp:comparison.metrics.kill_participation.recent,exampleRejected,updated};
+            }''')
+            assert result == {'count':8,'matching':6,'recent':500,'previous':200,'kp':{'value':None,'n':0},'exampleRejected':True,'updated':True}, result
+            page.reload()
+            page.wait_for_function("document.querySelectorAll('#session-list li').length === 8")
+            page.locator('#comparison-group').select_option('KR|RANKED_SOLO|16.19|GOLD|Ezreal|BOT')
+            assert page.locator('#self-comparison table').count() == 1
+            # 원본 관찰과 행동 문구는 HTML로 실행하지 않음.
+            page.locator('#tab-review').click()
+            page.locator('#start-personal').click()
+            fields = {'champion_id':'Ezreal','region':'KR','queue':'RANKED_SOLO','tier':'GOLD','role':'BOT','focus':'resource'}
+            for name, value in fields.items():
+                page.locator(f'#review-form select[name={name}]').select_option(value)
+            values = {'patch':'16.19','played_at':'2026-09-26T20:00','duration_minutes':'30','gold':'12000','damage':'21000','vision':'24','kills':'5','assists':'8','team_kills':'24'}
+            for name, value in values.items():
+                page.locator(f'#review-form input[name={name}]').fill(value)
+            page.locator('#review-form button[type=submit]').click()
+            page.wait_for_function("!document.getElementById('save-session').disabled")
+            page.locator('#scene-note').fill('<img src=x onerror=alert(1)>')
+            page.locator('#next-action').fill('합류 위치 확인')
+            page.locator('#save-session').click()
+            assert page.locator('#save-status').inner_text().startswith('내 경기 기록을 저장')
+            page.locator('#tab-overview').click()
+            assert page.locator('#session-list li').count() == 9
+            assert page.locator('#session-list img').count() == 0
+            page.locator('#session-list button').first.click()
+            assert page.locator('#session-list li').count() == 8
+            # 연결 UI는 네트워크 요청 없이 모의 공식 응답으로 확인.
+            page.route('**/api/riot/recent', lambda route: route.fulfill(json={
+                'source':'모의 Riot API 응답','current_rank':{'tier':'GOLD','rank':'IV','leaguePoints':30},
+                'skipped':0,'cached':False,'caveat':'현재 랭크와 경기 당시 티어를 구분',
+                'items':[{'champion_id':'Ezreal','champion_name':'이즈리얼','role':'BOT','region':'KR','queue':'RANKED_SOLO','patch':'16.19','played_at':'2026-09-25T12:00:00Z','duration_minutes':30,'gold':12000,'damage':21000,'vision':24,'kills':5,'assists':8,'team_kills':24,'tier':None,'win':True}]}))
+            page.locator('#tab-review').click()
+            page.locator('#riot-form input[name=game_name]').fill('synthetic-name')
+            page.locator('#riot-form input[name=tag_line]').fill('KR1')
+            page.locator('#riot-form button').click()
+            page.wait_for_function("document.querySelectorAll('#riot-matches button').length === 1")
+            page.locator('#riot-matches button').click()
+            assert page.locator('#review-form select[name=tier]').input_value() == ''
+            assert page.locator('#review-form select[name=role]').input_value() == 'BOT'
+            assert page.locator('#review-form input[name=patch]').input_value() == '16.19'
             page.locator('#tab-assistant').click()
             page.locator('#assistant-question').fill('최신 추천 챔피언은?')
             page.locator('#assistant-form button[type=submit]').click()
             page.wait_for_function("document.getElementById('assistant-answer').textContent.includes('추가 자료가 필요한 답변')")
             assert page.locator('#assistant-answer .source-list a').count() == 2
+            assert page.locator('#assistant-answer .external-references a').count() == 2
+            page.locator('#assistant-question').fill('내 전적에서 팀운이 문제야?')
+            page.locator('#assistant-form button[type=submit]').click()
+            page.wait_for_function("document.getElementById('assistant-answer').textContent.includes('브라우저')")
+            assert 'EUN' not in page.locator('#assistant-answer').inner_text()
+            page.evaluate("localStorage.removeItem('lol-ranked-reviews-v1')")
+            page.reload()
+            page.wait_for_function("document.getElementById('data-status').textContent.includes('실시간 전적 미연결')")
             page.locator('#tab-overview').click()
             if args.screenshot:
                 path = args.screenshot.resolve()
@@ -84,7 +152,7 @@ def main():
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), tab
             assert not errors, errors
             browser.close()
-        print('UI 검증 통과: 보드·탐색·빈 검색·복기·입력 오류·안전한 노트 저장/삭제·근거 보류·모바일 4화면')
+        print('UI 검증 통과: 4화면·합성 예제 제외·개인 기록 저장/삭제·조건/일시 비교·KP 미정의·API 모의 가져오기·개인 질문 보류·모바일')
     finally:
         server.terminate()
         server.wait(timeout=10)

@@ -30,11 +30,23 @@ def answer(question, champion_id=None):
     result = {'status': 'documented', 'scope': SCOPE, 'sources': [],
               'caveats': ['기존 경기 표본은 2025년 초 패치 15.1·15.3이며 현재 메타를 대표하지 않습니다.'],
               'next_step': '근거와 비교 조건을 확인한 뒤 검토할 질문 한 가지를 복기 노트에 남겨보세요.'}
-    if any(word in q for word in ['최신', '지금', '현재', '추천', '사기', '티어리스트', '아이템', '룬', '빌드']):
+    if any(word in q for word in ['내 전적', '내 최근', '내 승률', '내 실력', '팀운', '내 티어']):
+        result.update(status='insufficient_data',
+                      answer='개인 전적은 아직 자동 연결되지 않았습니다. 복기 보드에 저장한 직접 입력 경기에서 같은 지역·랭크 큐·패치·티어·챔피언·역할의 내 기록을 비교할 수 있습니다. 이 도우미에는 브라우저의 개인 기록이 전달되지 않아 내 실력이나 팀운을 판정할 수 없습니다.',
+                      scope={'patches': [], 'region': '사용자 선택', 'cohort': '내 직접 입력 경기', 'unit': '완료 경기', 'is_current_match_data': False},
+                      sources=[{'title': '개인 복기와 비교 조건', 'url': REPO + 'docs/06_companion_plan.md'}],
+                      caveats=['직접 입력은 전적 API로 확인되지 않은 기록입니다. 내 기록의 전후 차이는 인과효과나 실력 점수가 아닙니다.'])
+    elif any(word in q for word in ['최신', '지금', '현재', '추천', '사기', '티어리스트', '아이템', '룬', '빌드']):
         cat = catalogue()
         result.update(status='insufficient_data', answer=f'확인된 공식 챔피언 정적 자료는 {cat["version"]}입니다. 챔피언 이름·분류·기본 수치를 확인할 수 있지만 최신 승률·추천 빌드를 계산할 경기 표본은 연결되지 않았습니다. 과거 승률을 현재 추천으로 바꾸어 답하지 않습니다.',
                       sources=[{'title': '공식 Data Dragon 정적 자료', 'url': cat['source_url']},
                                {'title': 'Riot API와 정적 자료의 구분', 'url': 'https://developer.riotgames.com/docs/lol'}])
+        champ = next((c for c in cat['champions'] if c['id'] == champion_id), None)
+        result['external_references'] = [
+            {'title': 'LOL.PS 챔피언 통계·매치업', 'url': f'https://lol.ps/champ/{champ["key"]}' if champ else 'https://lol.ps/'},
+            {'title': 'FOW 전적·챔피언 정보', 'url': 'https://www.fow.lol/'},
+        ]
+        result['next_step'] = '외부 통계에서 패치·티어·역할·표본 수를 확인하고, 내 경기에서 검토할 질문으로 가져오세요. 외부 자료는 이 서비스에 자동 수집되지 않습니다.'
     elif any(word in q for word in ['패치', '메타', '변화', '승률', '챔피언']):
         history = champion_history(champion_id) if champion_id else []
         if history:

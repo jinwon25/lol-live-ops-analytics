@@ -681,3 +681,11 @@ footer p{
     gap:14px
   }
 }
+[hidden] { display: none !important; }
+.journal-fields { display: grid; gap: 12px; margin-top: 24px; }
+#comparison-group { width: 100%; margin-bottom: 18px; }
+#session-list { padding-left: 20px; }
+#session-list li { margin: 18px 0; overflow-wrap: anywhere; }
+#session-list p { margin: 6px 0; }
+#session-list button { margin-left: 10px; }
+button:disabled { cursor: not-allowed; opacity: .55; }
