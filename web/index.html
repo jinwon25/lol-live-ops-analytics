@@ -56,7 +56,7 @@
         <label>완료 경기 일시(현재 기기 시간대)<input name="played_at" type="datetime-local"></label>
         <label>포지션<select name="role"><option>TOP</option><option>JUNGLE</option><option selected>MID</option><option>BOT</option><option>SUPPORT</option></select></label>
         <label>오늘의 복기 초점<select name="focus" id="review-focus"><option value="vision">오브젝트 전 시야 준비</option><option value="fight_setup">교전 전 합류와 자원</option><option value="resource">파밍과 귀환 선택</option><option value="matchup">라인전 상대와 선택</option></select></label>
-        <label>경기 시간(분)<input name="duration_minutes" type="number" min="5" max="90" step="0.1" required></label>
+        <label>경기 시간(분)<input name="duration_minutes" type="number" min="5" max="90" step="0.01" required></label>
         <label>획득 골드<input name="gold" type="number" min="0" max="100000" required></label>
         <label>챔피언 대상 피해량<input name="damage" type="number" min="0" max="500000" required></label>
         <label>시야 점수<input name="vision" type="number" min="0" max="1000" step="0.1" required></label>

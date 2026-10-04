@@ -115,7 +115,7 @@ def main():
             page.route('**/api/riot/recent', lambda route: route.fulfill(json={
                 'source':'모의 Riot API 응답','current_rank':{'tier':'GOLD','rank':'IV','leaguePoints':30},
                 'skipped':0,'cached':False,'caveat':'현재 랭크와 경기 당시 티어를 구분',
-                'items':[{'champion_id':'Ezreal','champion_name':'이즈리얼','role':'BOT','region':'KR','queue':'RANKED_SOLO','patch':'16.19','played_at':'2026-09-25T12:00:00Z','duration_minutes':30,'gold':12000,'damage':21000,'vision':24,'kills':5,'assists':8,'team_kills':24,'tier':None,'win':True}]}))
+                'items':[{'champion_id':'Ezreal','champion_name':'이즈리얼','role':'BOT','region':'KR','queue':'RANKED_SOLO','patch':'16.19','played_at':'2026-09-25T12:00:00Z','duration_minutes':30.07,'gold':12000,'damage':21000,'vision':24,'kills':5,'assists':8,'team_kills':24,'tier':None,'win':True}]}))
             page.locator('#tab-review').click()
             page.locator('#riot-form input[name=game_name]').fill('synthetic-name')
             page.locator('#riot-form input[name=tag_line]').fill('KR1')
@@ -125,6 +125,11 @@ def main():
             assert page.locator('#review-form select[name=tier]').input_value() == ''
             assert page.locator('#review-form select[name=role]').input_value() == 'BOT'
             assert page.locator('#review-form input[name=patch]').input_value() == '16.19'
+            assert page.locator('#review-form input[name=duration_minutes]').input_value() == '30.07'
+            assert page.locator('#review-form').evaluate('(form) => form.checkValidity()'), 'API 경기 시간의 소수 둘째 자리도 허용'
+            with page.expect_response(lambda response: response.url.endswith('/api/review')) as reviewed:
+                page.locator('#review-form button[type=submit]').click()
+            assert reviewed.value.status == 200
             page.locator('#tab-assistant').click()
             page.locator('#assistant-question').fill('최신 추천 챔피언은?')
             page.locator('#assistant-form button[type=submit]').click()
