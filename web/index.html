@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LoL 인사이트 노트</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <script defer src="/assets/app.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 이동</a>
+<aside class="sidebar">
+  <a class="brand" href="/" aria-label="LoL 인사이트 노트 홈"><span class="brand-icon">IN</span><span>인사이트 노트<small>LEAGUE OF LEGENDS</small></span></a>
+  <p class="nav-label">나의 분석 공간</p>
+  <nav role="tablist" aria-label="서비스 메뉴">
+    <button role="tab" id="tab-overview" aria-controls="overview" aria-selected="true" data-page="overview">01 <span>인사이트 보드</span></button>
+    <button role="tab" id="tab-champions" aria-controls="champions" aria-selected="false" data-page="champions">02 <span>챔피언 탐색</span></button>
+    <button role="tab" id="tab-review" aria-controls="review" aria-selected="false" data-page="review">03 <span>경기 복기</span></button>
+    <button role="tab" id="tab-assistant" aria-controls="assistant" aria-selected="false" data-page="assistant">04 <span>분석 도우미</span></button>
+  </nav>
+  <div class="sidebar-note"><span class="dot"></span> 개발 중 · 로컬 첫 버전<p>관찰한 변화에서 근거를 확인하고, 다음 플레이의 질문을 남겨보세요.</p></div>
+  <a class="repo-link" href="https://github.com/jinwon25/lol-live-ops-analytics" target="_blank" rel="noopener noreferrer">분석 코드와 기록 ↗</a>
+</aside>
+<main id="main" tabindex="-1">
+  <header class="topbar"><span>GAME ANALYTICS / COMPANION</span><span class="pill">완료된 경기의 복기를 위한 공간</span></header>
+  <div id="data-status" class="data-status" role="status">자료 기준을 확인하는 중입니다.</div>
+  <div id="error-banner" class="error-banner" role="alert" hidden><span id="error-text"></span><button id="retry">다시 불러오기</button></div>
+  <section id="overview" role="tabpanel" aria-labelledby="tab-overview">
+    <div class="heading"><p class="eyebrow">INSIGHT BOARD</p><h1>근거부터, 다음 플레이까지.</h1><p>관측한 신호 · 비교할 조건 · 다음 경기에서 확인할 행동을 하나의 흐름으로.</p></div>
+    <div class="metrics" id="overview-metrics"></div>
+    <div class="section-title"><h2>오늘 살펴볼 분석 질문</h2><span>과거 표본에서 찾은 검토 출발점</span></div>
+    <div class="insight-grid">
+      <article class="card insight"><span class="number">01 / PATCH</span><h3>메타 변화는 표본에 얼마나 민감할까?</h3><p>이즈리얼의 픽 비중 변화는 전체 +0.35%p, 공통 티어 +0.13%p였습니다.</p><div class="evidence-note">관측 범위: EUN · 15.1→15.3<br>비교 조건에 민감한 신호. 인과효과는 미추정.</div><button class="text-button" data-question="패치 변화와 비교 조건을 설명해줘">분석 근거 확인 ↗</button></article>
+      <article class="card insight"><span class="number">02 / BEHAVIOR</span><h3>한 경기의 행동은 어떻게 나뉠까?</h3><p>역할 안에서 표준화한 행동 지표로 네 가지 경기별 유형을 살펴봅니다.</p><div class="evidence-note">관측 단위: 경기×참여자<br>군집에는 승패와 경기 흐름의 영향도 남습니다.</div><button class="text-button" data-question="행동 유형과 군집의 한계는?">유형의 해석 범위 ↗</button></article>
+      <article class="card insight accent"><span class="number">03 / PRACTICE</span><h3>다음 경기에서 무엇을 확인할까?</h3><p>시야 확보나 교전 준비처럼 직접 되짚을 행동을 하나 고르고 기록해보세요.</p><div class="evidence-note">연습 과제: 검토할 가설<br>효과를 판단하려면 반복 관찰과 조건 비교가 필요합니다.</div><button class="text-button" data-open="review">복기 노트 시작 ↗</button></article>
+    </div>
+    <div class="two-column"><article class="card"><div class="section-title"><h2>경기별 행동 유형</h2><span>기존 K=4 집계</span></div><div id="segment-bars"></div><p class="muted">표본 비중이며 개인의 성격이나 장기적 성향을 뜻하지 않습니다.</p></article><article class="card"><p class="eyebrow">OFFICIAL REFERENCE</p><h2>현재 공식 자료</h2><p id="official-reference">확인 중</p><div id="official-links" class="source-list"></div><p class="muted">정적 자료는 챔피언 기본 정보입니다. 현재 패치 경기 통계는 후속 수집 단계에서 연결합니다.</p></article></div>
+  </section>
+  <section id="champions" role="tabpanel" aria-labelledby="tab-champions" hidden>
+    <div class="heading"><p class="eyebrow">CHAMPION EXPLORER</p><h1>챔피언을 조건과 함께 살펴보기.</h1><p>공식 챔피언 정보와 과거 역할·패치 집계를 각각 확인합니다.</p></div>
+    <label class="search-label" for="champion-search">챔피언 이름 검색</label><input id="champion-search" class="search" type="search" placeholder="이즈리얼, Ezreal…" maxlength="80" autocomplete="off">
+    <div class="explorer-layout"><div id="champion-list" class="champion-list" aria-label="챔피언 목록"></div><article id="champion-detail" class="card detail" aria-live="polite"><h2>챔피언을 선택해 주세요.</h2><p>과거 자료가 없는 챔피언은 관측 승률을 표시하지 않습니다.</p></article></div>
+  </section>
+  <section id="review" role="tabpanel" aria-labelledby="tab-review" hidden>
+    <div class="heading"><p class="eyebrow">POST-MATCH REVIEW</p><h1>한 경기에서, 한 가지 질문.</h1><p>완료된 경기 수치를 직접 입력해 요약하고 다음 플레이에서 확인할 행동을 남겨보세요.</p></div>
+    <div class="two-column"><article class="card"><div class="section-title"><h2>경기 입력</h2><button id="fill-example" class="text-button">합성 예제 불러오기</button></div><p class="muted" id="review-source">직접 입력 · 실시간 전적 연동 준비 중</p>
+      <form id="review-form" class="form-grid">
+        <label>포지션<select name="role"><option>TOP</option><option>JUNGLE</option><option selected>MID</option><option>BOT</option><option>SUPPORT</option></select></label>
+        <label>경기 시간(분)<input name="duration_minutes" type="number" min="5" max="90" step="0.1" required></label>
+        <label>획득 골드<input name="gold" type="number" min="0" max="100000" required></label>
+        <label>챔피언 대상 피해량<input name="damage" type="number" min="0" max="500000" required></label>
+        <label>시야 점수<input name="vision" type="number" min="0" max="1000" step="0.1" required></label>
+        <label>팀 킬<input name="team_kills" type="number" min="0" max="500" required></label>
+        <label>내 킬<input name="kills" type="number" min="0" max="200" required></label>
+        <label>내 도움<input name="assists" type="number" min="0" max="300" required></label>
+        <button class="primary wide" type="submit">경기 요약과 복기 질문 보기</button>
+      </form><p id="review-error" role="alert" class="error-text"></p></article>
+      <article class="card"><h2>복기 결과</h2><div id="review-result" aria-live="polite"><div class="empty-state">입력한 경기의 요약이 여기에 표시됩니다.<small>동티어 백분위와 개인 진단은 전적·비교 표본 연결 후 검증합니다.</small></div></div></article></div>
+    <article class="card notebook"><div class="section-title"><h2>다음 경기에서 확인할 행동</h2><span>이 브라우저에만 저장</span></div><form id="note-form"><label class="search-label" for="practice-note">복기 질문 또는 행동 한 가지</label><div class="note-input"><input id="practice-note" maxlength="200" required placeholder="예: 첫 드래곤 전 시야를 확보한 시점과 경로를 되짚기"><button class="primary" type="submit">기록</button></div></form><ul id="practice-list"></ul><p id="note-status" role="status" class="muted"></p><button id="clear-notes" class="text-button">이 브라우저의 복기 기록 지우기</button></article>
+  </section>
+  <section id="assistant" role="tabpanel" aria-labelledby="tab-assistant" hidden>
+    <div class="heading"><p class="eyebrow">EVIDENCE ASSISTANT</p><h1>답변의 근거까지 함께.</h1><p>현재 등록된 분석을 질문으로 탐색합니다. 최신 전적·빌드는 아직 연결되지 않았습니다.</p></div>
+    <div class="assistant-layout"><article class="card"><h2>무엇이 궁금한가요?</h2><div class="suggestions"><button data-question="패치 변화에서 표본 조건이 왜 중요해?">패치 변화의 비교 조건</button><button data-question="행동 유형은 내 성격이야?">행동 유형의 해석 범위</button><button data-question="최신 챔피언을 추천해줘">현재 추천 가능 범위</button><button data-question="시야를 어떻게 복기할까?">다음 경기 복기 질문</button></div><form id="assistant-form"><label class="search-label" for="assistant-question">분석 질문</label><textarea id="assistant-question" minlength="2" maxlength="300" required placeholder="패치·군집·복기에 관한 질문을 입력하세요. 선택한 챔피언의 과거 집계도 물을 수 있어요."></textarea><p id="selected-context" class="muted">선택된 챔피언 없음</p><button class="primary" type="submit">근거와 함께 확인</button></form><p id="assistant-error" role="alert" class="error-text"></p></article><article class="card answer-card" id="assistant-answer" aria-live="polite"><div class="empty-state">질문을 보내면 분석 범위와 출처가 함께 표시됩니다.<small>등록된 근거 밖의 질문은 확인이 필요하다고 안내합니다.</small></div></article></div>
+  </section>
+  <footer><p>LoL 인사이트 노트는 Riot Games의 승인이나 후원을 받은 서비스가 아닙니다.</p><p>LoL Insight Notes isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p></footer>
+</main>
+</body>
+</html>
