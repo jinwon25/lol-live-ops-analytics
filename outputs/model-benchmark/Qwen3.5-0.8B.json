@@ -1,0 +1,133 @@
+{
+  "model": "Qwen/Qwen3.5-0.8B",
+  "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "adapter": false,
+  "transformers": "5.18.0",
+  "torch": "2.7.1+cpu",
+  "dtype": "float32",
+  "device": "cpu",
+  "threads": 4,
+  "decoding": "greedy, non-thinking",
+  "per_call_time_cap": 30,
+  "load_seconds": 4.78,
+  "peak_working_set_gib": 3.819,
+  "routing_valid": 6,
+  "routing_total": 8,
+  "median_seconds": 12.093,
+  "results": [
+    {
+      "case": "top",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "fight_setup",
+      "seconds": 12.688,
+      "tokens": 40,
+      "raw": "{\n  \"focus_id\": \"fight_setup\",\n  \"evidence_keys\": [\n    \"kill_participation\",\n    \"damage_share\"\n  ]\n}"
+    },
+    {
+      "case": "jungle",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "fight_setup",
+      "seconds": 12.359,
+      "tokens": 40,
+      "raw": "{\n  \"focus_id\": \"fight_setup\",\n  \"evidence_keys\": [\n    \"kill_participation\",\n    \"damage_share\"\n  ]\n}"
+    },
+    {
+      "case": "mid",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "fight_setup",
+      "seconds": 13.328,
+      "tokens": 40,
+      "raw": "{\n  \"focus_id\": \"fight_setup\",\n  \"evidence_keys\": [\n    \"kill_participation\",\n    \"damage_share\"\n  ]\n}"
+    },
+    {
+      "case": "bot",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "fight_setup",
+      "seconds": 11.422,
+      "tokens": 40,
+      "raw": "{\n  \"focus_id\": \"fight_setup\",\n  \"evidence_keys\": [\n    \"kill_participation\",\n    \"damage_share\"\n  ]\n}"
+    },
+    {
+      "case": "support",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "fight_setup",
+      "seconds": 10.703,
+      "tokens": 40,
+      "raw": "{\n  \"focus_id\": \"fight_setup\",\n  \"evidence_keys\": [\n    \"kill_participation\",\n    \"damage_share\"\n  ]\n}"
+    },
+    {
+      "case": "zero-team-kills",
+      "task": "routing",
+      "strict_json": true,
+      "valid": false,
+      "focus": null,
+      "seconds": 11.438,
+      "tokens": 40,
+      "raw": "{\n  \"focus_id\": \"fight_setup\",\n  \"evidence_keys\": [\n    \"kill_participation\",\n    \"damage_share\"\n  ]\n}"
+    },
+    {
+      "case": "missing-cs-share",
+      "task": "routing",
+      "strict_json": true,
+      "valid": false,
+      "focus": null,
+      "seconds": 11.141,
+      "tokens": 40,
+      "raw": "{\n  \"focus_id\": \"fight_setup\",\n  \"evidence_keys\": [\n    \"kill_participation\",\n    \"damage_share\"\n  ]\n}"
+    },
+    {
+      "case": "zero-vision",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "fight_setup",
+      "seconds": 12.093,
+      "tokens": 40,
+      "raw": "{\n  \"focus_id\": \"fight_setup\",\n  \"evidence_keys\": [\n    \"kill_participation\",\n    \"damage_share\"\n  ]\n}"
+    },
+    {
+      "case": "normal",
+      "task": "korean_summary",
+      "required_facts_present": true,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 10.734,
+      "tokens": 33,
+      "raw": "경기 시간 30 분 동안 12,000 골드 획득하여 분당 400 골드의 속도로 진행했습니다.",
+      "automatic_checks_are_not_semantic_review": true
+    },
+    {
+      "case": "missing",
+      "task": "korean_summary",
+      "required_facts_present": true,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 12.703,
+      "tokens": 35,
+      "raw": "팀 킬과 내 킬은 모두 0이며, 내 도움도 0으로 기록되어 있어 킬 관여율은 계산 불가 상태입니다.",
+      "automatic_checks_are_not_semantic_review": true
+    },
+    {
+      "case": "comparison",
+      "task": "korean_summary",
+      "required_facts_present": true,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 12.438,
+      "tokens": 41,
+      "raw": "경기 당시 평균 분당 골드 375였으나, 이번 경기 400으로 상승하여 +25 포인트의 차이로 인해 400 골드 달성했습니다.",
+      "automatic_checks_are_not_semantic_review": true
+    }
+  ],
+  "coaching_effect_validated": false
+}

@@ -1,0 +1,1351 @@
+{
+  "version": "16.19.1",
+  "tabler_version": "3.46.0",
+  "reference": "https://developer.riotgames.com/docs/lol#data-dragon",
+  "assets": [
+    {
+      "path": "champions/Aatrox.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Aatrox.png",
+      "owner": "Riot Games",
+      "bytes": 25644,
+      "sha256": "852d739fb696684549064266851df91ecd03729e06b1a192dc14af01549b7f3f"
+    },
+    {
+      "path": "champions/Ahri.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ahri.png",
+      "owner": "Riot Games",
+      "bytes": 28511,
+      "sha256": "8e93368d97e3d302463c4e83ac5980d1f0a3a0aaf92ac44435730fecbd55b565"
+    },
+    {
+      "path": "champions/Akali.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Akali.png",
+      "owner": "Riot Games",
+      "bytes": 27191,
+      "sha256": "a62acc32c454b5cc39cebd0769f940b34f3d39ddaf157b95acb176027f81e17a"
+    },
+    {
+      "path": "champions/Akshan.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Akshan.png",
+      "owner": "Riot Games",
+      "bytes": 25518,
+      "sha256": "da9a6cec8d8085b85e35b7ef0f4fb0ef368992b86760ea72a6539095482e5043"
+    },
+    {
+      "path": "champions/Alistar.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Alistar.png",
+      "owner": "Riot Games",
+      "bytes": 28116,
+      "sha256": "a1b9e0dc85d186fea8b7eccb91b7dc770ea6d3c5d5b53d9698cdf33524879259"
+    },
+    {
+      "path": "champions/Ambessa.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ambessa.png",
+      "owner": "Riot Games",
+      "bytes": 20689,
+      "sha256": "ce2bf0adfc1cb9e46430f318e73ec1c0bf257e5afe84b584acb88f15bfdb3646"
+    },
+    {
+      "path": "champions/Amumu.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Amumu.png",
+      "owner": "Riot Games",
+      "bytes": 24683,
+      "sha256": "bb20e52d6f4808d3c3cb5038397fdbff174544ee7c9cf9271deee9240a4b1204"
+    },
+    {
+      "path": "champions/Anivia.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Anivia.png",
+      "owner": "Riot Games",
+      "bytes": 27008,
+      "sha256": "f10e316692a616d9f27ff5548a52aa128e794ce736b8daa3e1a2b86217a406d5"
+    },
+    {
+      "path": "champions/Annie.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Annie.png",
+      "owner": "Riot Games",
+      "bytes": 30267,
+      "sha256": "97720fcc698033b18382e7475800d4aac6c436712d997d99df4a0ae99f6829e2"
+    },
+    {
+      "path": "champions/Aphelios.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Aphelios.png",
+      "owner": "Riot Games",
+      "bytes": 25225,
+      "sha256": "1db20831bdc7a01918adac84c3afffe3ce4ea8e2f2bee54d70dec220bd1ea6fc"
+    },
+    {
+      "path": "champions/Ashe.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ashe.png",
+      "owner": "Riot Games",
+      "bytes": 32121,
+      "sha256": "423666bdb0685355be4576f78eb6406fd49469b4f6e9f780f1c5eb4349fed91f"
+    },
+    {
+      "path": "champions/AurelionSol.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/AurelionSol.png",
+      "owner": "Riot Games",
+      "bytes": 26953,
+      "sha256": "a8888510b555c75b35f291a1474e28f46875a543eafcbf4d3595a71654856d7c"
+    },
+    {
+      "path": "champions/Aurora.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Aurora.png",
+      "owner": "Riot Games",
+      "bytes": 31037,
+      "sha256": "cb291047d565205ffe91bbbd3fc34592452b2f55b7706430a31c8ac188d99a33"
+    },
+    {
+      "path": "champions/Azir.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Azir.png",
+      "owner": "Riot Games",
+      "bytes": 25934,
+      "sha256": "fa90e249ef38adeabd757f24fc4069db8caccdf64353868d9683a5a9c4c81a35"
+    },
+    {
+      "path": "champions/Bard.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Bard.png",
+      "owner": "Riot Games",
+      "bytes": 31628,
+      "sha256": "18ee517f6453831c0730d73cbf1628001e53a5acced928d4d78e34a28051094d"
+    },
+    {
+      "path": "champions/Belveth.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Belveth.png",
+      "owner": "Riot Games",
+      "bytes": 25348,
+      "sha256": "9959345f8316af4ff29d9bf68ab6c8450c85a3742ba4f3e6952ab19d4d0057f1"
+    },
+    {
+      "path": "champions/Blitzcrank.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Blitzcrank.png",
+      "owner": "Riot Games",
+      "bytes": 29858,
+      "sha256": "753db19576c52ab7af43bd5ec2631023654567ecb2e0d83389d016927610d74c"
+    },
+    {
+      "path": "champions/Brand.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Brand.png",
+      "owner": "Riot Games",
+      "bytes": 30626,
+      "sha256": "c50bbafb3ed2beea470479b28cd9b2e233a9f88760e61a76cd413d68bafbac52"
+    },
+    {
+      "path": "champions/Braum.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Braum.png",
+      "owner": "Riot Games",
+      "bytes": 23674,
+      "sha256": "1ada9222fe928d32cca4b91fc374fb41cacb6157f0122a390ca611c3e2c29daa"
+    },
+    {
+      "path": "champions/Briar.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Briar.png",
+      "owner": "Riot Games",
+      "bytes": 31369,
+      "sha256": "dbecebf6559e79383b208ea340c1cffeea0867b757dff0b8525dd0e0a751ff1c"
+    },
+    {
+      "path": "champions/Caitlyn.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Caitlyn.png",
+      "owner": "Riot Games",
+      "bytes": 25976,
+      "sha256": "f7a515360f30f33dfe5ab4e8886ce59a70c2d333f924252f48f5f9a2fbc6edf4"
+    },
+    {
+      "path": "champions/Camille.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Camille.png",
+      "owner": "Riot Games",
+      "bytes": 26879,
+      "sha256": "54bfa2dc66fc3885279d4546a4d9651f3a16bd4e4474ceaf2e319bf7f673138a"
+    },
+    {
+      "path": "champions/Cassiopeia.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Cassiopeia.png",
+      "owner": "Riot Games",
+      "bytes": 26205,
+      "sha256": "da2ad096fc5237e31a1e9d9ebb9b6db6de65e2cab126c9a607c3fa7a36bc8e54"
+    },
+    {
+      "path": "champions/Chogath.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Chogath.png",
+      "owner": "Riot Games",
+      "bytes": 32006,
+      "sha256": "f5381fea0255a8a903381728fec79862dc5c426e25774c5e18def583fb3b1dfb"
+    },
+    {
+      "path": "champions/Corki.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Corki.png",
+      "owner": "Riot Games",
+      "bytes": 28457,
+      "sha256": "db997e48b9a4cda57b6e934c131d4718aca559f2b5bdaacc8e81a19d3c2953bb"
+    },
+    {
+      "path": "champions/Darius.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Darius.png",
+      "owner": "Riot Games",
+      "bytes": 27666,
+      "sha256": "4c73167413335e00b3ece58fadaa495a0c3fe05184b246b0f8b9af923a0d3d81"
+    },
+    {
+      "path": "champions/Diana.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Diana.png",
+      "owner": "Riot Games",
+      "bytes": 24762,
+      "sha256": "d967ef71d043a49c60dce6f19725fd17d8e8362ea3c059f9ba38906688905d93"
+    },
+    {
+      "path": "champions/Draven.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Draven.png",
+      "owner": "Riot Games",
+      "bytes": 26400,
+      "sha256": "9b62ecd81173ff55d83a7a9e42d7f9553288856e8365cc3bcbbf4ce3bf4091a6"
+    },
+    {
+      "path": "champions/DrMundo.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/DrMundo.png",
+      "owner": "Riot Games",
+      "bytes": 30630,
+      "sha256": "496b97ef027d5f90b583329269714623701ad12d013c610ee4c7465916ecb8e0"
+    },
+    {
+      "path": "champions/Ekko.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ekko.png",
+      "owner": "Riot Games",
+      "bytes": 26511,
+      "sha256": "6b2219dd6a3888d5572a2b2f2f522c3eeac490578f82f58171adfdf8e647b093"
+    },
+    {
+      "path": "champions/Elise.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Elise.png",
+      "owner": "Riot Games",
+      "bytes": 27566,
+      "sha256": "cb7e3ec0658c4e8cf86f2829b12203af68cfc9ab95b98579957427134d00c6e0"
+    },
+    {
+      "path": "champions/Evelynn.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Evelynn.png",
+      "owner": "Riot Games",
+      "bytes": 27174,
+      "sha256": "7b09f45c7350fe57217f6833fb97427ea6cc8312b902f7fb8bbbf2a6d5c2f506"
+    },
+    {
+      "path": "champions/Ezreal.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ezreal.png",
+      "owner": "Riot Games",
+      "bytes": 31064,
+      "sha256": "676467c4362b8745a27db93a44619179820add83be95583d7b2adcfcb4eb7e35"
+    },
+    {
+      "path": "champions/Fiddlesticks.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Fiddlesticks.png",
+      "owner": "Riot Games",
+      "bytes": 27884,
+      "sha256": "681544df2412f89a96052e835abe3327cfdd73801868aad20d07576a8157cc32"
+    },
+    {
+      "path": "champions/Fiora.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Fiora.png",
+      "owner": "Riot Games",
+      "bytes": 28094,
+      "sha256": "b76387ea62f007ece3e06e589ac15bc9bf5452472b70a0d847d096b06f6785b7"
+    },
+    {
+      "path": "champions/Fizz.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Fizz.png",
+      "owner": "Riot Games",
+      "bytes": 27947,
+      "sha256": "447fa01c18cc5bdcd0e014825f7825a93f05d32bde8226bb69fdf58fd6412999"
+    },
+    {
+      "path": "champions/Galio.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Galio.png",
+      "owner": "Riot Games",
+      "bytes": 24739,
+      "sha256": "25b4acea5a0d8d2b4de819e62fbf7e7bb4afdb94e0d18e8896cb28112a13dc3f"
+    },
+    {
+      "path": "champions/Gangplank.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Gangplank.png",
+      "owner": "Riot Games",
+      "bytes": 28742,
+      "sha256": "f2bed51abb3d68897a161e152f03e9c9e0bc13039e6b709f551397a52e5aeb39"
+    },
+    {
+      "path": "champions/Garen.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Garen.png",
+      "owner": "Riot Games",
+      "bytes": 30705,
+      "sha256": "53018603962e1867b391071f159bb4c60d57919422585c33bfd36551e97f3752"
+    },
+    {
+      "path": "champions/Gnar.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Gnar.png",
+      "owner": "Riot Games",
+      "bytes": 25845,
+      "sha256": "d566858ab7ae4a6887f3490cedcd9a7097f5b5214d78c0b7f1b631567f8d739e"
+    },
+    {
+      "path": "champions/Gragas.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Gragas.png",
+      "owner": "Riot Games",
+      "bytes": 28755,
+      "sha256": "06599cb8a6b083a3250c3bcd701b1bab1c8f9dab6ea52c7709ac2c895431f4f6"
+    },
+    {
+      "path": "champions/Graves.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Graves.png",
+      "owner": "Riot Games",
+      "bytes": 28267,
+      "sha256": "6f171c830d729e9b8b23c6a4d772f2bd44f90304101f1e6a299920b4ecda67d9"
+    },
+    {
+      "path": "champions/Gwen.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Gwen.png",
+      "owner": "Riot Games",
+      "bytes": 31229,
+      "sha256": "a7bba2bc0970bc5098396a4578a2cb72908630125011502bd2c0ee183ceb29d9"
+    },
+    {
+      "path": "champions/Hecarim.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Hecarim.png",
+      "owner": "Riot Games",
+      "bytes": 28985,
+      "sha256": "ba5b2d3fd406fdd81e52e359231024ef4877009bdcf61c9d7ca389916fe61509"
+    },
+    {
+      "path": "champions/Heimerdinger.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Heimerdinger.png",
+      "owner": "Riot Games",
+      "bytes": 32532,
+      "sha256": "3e54bea65546474fa1154f9ac25c73bd51aff36db5c808377553b1e9f252c56d"
+    },
+    {
+      "path": "champions/Hwei.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Hwei.png",
+      "owner": "Riot Games",
+      "bytes": 24613,
+      "sha256": "c8aeb272d4f4990ee87b7b7f857840d214e99f1707c9aebb6529ac6e0bc5f5ff"
+    },
+    {
+      "path": "champions/Illaoi.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Illaoi.png",
+      "owner": "Riot Games",
+      "bytes": 25338,
+      "sha256": "1334b302ec0fb4895e15033351122427786cfc25c6c30b4f9b43e2a8212314c1"
+    },
+    {
+      "path": "champions/Irelia.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Irelia.png",
+      "owner": "Riot Games",
+      "bytes": 29037,
+      "sha256": "a8cd7e83c7b327516869d67eb9cd96499bcf720d799b814830373cb200a98c9c"
+    },
+    {
+      "path": "champions/Ivern.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ivern.png",
+      "owner": "Riot Games",
+      "bytes": 25942,
+      "sha256": "a79756ca23f8f93a882f47e4ce5d4228b70bf002a1ea320d5a69fa16491c5df4"
+    },
+    {
+      "path": "champions/Janna.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Janna.png",
+      "owner": "Riot Games",
+      "bytes": 28129,
+      "sha256": "d0a7b79a9d7673b429fc94bb2718a27bff8cdbbbafe9fac294f1cf0cc1982d83"
+    },
+    {
+      "path": "champions/JarvanIV.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/JarvanIV.png",
+      "owner": "Riot Games",
+      "bytes": 28504,
+      "sha256": "9da74ae808585eff7f130f47ce4c6c3ddab0b302b1d39902e273ae0253592764"
+    },
+    {
+      "path": "champions/Jax.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Jax.png",
+      "owner": "Riot Games",
+      "bytes": 27107,
+      "sha256": "441e8d865d461bc338a2d2d5a2a09f6151bbfdb4795ec8b59e66ee8654eebcca"
+    },
+    {
+      "path": "champions/Jayce.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Jayce.png",
+      "owner": "Riot Games",
+      "bytes": 23552,
+      "sha256": "81301e79adf1c92dd700defb5e1ee11cb8b7ef04b7034554aacb067c66256a38"
+    },
+    {
+      "path": "champions/Jhin.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Jhin.png",
+      "owner": "Riot Games",
+      "bytes": 25526,
+      "sha256": "dd24ce955ba61995956f1a48cb9b90b9b52936bb23bf05e0cb74cfc9c74a4b0c"
+    },
+    {
+      "path": "champions/Jinx.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Jinx.png",
+      "owner": "Riot Games",
+      "bytes": 27938,
+      "sha256": "2777d44345974b93f8af378430811670566d0451b6410b2caff2984e93797357"
+    },
+    {
+      "path": "champions/Kaisa.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Kaisa.png",
+      "owner": "Riot Games",
+      "bytes": 26828,
+      "sha256": "e0e86ccb7143d20bcbd83f192530f9712bf4b1d6306ec07a06992d4b72676443"
+    },
+    {
+      "path": "champions/Kalista.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Kalista.png",
+      "owner": "Riot Games",
+      "bytes": 28603,
+      "sha256": "3809361a78dfb97d3660fd47345145287d48af10909426d353b451cf52dc093b"
+    },
+    {
+      "path": "champions/Karma.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Karma.png",
+      "owner": "Riot Games",
+      "bytes": 30154,
+      "sha256": "e1df55d95c9a90445b59615db2984c3a8a9d8df3578faf968872bbe2e0075bc0"
+    },
+    {
+      "path": "champions/Karthus.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Karthus.png",
+      "owner": "Riot Games",
+      "bytes": 28743,
+      "sha256": "2b7015e102317b52900f9c69adfe462426301ac0f62c54502fdeae518d30392e"
+    },
+    {
+      "path": "champions/Kassadin.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Kassadin.png",
+      "owner": "Riot Games",
+      "bytes": 29874,
+      "sha256": "a7616e721346eef6a2af65470f98757e4ad184a53685d412edec583dd5989a15"
+    },
+    {
+      "path": "champions/Katarina.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Katarina.png",
+      "owner": "Riot Games",
+      "bytes": 26732,
+      "sha256": "998f3a479b5441f86f4031aace49bbd70bb83a76c05d39b0697288fe50ba029e"
+    },
+    {
+      "path": "champions/Kayle.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Kayle.png",
+      "owner": "Riot Games",
+      "bytes": 24103,
+      "sha256": "63dd90ebddcf8fcda57aa20f6f6b490ceea0958a45f9411946d4b9bd0d1293c6"
+    },
+    {
+      "path": "champions/Kayn.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Kayn.png",
+      "owner": "Riot Games",
+      "bytes": 25653,
+      "sha256": "7a7e6e8f8df01879296ed9de5710329a2f3c541418ae277c65175e1ba2212982"
+    },
+    {
+      "path": "champions/Kennen.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Kennen.png",
+      "owner": "Riot Games",
+      "bytes": 26105,
+      "sha256": "71239ebd9236d5d0fdbccfb8741727e6f13dd007a4d6905e5aa82f6b36aceebd"
+    },
+    {
+      "path": "champions/Khazix.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Khazix.png",
+      "owner": "Riot Games",
+      "bytes": 23545,
+      "sha256": "30007408b2c91e58a8036116f222f70b1d148699b994a109a30eacb4eff6bb63"
+    },
+    {
+      "path": "champions/Kindred.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Kindred.png",
+      "owner": "Riot Games",
+      "bytes": 29250,
+      "sha256": "a789f7340a9e390c8627be587cb4f236736f55907c8e36b792ca1f6221ade4ed"
+    },
+    {
+      "path": "champions/Kled.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Kled.png",
+      "owner": "Riot Games",
+      "bytes": 28478,
+      "sha256": "4d71421e5e0a4fd8092fc9b6d91cc10fb36a067fc8a74b5e2fce2e718d3f2566"
+    },
+    {
+      "path": "champions/KogMaw.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/KogMaw.png",
+      "owner": "Riot Games",
+      "bytes": 29237,
+      "sha256": "a5836dd40801e9f6275c1b74de8ba6de2de09ab2d24ec2e9695f958917348f1a"
+    },
+    {
+      "path": "champions/KSante.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/KSante.png",
+      "owner": "Riot Games",
+      "bytes": 25880,
+      "sha256": "d7d62b07df5b66497195c68e3e2bbdc8c3d6078066aa2ed170cfbcb0fc2f5ddf"
+    },
+    {
+      "path": "champions/Leblanc.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Leblanc.png",
+      "owner": "Riot Games",
+      "bytes": 36027,
+      "sha256": "e48b97ce2451c37d4e4a747b37663bd1095730b4182b2805f397f60fd12c7c5d"
+    },
+    {
+      "path": "champions/LeeSin.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/LeeSin.png",
+      "owner": "Riot Games",
+      "bytes": 24979,
+      "sha256": "890f439dd16bfa686b3c6f06f9749eb5477e5b706a8ff85cb8161f91adcff9a8"
+    },
+    {
+      "path": "champions/Leona.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Leona.png",
+      "owner": "Riot Games",
+      "bytes": 31573,
+      "sha256": "d7e170e1d5c37b243663e03d480a4befe727d86d0733e3e411b90297cb192461"
+    },
+    {
+      "path": "champions/Lillia.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Lillia.png",
+      "owner": "Riot Games",
+      "bytes": 28814,
+      "sha256": "b270de6af7ec29bb2fb91d6effec79f3c0b6d93811315dc54d101ee55f61fb31"
+    },
+    {
+      "path": "champions/Lissandra.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Lissandra.png",
+      "owner": "Riot Games",
+      "bytes": 28806,
+      "sha256": "ece7fc0269138d30380dbb0420ccf822e7ca95819d7d911a0e29f7d10cf7445d"
+    },
+    {
+      "path": "champions/Locke.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Locke.png",
+      "owner": "Riot Games",
+      "bytes": 36247,
+      "sha256": "f05b0779ef6873f798d42f0bff433d54a7ba761d487ef36dd3de0c32bdf98d28"
+    },
+    {
+      "path": "champions/Lucian.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Lucian.png",
+      "owner": "Riot Games",
+      "bytes": 27998,
+      "sha256": "75e3de3e43f732f815293472167e0022118a0be55a627f10794bc8043e2602cb"
+    },
+    {
+      "path": "champions/Lulu.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Lulu.png",
+      "owner": "Riot Games",
+      "bytes": 29539,
+      "sha256": "ca22c4a042d66085ef7794c8b351b57880739be454aa4128fbdd7506c02d1a50"
+    },
+    {
+      "path": "champions/Lux.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Lux.png",
+      "owner": "Riot Games",
+      "bytes": 29188,
+      "sha256": "64639bea2aa7d622dd07287de7a7820950e567f0993c7dcc422e1e699fd743fd"
+    },
+    {
+      "path": "champions/Malphite.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Malphite.png",
+      "owner": "Riot Games",
+      "bytes": 26063,
+      "sha256": "233005b989ae25fc6e5e22d1325291bce2d64e49767ebb83413c0f91e1b157c6"
+    },
+    {
+      "path": "champions/Malzahar.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Malzahar.png",
+      "owner": "Riot Games",
+      "bytes": 27604,
+      "sha256": "c0f9eb031b22805d1bbed0cd0ee2a7f148541076c1655271665325e2dbf06911"
+    },
+    {
+      "path": "champions/Maokai.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Maokai.png",
+      "owner": "Riot Games",
+      "bytes": 27854,
+      "sha256": "7e68c320efa332ba9126c6d2d6ccd3a51939d7d1f2b31785fbec8594a0e6f6b3"
+    },
+    {
+      "path": "champions/MasterYi.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/MasterYi.png",
+      "owner": "Riot Games",
+      "bytes": 29421,
+      "sha256": "1c23534926a7956a260591fb3cee8f38cb6de3d9d4f064fe93fb88c8f76b1b66"
+    },
+    {
+      "path": "champions/Mel.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Mel.png",
+      "owner": "Riot Games",
+      "bytes": 29534,
+      "sha256": "e464fe1e53f45f3c603cdf1bab1cd182ce6a429840e008d30ed41411d4a68ea0"
+    },
+    {
+      "path": "champions/Milio.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Milio.png",
+      "owner": "Riot Games",
+      "bytes": 27199,
+      "sha256": "86517cc10c6c5670dcd6821a2e5c7bbb9e16aac597cda5d04578933bd5861343"
+    },
+    {
+      "path": "champions/MissFortune.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/MissFortune.png",
+      "owner": "Riot Games",
+      "bytes": 25963,
+      "sha256": "a8c3048bfb76b4e8b34e00193ed2febe69669918055ffda835ddb24905588733"
+    },
+    {
+      "path": "champions/MonkeyKing.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/MonkeyKing.png",
+      "owner": "Riot Games",
+      "bytes": 29161,
+      "sha256": "2264db1ffde08659aee3380c8ac5643771d872d95a9c9090951d7f2849e61353"
+    },
+    {
+      "path": "champions/Mordekaiser.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Mordekaiser.png",
+      "owner": "Riot Games",
+      "bytes": 26259,
+      "sha256": "3d3521dedf02d446ae2a506b8b5395a9fba690567dbf6be3cf4523e8c439d9b8"
+    },
+    {
+      "path": "champions/Morgana.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Morgana.png",
+      "owner": "Riot Games",
+      "bytes": 26025,
+      "sha256": "bd170027904c2e5a354e53dca0f5d50516a4f3d60a4fbb0c286c9eb32d8d8954"
+    },
+    {
+      "path": "champions/Naafiri.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Naafiri.png",
+      "owner": "Riot Games",
+      "bytes": 23851,
+      "sha256": "75a82287766d7bc333305390675eb5bd3a0b7522d0a69a46543e7bdc301a4ed7"
+    },
+    {
+      "path": "champions/Nami.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Nami.png",
+      "owner": "Riot Games",
+      "bytes": 28176,
+      "sha256": "f43e652c61cd4998274e966a1e91e00fb3d51cc6202f7e53a5f2c7da160ddd23"
+    },
+    {
+      "path": "champions/Nasus.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Nasus.png",
+      "owner": "Riot Games",
+      "bytes": 29763,
+      "sha256": "80b838812e5f14b1e37900d1c14c54835b535d5bd36af6ace19fd23344989be3"
+    },
+    {
+      "path": "champions/Nautilus.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Nautilus.png",
+      "owner": "Riot Games",
+      "bytes": 28532,
+      "sha256": "6e8dfa2e6ba3d4564745fe69ace7c796898aa023a2af2727b0be127316712c2c"
+    },
+    {
+      "path": "champions/Neeko.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Neeko.png",
+      "owner": "Riot Games",
+      "bytes": 28615,
+      "sha256": "0fd600e0aeeca36f9245bcbc02ca666a2493b2b68a60ecd298a2ad26c33c8a92"
+    },
+    {
+      "path": "champions/Nidalee.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Nidalee.png",
+      "owner": "Riot Games",
+      "bytes": 26077,
+      "sha256": "f6291b72f4ea9ea1fa272f61443bc3580e3f61b870be31c0743824a1c25abf33"
+    },
+    {
+      "path": "champions/Nilah.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Nilah.png",
+      "owner": "Riot Games",
+      "bytes": 28372,
+      "sha256": "564103bc6f32863242ea0d39fc40eb39c70cf4a1f28297c756f83d44195048b2"
+    },
+    {
+      "path": "champions/Nocturne.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Nocturne.png",
+      "owner": "Riot Games",
+      "bytes": 27356,
+      "sha256": "b9968b3e2bd60257ed23cede9e69b184ef78096bc196d157c1f6eff9b3d900d5"
+    },
+    {
+      "path": "champions/Nunu.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Nunu.png",
+      "owner": "Riot Games",
+      "bytes": 27502,
+      "sha256": "dab4f686598e93d0d430db32d824a98f34b5a0055331a654c84ea3759fe6ed6a"
+    },
+    {
+      "path": "champions/Olaf.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Olaf.png",
+      "owner": "Riot Games",
+      "bytes": 30509,
+      "sha256": "17d439590f461a2d4d5bdacd33d4d2c31009ea8f57b46a6a427b0db96f6bd0ab"
+    },
+    {
+      "path": "champions/Orianna.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Orianna.png",
+      "owner": "Riot Games",
+      "bytes": 21902,
+      "sha256": "7d70d8bcb2991de3f3512efb565c453a9d470dca78088c05aec3691d22dd7511"
+    },
+    {
+      "path": "champions/Ornn.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ornn.png",
+      "owner": "Riot Games",
+      "bytes": 25086,
+      "sha256": "91374f0919871a6490ac7b8ff9b073efb8b6a797f28302cc3751294c47c58d6e"
+    },
+    {
+      "path": "champions/Pantheon.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Pantheon.png",
+      "owner": "Riot Games",
+      "bytes": 28793,
+      "sha256": "0ab8b436d5d7dd0a4163ec105a4977fc77abfd16757d46a9e958242f2d6858c1"
+    },
+    {
+      "path": "champions/Poppy.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Poppy.png",
+      "owner": "Riot Games",
+      "bytes": 31447,
+      "sha256": "c2cdd3a868b4b9ac5f1f3fef5ca77e930f32b0c98a5c3b83bcb099f75a4b6b7c"
+    },
+    {
+      "path": "champions/Pyke.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Pyke.png",
+      "owner": "Riot Games",
+      "bytes": 29162,
+      "sha256": "384a69fbcbfed183b2ef591923e51cb56d5f55835a4dae2da716f858cd8a7a6f"
+    },
+    {
+      "path": "champions/Qiyana.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Qiyana.png",
+      "owner": "Riot Games",
+      "bytes": 30662,
+      "sha256": "b7bc7f2b7b4acd45b994005e87710c779c1c9bb89343e02f1fd1e98533a1f93f"
+    },
+    {
+      "path": "champions/Quinn.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Quinn.png",
+      "owner": "Riot Games",
+      "bytes": 30154,
+      "sha256": "69ac72c21c771fe80492a7a6316dbe7053c0f20f0bb35ecb59d43f6d916d90e4"
+    },
+    {
+      "path": "champions/Rakan.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Rakan.png",
+      "owner": "Riot Games",
+      "bytes": 28472,
+      "sha256": "b0252249ed33b226421595e5cf4f7a6b4e4fbe9441140e65cee05f82463f87fd"
+    },
+    {
+      "path": "champions/Rammus.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Rammus.png",
+      "owner": "Riot Games",
+      "bytes": 27369,
+      "sha256": "911faa8b6e8a2b5e018fa1c5f36617488036782e163faa8029d1475885cef6ab"
+    },
+    {
+      "path": "champions/RekSai.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/RekSai.png",
+      "owner": "Riot Games",
+      "bytes": 27922,
+      "sha256": "881fcd45ab0566be11312e358b9fe33f61656bbafe5b0ae4c95e5b3ca9cacfc3"
+    },
+    {
+      "path": "champions/Rell.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Rell.png",
+      "owner": "Riot Games",
+      "bytes": 29915,
+      "sha256": "47c0724d3b71c8b4d2ae4eed8d3b793550e1f4ef0e2bf3807696c6bf2ebaa91c"
+    },
+    {
+      "path": "champions/Renata.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Renata.png",
+      "owner": "Riot Games",
+      "bytes": 27669,
+      "sha256": "59f70a9f29de3a7740594e7f0a635e2d75f7e32b44c04f1d5b2576e91494baf0"
+    },
+    {
+      "path": "champions/Renekton.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Renekton.png",
+      "owner": "Riot Games",
+      "bytes": 29409,
+      "sha256": "a3b94121970f7649896ef8c695be265d31c617e33ff9c7c86cff56d1e19724fd"
+    },
+    {
+      "path": "champions/Rengar.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Rengar.png",
+      "owner": "Riot Games",
+      "bytes": 31091,
+      "sha256": "afc37ac7e29cbc58e31e3d127e26a9c1e09f05fcc489adbb512ad6710b63ff5e"
+    },
+    {
+      "path": "champions/Riven.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Riven.png",
+      "owner": "Riot Games",
+      "bytes": 27993,
+      "sha256": "4527ba3804c0b78e0127608708b2a425d1c6eef5f95925c5dcfd707f5fa32139"
+    },
+    {
+      "path": "champions/Rumble.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Rumble.png",
+      "owner": "Riot Games",
+      "bytes": 29584,
+      "sha256": "e14a39464abbdb4aba3ac5827e8f717ff7ce5b13d9c6a932da3fc13caa783f36"
+    },
+    {
+      "path": "champions/Ryze.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ryze.png",
+      "owner": "Riot Games",
+      "bytes": 25185,
+      "sha256": "abb747c8b8402625d4cc6b5b3c48950b192823216532c74f26d4b5ccf8851290"
+    },
+    {
+      "path": "champions/Samira.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Samira.png",
+      "owner": "Riot Games",
+      "bytes": 24690,
+      "sha256": "0a30028f649d72534fddf5c66e713792511dc79cb4ce882b7b7828eeabe35aa7"
+    },
+    {
+      "path": "champions/Sejuani.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Sejuani.png",
+      "owner": "Riot Games",
+      "bytes": 31761,
+      "sha256": "a84f6106746dd2cc0c173e6a995d7310a2ee676c7a22630f041fa1869bc6ef86"
+    },
+    {
+      "path": "champions/Senna.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Senna.png",
+      "owner": "Riot Games",
+      "bytes": 23661,
+      "sha256": "9ea2bd78c36f3c9b466a0f6df52154007663bb77cab7c07d87496885f0f86683"
+    },
+    {
+      "path": "champions/Seraphine.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Seraphine.png",
+      "owner": "Riot Games",
+      "bytes": 27763,
+      "sha256": "87bfe49f6595aa4b3b002f9768487d5d410badf25dfbb0f7bb54de11b0d50254"
+    },
+    {
+      "path": "champions/Sett.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Sett.png",
+      "owner": "Riot Games",
+      "bytes": 26531,
+      "sha256": "95823a0688664a52d1d46ebb0392c3cc45e26ab7e7a2510292a4f36239d9eea0"
+    },
+    {
+      "path": "champions/Shaco.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Shaco.png",
+      "owner": "Riot Games",
+      "bytes": 28951,
+      "sha256": "83ad990c0196b9b33c06b6cdf672db2d1ab3025cde131961ba767ddfff9c7a8a"
+    },
+    {
+      "path": "champions/Shen.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Shen.png",
+      "owner": "Riot Games",
+      "bytes": 25298,
+      "sha256": "6570a91fb958ef079805dadd8c7a628da569d9601883b6b24610f0858bda8239"
+    },
+    {
+      "path": "champions/Shyvana.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Shyvana.png",
+      "owner": "Riot Games",
+      "bytes": 39720,
+      "sha256": "f65317e9ded51d97ea2e53293984b7a5c640242a7099df7fb3de0aad356594b0"
+    },
+    {
+      "path": "champions/Singed.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Singed.png",
+      "owner": "Riot Games",
+      "bytes": 27610,
+      "sha256": "0429cad926e909454d99f3286b091a143780b87f67f867b54ab4ee152bdbec99"
+    },
+    {
+      "path": "champions/Sion.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Sion.png",
+      "owner": "Riot Games",
+      "bytes": 26066,
+      "sha256": "4908e30a48ec3cbdb080de1667833e2d018ea03fb296e9760066a46793adb528"
+    },
+    {
+      "path": "champions/Sivir.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Sivir.png",
+      "owner": "Riot Games",
+      "bytes": 28166,
+      "sha256": "dd8642cd3fb6df0d85d1837dc94c7128e4292554a93451081a5537d0b888172b"
+    },
+    {
+      "path": "champions/Skarner.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Skarner.png",
+      "owner": "Riot Games",
+      "bytes": 29500,
+      "sha256": "cefd97204e9634f6d46216b736279b988f5e0f3ce1ca49ed43a519effd6f05c9"
+    },
+    {
+      "path": "champions/Smolder.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Smolder.png",
+      "owner": "Riot Games",
+      "bytes": 29635,
+      "sha256": "8a7ffc62f2fe7904aee014201fe75e138b2bf82710d2bc3a6cf34d50d171e076"
+    },
+    {
+      "path": "champions/Sona.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Sona.png",
+      "owner": "Riot Games",
+      "bytes": 26340,
+      "sha256": "e77557069fdc32b412190e8218d2df235d89265100758f0fd8a3399e7b585548"
+    },
+    {
+      "path": "champions/Soraka.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Soraka.png",
+      "owner": "Riot Games",
+      "bytes": 31969,
+      "sha256": "ca2774023350198da7025b950c85be65e3506e2f40947ca4151f0e8df4a8be15"
+    },
+    {
+      "path": "champions/Swain.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Swain.png",
+      "owner": "Riot Games",
+      "bytes": 24066,
+      "sha256": "9f4550dd903cf19ee587bd0870f630ce90d6f62fac2a2d07fe46bda153db8f9b"
+    },
+    {
+      "path": "champions/Sylas.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Sylas.png",
+      "owner": "Riot Games",
+      "bytes": 27292,
+      "sha256": "3e724fcd4fffd0b36ea3dd2a60d7d3ed9aeb20ebc5e2dec2e8019b31c3097647"
+    },
+    {
+      "path": "champions/Syndra.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Syndra.png",
+      "owner": "Riot Games",
+      "bytes": 30524,
+      "sha256": "51424965682912746a4ac1a66c9c7d4e3d08333aaf8a59b9865725166580f7b3"
+    },
+    {
+      "path": "champions/TahmKench.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/TahmKench.png",
+      "owner": "Riot Games",
+      "bytes": 27628,
+      "sha256": "138eaa3abe89c804e7ef287f8d3bf69172be797965df958b259663c3d4389e42"
+    },
+    {
+      "path": "champions/Taliyah.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Taliyah.png",
+      "owner": "Riot Games",
+      "bytes": 24435,
+      "sha256": "436958c1d99411e473c7065bd969cec65ebdf61702d5b266db7e0720a3937c85"
+    },
+    {
+      "path": "champions/Talon.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Talon.png",
+      "owner": "Riot Games",
+      "bytes": 26989,
+      "sha256": "fc05e5ae6e6d4705a9db3a842fdbce11f429bf333b278f8183caef1d669919d9"
+    },
+    {
+      "path": "champions/Taric.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Taric.png",
+      "owner": "Riot Games",
+      "bytes": 27875,
+      "sha256": "3a91b21a88d562717fb78ada18c95a0b7a077e0c3b941d34829ba5e4d7eceaed"
+    },
+    {
+      "path": "champions/Teemo.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Teemo.png",
+      "owner": "Riot Games",
+      "bytes": 21456,
+      "sha256": "bbf4b7238b1f62dc02b39208db764588d18a712a7ea96205f5932730c08a62ee"
+    },
+    {
+      "path": "champions/Thresh.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Thresh.png",
+      "owner": "Riot Games",
+      "bytes": 26720,
+      "sha256": "27f9bfc32eb28d9e17e42e29f8d555c91110e040991d56577f433ddc9eca6c7e"
+    },
+    {
+      "path": "champions/Tristana.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Tristana.png",
+      "owner": "Riot Games",
+      "bytes": 30313,
+      "sha256": "9f46e6dd9d49bf8fd2c6dc7397fa4badb35bf0f355334301782c7f9e13f00aa5"
+    },
+    {
+      "path": "champions/Trundle.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Trundle.png",
+      "owner": "Riot Games",
+      "bytes": 28260,
+      "sha256": "e77d99af3ac328a80a247fafec728df7be4eda7200300a597b38f093fffe234e"
+    },
+    {
+      "path": "champions/Tryndamere.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Tryndamere.png",
+      "owner": "Riot Games",
+      "bytes": 31840,
+      "sha256": "e715ed3a7eb5f3a0dcfb6da2a9c8ae05d9c197ef514f959d5a94bff38d4dff48"
+    },
+    {
+      "path": "champions/TwistedFate.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/TwistedFate.png",
+      "owner": "Riot Games",
+      "bytes": 24949,
+      "sha256": "5f5944763b0d7c8fc68edad413a908799e2cfcae8a850a6ff746a16afc553670"
+    },
+    {
+      "path": "champions/Twitch.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Twitch.png",
+      "owner": "Riot Games",
+      "bytes": 28474,
+      "sha256": "823c7394b6cdc9fcc0b70f0e71578d8fbe1f06533e1010aa7785ebae4d1209ad"
+    },
+    {
+      "path": "champions/Udyr.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Udyr.png",
+      "owner": "Riot Games",
+      "bytes": 29169,
+      "sha256": "5fa439ae56b9b7a7bdc2ee35661caf8080c19bf2ef5fc0b87ad0315271ac9b93"
+    },
+    {
+      "path": "champions/Urgot.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Urgot.png",
+      "owner": "Riot Games",
+      "bytes": 25786,
+      "sha256": "35d3f774ca9b1430aa32fcacb9add8daa7cecb51411985a178e0d72d5571ec3d"
+    },
+    {
+      "path": "champions/Varus.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Varus.png",
+      "owner": "Riot Games",
+      "bytes": 28137,
+      "sha256": "1a300d007f9a3bc76342534a16cdf025ac111e733f69667bb4f065869a5ae9f4"
+    },
+    {
+      "path": "champions/Vayne.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Vayne.png",
+      "owner": "Riot Games",
+      "bytes": 28367,
+      "sha256": "d9ea091b8d2eddbf7d08001866d7a0798f2649a7067c61dce15ac92fbc3cb723"
+    },
+    {
+      "path": "champions/Veigar.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Veigar.png",
+      "owner": "Riot Games",
+      "bytes": 26807,
+      "sha256": "ace2c32c06d8a96b4de943228b01812f220adf3a4dfaa396e922f7c696221024"
+    },
+    {
+      "path": "champions/Velkoz.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Velkoz.png",
+      "owner": "Riot Games",
+      "bytes": 29187,
+      "sha256": "263e174bec40da4a00656390621f4bb7e81677c39527ed98ad63ed12c52308ee"
+    },
+    {
+      "path": "champions/Vex.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Vex.png",
+      "owner": "Riot Games",
+      "bytes": 29332,
+      "sha256": "aaa93d7fab2d5d469778128ccdbe59bde00e601da065d17e3ae7bce4fe53c758"
+    },
+    {
+      "path": "champions/Vi.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Vi.png",
+      "owner": "Riot Games",
+      "bytes": 33358,
+      "sha256": "282bd7a3e6a3bdd309f90eebf03b1fb7009a5357e6f53e158dd8c7df8103b4ab"
+    },
+    {
+      "path": "champions/Viego.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Viego.png",
+      "owner": "Riot Games",
+      "bytes": 28601,
+      "sha256": "582fda91453e711bf45146e75ae7b0db0a2aa148499cffd4919050a1b96e9316"
+    },
+    {
+      "path": "champions/Viktor.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Viktor.png",
+      "owner": "Riot Games",
+      "bytes": 30530,
+      "sha256": "caf7df593c7713892aac575d1031e9693066c57b86c25ff19542f4ca98c2159a"
+    },
+    {
+      "path": "champions/Vladimir.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Vladimir.png",
+      "owner": "Riot Games",
+      "bytes": 24626,
+      "sha256": "eebcd73ab4ba404c4c5b45b7665e5f31399515402b36d9ff8953bb02d4d4c0b3"
+    },
+    {
+      "path": "champions/Volibear.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Volibear.png",
+      "owner": "Riot Games",
+      "bytes": 29127,
+      "sha256": "36ab730707d6835a6a6fefe216ae3d8bf9d416970fc3223c857f109f404ee5ab"
+    },
+    {
+      "path": "champions/Warwick.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Warwick.png",
+      "owner": "Riot Games",
+      "bytes": 24895,
+      "sha256": "f5df0cb82ea9fba63308254d04d68307c09d1b17b1a28426d1550da39d9c79b8"
+    },
+    {
+      "path": "champions/Xayah.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Xayah.png",
+      "owner": "Riot Games",
+      "bytes": 26882,
+      "sha256": "4ecd1e37697ebc5ee54ca05f1914101ee49be334798287bb8a432f8dd42a5b3d"
+    },
+    {
+      "path": "champions/Xerath.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Xerath.png",
+      "owner": "Riot Games",
+      "bytes": 24656,
+      "sha256": "b204c7007dfe3dd7203c36a65ac6798f39fd96ba10ab981fa82e488aa170ed38"
+    },
+    {
+      "path": "champions/XinZhao.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/XinZhao.png",
+      "owner": "Riot Games",
+      "bytes": 35410,
+      "sha256": "f70e9570c60a33328b4e0c0437bcb33cc2320056ba0724e0279e553436da5667"
+    },
+    {
+      "path": "champions/Yasuo.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Yasuo.png",
+      "owner": "Riot Games",
+      "bytes": 28213,
+      "sha256": "25a7597bfbd3198740b56d369734542f9e7b2100645d9f1199d969c7e1538ffb"
+    },
+    {
+      "path": "champions/Yone.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Yone.png",
+      "owner": "Riot Games",
+      "bytes": 26864,
+      "sha256": "cc02f91c39f7336562fb8fa5792eeaeeb1540517a54e7713f7c70732add51c6d"
+    },
+    {
+      "path": "champions/Yorick.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Yorick.png",
+      "owner": "Riot Games",
+      "bytes": 26344,
+      "sha256": "151b64e886222db394d6397734f5297862ddc4216fcc1db4a6ad5d33d5dc241a"
+    },
+    {
+      "path": "champions/Yunara.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Yunara.png",
+      "owner": "Riot Games",
+      "bytes": 39524,
+      "sha256": "1502b9641f838af84749a8b10db447942fa8f1661c1fc9c3d43330489427a9d5"
+    },
+    {
+      "path": "champions/Yuumi.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Yuumi.png",
+      "owner": "Riot Games",
+      "bytes": 28605,
+      "sha256": "63283c06c2b3a4873a83cb9d00b2ee5892f7bcd7cd009fd8b6ff893f92138b9e"
+    },
+    {
+      "path": "champions/Zaahen.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Zaahen.png",
+      "owner": "Riot Games",
+      "bytes": 40550,
+      "sha256": "2028854176d35cf2f1f926044f071bcd0b7cc8eed839590296e64852bedd35d4"
+    },
+    {
+      "path": "champions/Zac.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Zac.png",
+      "owner": "Riot Games",
+      "bytes": 25794,
+      "sha256": "be2426155e937aa048cd22cab2342dd7ecbc591a90c5417d0bd3759ab5876aa6"
+    },
+    {
+      "path": "champions/Zed.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Zed.png",
+      "owner": "Riot Games",
+      "bytes": 28879,
+      "sha256": "3ad3e956e9ad5ca3127d8f685faf69d4251fb726e9b4f0be989764f0027e9c5f"
+    },
+    {
+      "path": "champions/Zeri.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Zeri.png",
+      "owner": "Riot Games",
+      "bytes": 28570,
+      "sha256": "5fc4e7ed3b8184495375ea0b8e35a625521cddc7d17d1d6e30e13b683b36100c"
+    },
+    {
+      "path": "champions/Ziggs.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Ziggs.png",
+      "owner": "Riot Games",
+      "bytes": 28542,
+      "sha256": "cc3ea57671db30642002b5c36c0a6c851aacb7b2d6a5af10069f9f00b00775a9"
+    },
+    {
+      "path": "champions/Zilean.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Zilean.png",
+      "owner": "Riot Games",
+      "bytes": 32671,
+      "sha256": "07c45f7285e5d741f17ebdc07889971c46c67f09846fdb9a3f0f0123aedd8850"
+    },
+    {
+      "path": "champions/Zoe.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Zoe.png",
+      "owner": "Riot Games",
+      "bytes": 27849,
+      "sha256": "2413cb98c5f863b8570a012e1927e4908ee78be0f7619ab3ce471e8c7da56bb2"
+    },
+    {
+      "path": "champions/Zyra.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/champion/Zyra.png",
+      "owner": "Riot Games",
+      "bytes": 26347,
+      "sha256": "9993a6caf52f955ad41077e56b56f2472c07c1a589fb4d1c66097ddf775feda4"
+    },
+    {
+      "path": "game/3340.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/3340.png",
+      "owner": "Riot Games",
+      "bytes": 5905,
+      "sha256": "a7153d00ff55d5165ac8c6d113681582d0c2902330c44cb12141472415c1c722"
+    },
+    {
+      "path": "game/1055.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1055.png",
+      "owner": "Riot Games",
+      "bytes": 3864,
+      "sha256": "1893376ba2a9476444e44e2f73b534d24a90cd0b4b11bf2d81a591e8fd857758"
+    },
+    {
+      "path": "game/1054.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/item/1054.png",
+      "owner": "Riot Games",
+      "bytes": 10860,
+      "sha256": "9577bd9146db0dd09885144767e381ab9f40474014d07537e4cad75bde910198"
+    },
+    {
+      "path": "game/SummonerFlash.png",
+      "source": "https://ddragon.leagueoflegends.com/cdn/16.19.1/img/spell/SummonerFlash.png",
+      "owner": "Riot Games",
+      "bytes": 6403,
+      "sha256": "1272fe7b3275c0afc872a6aaa6b65e27d41572d57f9ce19b9ed81b79aa5eb2aa"
+    },
+    {
+      "path": "icons/notebook.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/notebook.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 502,
+      "sha256": "c00d2c085c55edc9e517aa9329f6cdecdae990afc0a4fe20d3b001e500b5ab5f"
+    },
+    {
+      "path": "icons/layout-dashboard.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/layout-dashboard.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 720,
+      "sha256": "fa525ddc80d1df3411fe44685eeb3bd03d1b285581049931efe648450486eaf7"
+    },
+    {
+      "path": "icons/users.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/users.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 550,
+      "sha256": "ee1ec96e17087cbcb5663d84d2e5e1e46d56356c19d88bc42f8100154c1e298f"
+    },
+    {
+      "path": "icons/swords.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/swords.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 543,
+      "sha256": "056a09258110ffaa6e33b4c3e34279be13e51a8aa49cf13d5d5b1e4a7d065396"
+    },
+    {
+      "path": "icons/message-circle.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/message-circle.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 559,
+      "sha256": "9aa5a223a418736c972ff2f6759dceed9f4c73830d20e504a8c7228d74995a3d"
+    },
+    {
+      "path": "icons/search.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/search.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 422,
+      "sha256": "e579b69a4b978f702908a48b1bef74d9ac73df4679cb1a6074c567bec2748c41"
+    },
+    {
+      "path": "icons/arrow-right.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/arrow-right.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 434,
+      "sha256": "f3b14b2b1b68711e72864c3f231004c42a5317108dd480fe189bc98d5fad9f92"
+    },
+    {
+      "path": "icons/chart-line.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/chart-line.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 428,
+      "sha256": "0a2ec43a92e585dfc29e515cedaf1fc656c466bab5a6b9e0aa0a56f0c384f88a"
+    },
+    {
+      "path": "icons/target.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/target.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 504,
+      "sha256": "86aeb93cca8fdd443836de446a3fc565c45f5af5e7312171c1d054f14da1388e"
+    },
+    {
+      "path": "icons/download.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/download.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 450,
+      "sha256": "4c3498b4dc4e7f007db234f293b396ae1b23f18646e1d36f8bc4e08a31bf97b1"
+    },
+    {
+      "path": "icons/chevron-right.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/chevron-right.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 381,
+      "sha256": "26b321e42c7c7ed5d5161d9af061033df1d49ef33b5d2fc2309e2f6ee3d4c81a"
+    },
+    {
+      "path": "icons/check.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/check.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 395,
+      "sha256": "fe359b27c74ed0f4f72bfabbe5ca969a8bb13a5f39648bae63f9e798034ebed3"
+    },
+    {
+      "path": "icons/clock.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/clock.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 431,
+      "sha256": "bb582eb2c9d6709d285623bea586e1f532872a9db3d2391308360636e93d199d"
+    },
+    {
+      "path": "icons/book-2.svg",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/icons/outline/book-2.svg",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 482,
+      "sha256": "1f03d3e6df24ba50d7d9007d344430fe96fd80a3e4e5da92ecdd4dcf024f7a3a"
+    },
+    {
+      "path": "icons/LICENSE",
+      "source": "https://raw.githubusercontent.com/tabler/tabler-icons/v3.46.0/LICENSE",
+      "owner": "Tabler Icons / MIT",
+      "bytes": 1073,
+      "sha256": "b740a1d46122672da62833e97f7e7c8a13fa85cbc7445b584b297cc00dde93db"
+    }
+  ]
+}

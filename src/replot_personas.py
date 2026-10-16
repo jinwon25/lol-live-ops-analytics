@@ -17,8 +17,12 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-plt.rcParams["font.family"] = "Malgun Gothic"
-plt.rcParams["axes.unicode_minus"] = False
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from segment import configure_matplotlib_font
+
+configure_matplotlib_font()
+
 
 from sklearn.decomposition import PCA
 

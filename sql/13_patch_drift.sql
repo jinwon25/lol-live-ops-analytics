@@ -65,6 +65,9 @@ SELECT
     ROUND((pr3 - pr1)*100, 3)      AS pickrate_diff_pp,
     ROUND(((pr3 - pr1) - 1.96 * SQRT(pr1*(1-pr1)/N1 + pr3*(1-pr3)/N3)) * 100, 3) AS pr_ci_low_pp,
     ROUND(((pr3 - pr1) + 1.96 * SQRT(pr1*(1-pr1)/N1 + pr3*(1-pr3)/N3)) * 100, 3) AS pr_ci_high_pp,
+    CASE WHEN (pr1*(1-pr1)/N1 + pr3*(1-pr3)/N3) <= 0 THEN 0.0
+         ELSE ROUND((pr3 - pr1) / SQRT(pr1*(1-pr1)/N1 + pr3*(1-pr3)/N3), 4)
+    END                                                       AS pr_z_stat,
     CASE WHEN wr1 IS NULL THEN NULL ELSE ROUND(wr1*100, 2) END AS winrate_15_1_pct,
     CASE WHEN wr3 IS NULL THEN NULL ELSE ROUND(wr3*100, 2) END AS winrate_15_3_pct,
     CASE WHEN wr1 IS NULL OR wr3 IS NULL THEN NULL
@@ -76,7 +79,10 @@ SELECT
     CASE WHEN n_15_1=0 OR n_15_3=0 THEN NULL
          ELSE ROUND(((wr3 - wr1) + 1.96 *
                      SQRT(wr1*(1-wr1)/n_15_1 + wr3*(1-wr3)/n_15_3)) * 100, 2)
-    END                                                       AS wr_ci_high_pp
+    END                                                       AS wr_ci_high_pp,
+    CASE WHEN n_15_1=0 OR n_15_3=0 OR (wr1*(1-wr1)/n_15_1 + wr3*(1-wr3)/n_15_3) <= 0 THEN NULL
+         ELSE ROUND((wr3 - wr1) / SQRT(wr1*(1-wr1)/n_15_1 + wr3*(1-wr3)/n_15_3), 4)
+    END                                                       AS wr_z_stat
 FROM stats;
 
 
@@ -133,6 +139,7 @@ SELECT
 FROM stats;
 
 
+
 -- [1] 떠오른 챔프 TOP 15 (코호트 = 메인). 픽률 증가 큰 순.
 SELECT *
 FROM v_drift_cohort
@@ -153,8 +160,8 @@ LIMIT 15;
 SELECT
     champion_name, n_15_1, n_15_3,
     winrate_15_1_pct, winrate_15_3_pct,
-    winrate_diff_pp, wr_ci_low_pp, wr_ci_high_pp,
-    pickrate_15_1_pct, pickrate_15_3_pct, pickrate_diff_pp
+    winrate_diff_pp, wr_ci_low_pp, wr_ci_high_pp, wr_z_stat,
+    pickrate_15_1_pct, pickrate_15_3_pct, pickrate_diff_pp, pr_z_stat
 FROM v_drift_cohort
 WHERE n_15_1 >= 30 AND n_15_3 >= 30
 ORDER BY winrate_diff_pp DESC
@@ -165,12 +172,13 @@ LIMIT 10;
 SELECT
     champion_name, n_15_1, n_15_3,
     winrate_15_1_pct, winrate_15_3_pct,
-    winrate_diff_pp, wr_ci_low_pp, wr_ci_high_pp,
-    pickrate_15_1_pct, pickrate_15_3_pct, pickrate_diff_pp
+    winrate_diff_pp, wr_ci_low_pp, wr_ci_high_pp, wr_z_stat,
+    pickrate_15_1_pct, pickrate_15_3_pct, pickrate_diff_pp, pr_z_stat
 FROM v_drift_cohort
 WHERE n_15_1 >= 30 AND n_15_3 >= 30
 ORDER BY winrate_diff_pp ASC
 LIMIT 10;
+
 
 
 -- [5] role별 다양성 지표 변화 (코호트). HHI 변화 = 메타 쏠림 변화.

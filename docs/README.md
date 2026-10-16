@@ -4,9 +4,13 @@
 
 ## 목적에 따른 읽는 순서
 
+최신 구현은 [전적 중심 흐름·서비스 기반 점검](18_service_foundation_and_api_only_flow.md), [경기 탐색·현재 메타·Riot 수집](17_match_explorer_and_riot_collection.md), [Gen.G 컬러·검색·챔피언 탐색](16_geng_theme_and_navigation.md), [상용 서비스 참고·넓은 화면 개선](15_commercial_ui_refinement.md), [공개 모델 비교 범위 재점검](14_model_selection_audit.md), [화면 구조·자동 리포트](12_structure_and_auto_reports.md), [공개 데이터셋 조사](11_public_data_research.md)을 먼저 읽는다. [초기 모델 비교·학습 실험](13_local_llm_research.md)과 아래 기획·현황 문서는 작성 시점의 기록이다.
+
 | 목적 | 순서 | 확인할 점 |
 |---|---|---|
 | 개인 복기 서비스를 사용하기 | [서비스 실행](../service/README.md) → [API 연결](08_riot_integration.md) | 키는 서버의 로컬 환경 파일에 둡니다. 개발 키·개인 키와 공개 운영 조건을 구분합니다. |
+| 현재 구현과 다음 작업 확인 | [2026-10-05 현황 점검](09_service_status.md) → [서비스 실행](../service/README.md) | 기록 검색·수정·백업·복원과 남은 개발 순서를 확인합니다. |
+| 개선된 화면과 개인 분석 확인 | [화면·개인 분석 개선](10_personal_analysis_ui.md) → [상용 서비스 참고](07_service_benchmark.md) | 공식 이미지, 조건별 추이와 질문, 이전 과제 재사용, 참고 사이트 접근 범위를 확인합니다. |
 | 서비스 기획과 차별점 보기 | [서비스 기획](06_companion_plan.md) → [상용 서비스 참고](07_service_benchmark.md) | 본인 행동 기록과 동일 조건 비교가 중심이며, 최신 승률 추천·자동 코칭 효과는 검증하지 않았습니다. |
 | 과거 분석의 근거 보기 | [적재·표본 점검](01_phase1_notes.md) → [메타 분석](02_phase2_notes.md) → [행동 군집](03_phase3_notes.md) | 패치 15.1·15.3의 EUN 표본입니다. 최신 KR 랭크 표본으로 해석하지 않습니다. |
 | 결과 전달 방식 보기 | [패치와 사후 대조](04_patch_notes_match.md) → [대시보드 설계](05_dashboard_plan.md) | 이미 공개된 패치와의 비교이며 사전 예측 성과가 아닙니다. 대시보드는 설계·CSV 범위입니다. |

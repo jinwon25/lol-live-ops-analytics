@@ -25,10 +25,20 @@ Thumbs.db
 
 # Outputs — 분석 산출물 PNG/CSV 는 추적, 임시 산출물만 제외
 outputs/_tmp/
+outputs/refinement*.png
 
 # 원본 데이터는 추적하지 않음 (용량 큼, 외부 출처)
 data/raw/*.xlsx
 data/raw/*.csv
+data/raw/public/
 .pytest_cache/
 *.log
 .local/
+
+# Test / lint / type-check caches
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/

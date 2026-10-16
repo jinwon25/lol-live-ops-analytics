@@ -4,74 +4,96 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>LoL 인사이트 노트</title>
   <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="/assets/geng-theme.css">
+  <link rel="stylesheet" href="/assets/workspace.css">
   <script defer src="/assets/journal.js"></script>
+  <script defer src="/assets/analysis.js"></script>
+  <script defer src="/assets/reports.js"></script>
   <script defer src="/assets/app.js"></script>
+  <script defer src="/assets/match_views.js"></script>
+  <script defer src="/assets/insights.js"></script>
 </head>
 <body>
 <a class="skip-link" href="#main">본문으로 이동</a>
-<aside class="sidebar">
-  <a class="brand" href="/" aria-label="LoL 인사이트 노트 홈"><span class="brand-icon">IN</span><span>인사이트 노트<small>LEAGUE OF LEGENDS</small></span></a>
-  <p class="nav-label">나의 분석 공간</p>
+<header class="sidebar">
+  <a class="brand" href="/" aria-label="LoL 인사이트 노트 홈"><span class="brand-icon"><img src="/assets/images/icons/notebook.svg" alt="" width="24" height="24"></span><span>인사이트 노트<small>LEAGUE OF LEGENDS</small></span></a>
   <nav role="tablist" aria-label="서비스 메뉴">
-    <button role="tab" id="tab-overview" aria-controls="overview" aria-selected="true" data-page="overview">01 <span>인사이트 보드</span></button>
-    <button role="tab" id="tab-champions" aria-controls="champions" aria-selected="false" data-page="champions">02 <span>챔피언 탐색</span></button>
-    <button role="tab" id="tab-review" aria-controls="review" aria-selected="false" data-page="review">03 <span>경기 복기</span></button>
-    <button role="tab" id="tab-assistant" aria-controls="assistant" aria-selected="false" data-page="assistant">04 <span>분석 도우미</span></button>
+    <button role="tab" id="tab-review" aria-controls="review" aria-selected="true" data-page="review"><img src="/assets/images/icons/swords.svg" alt="" class="nav-icon"><span>내 전적·리포트</span></button>
+    <button role="tab" id="tab-overview" aria-controls="overview" aria-selected="false" data-page="overview"><img src="/assets/images/icons/notebook.svg" alt="" class="nav-icon"><span>보관함</span></button>
+    <button role="tab" id="tab-champions" aria-controls="champions" aria-selected="false" data-page="champions"><img src="/assets/images/icons/layout-dashboard.svg" alt="" class="nav-icon"><span>데이터 인사이트</span></button>
   </nav>
-  <div class="sidebar-note"><span class="dot"></span> 개발 중 · 로컬 첫 버전<p>관찰한 변화에서 근거를 확인하고, 다음 플레이의 질문을 남겨보세요.</p></div>
-  <a class="repo-link" href="https://github.com/jinwon25/lol-live-ops-analytics" target="_blank" rel="noopener noreferrer">분석 코드와 기록 ↗</a>
-</aside>
+  <div class="masthead-tools"><span>KR · 솔로듀오</span><button id="open-data-sources" class="text-button">자료 출처</button></div>
+</header>
 <main id="main" tabindex="-1">
-  <header class="topbar"><span>GAME ANALYTICS / COMPANION</span><span class="pill">완료된 경기의 복기를 위한 공간</span></header>
-  <div id="data-status" class="data-status" role="status">자료 기준을 확인하는 중입니다.</div>
   <div id="error-banner" class="error-banner" role="alert" hidden><span id="error-text"></span><button id="retry">다시 불러오기</button></div>
-  <section id="overview" role="tabpanel" aria-labelledby="tab-overview">
-    <div class="heading"><p class="eyebrow">MY RANKED REVIEW</p><h1>한 장면을 복기하고,<br>다음 선택을 바꾸기.</h1><p>랭크를 진지하게 복기하는 나를 위한 공간. 수치와 장면에서 확인한 사실을 구분하고 행동 하나를 정합니다.</p></div>
+  <section id="overview" role="tabpanel" aria-labelledby="tab-overview" hidden>
+    <div class="heading board-heading"><div><h1>보관함</h1><p>경기 변화를 확인하고, 다음 행동 하나를 남기세요.</p></div><button class="primary with-icon" data-open="review"><img src="/assets/images/icons/swords.svg" alt="" class="button-icon">전적 불러와 분석하기</button></div>
     <div class="metrics" id="overview-metrics"></div>
-    <p id="personal-context" class="muted">개인 기본 조건은 경기 입력에서 선택할 수 있습니다.</p>
-    <article class="card notebook"><div class="section-title"><h2>내 경기 기록</h2><button class="text-button" data-open="review">완료 경기 복기 시작 ↗</button></div><p class="muted">직접 입력 · 이 브라우저에만 저장. 전적 조회와 자동 리플레이 분석은 아직 연결되지 않았습니다.</p><label class="search-label" for="comparison-group">비교할 경기 조건</label><select id="comparison-group"></select><div id="self-comparison" aria-live="polite"></div><p class="muted">지역·큐·패치·티어·챔피언·포지션이 모두 같은 내 경기만 비교합니다. 최근 3경기와 직전 3경기의 기술 통계이며 실력 향상이나 행동의 효과를 판정하지 않습니다.</p><ul id="session-list"></ul><p id="journal-status" role="status" class="muted"></p></article>
+    <p id="personal-context" class="muted">이 브라우저에 보관한 리포트와 기존 복기 기록을 확인하세요.</p>
+    <article class="card saved-reports-card"><div class="section-title"><h2>보관한 경기 리포트</h2><span id="saved-report-count">0경기</span></div><div id="saved-reports"></div><p id="report-library-status" class="muted" role="status"></p></article>
+    <div class="board-layout">
+      <article class="card journal-card"><div class="section-title"><h2>최근 복기 기록</h2><span>최신 경기부터</span></div>
+        <div class="journal-toolbar"><div><label class="search-label" for="journal-search">저장한 복기 검색</label><input id="journal-search" class="search" type="search" maxlength="100" placeholder="챔피언, 장면, 다음 행동 검색"></div><div><label class="search-label" for="journal-state">행동 진행 상태</label><select id="journal-state"><option value="">전체 상태</option><option value="planned">시도 전</option><option value="tried">시도함</option><option value="reviewed">돌아봄</option></select></div></div>
+        <p id="session-count" role="status" class="muted"></p><ul id="session-list"></ul><button id="more-sessions" class="text-button" hidden>기록 20개 더 보기</button><p id="journal-status" role="status" class="muted"></p><button id="undo-delete" class="text-button" hidden>방금 삭제한 경기 되돌리기</button>
+      <details class="journal-fields"><summary>경기 기록 백업·복원</summary>
+        <p class="muted">경기 수치·장면·다음 행동을 JSON 파일로 보관합니다. 개인 기록이 담긴 파일은 본인이 보관하세요. 자유 노트는 포함하지 않습니다.</p>
+        <button id="export-journal" class="text-button">경기 기록 JSON 내보내기</button>
+        <label for="import-journal">복원할 경기 백업 파일 (최대 2MB)</label><input id="import-journal" type="file" accept=".json,application/json">
+        <p class="muted">같은 조건·일시는 현재 기록을 유지합니다. 최대 500개를 보관하며 한도를 넘으면 기존 기록을 유지하고 복원을 중단합니다. 파일은 서버에 전송하지 않습니다.</p>
+        <button id="restore-journal" class="primary" disabled>미리보기 확인 · 기록 합치기</button><p id="backup-status" role="status" class="muted"></p>
+      </details>
+      </article>
+    </div>
+    <div class="analysis-layout"><article class="card personal-report"><div class="section-title"><h2>내 플레이의 변화</h2><span class="tag">같은 조건끼리 비교</span></div><div class="report-controls"><div><label class="search-label" for="comparison-group">비교할 경기 조건</label><select id="comparison-group"></select></div><div><label class="search-label" for="report-metric">추이 지표</label><select id="report-metric"><option value="gpm">분당 골드</option><option value="dpm">분당 피해량</option><option value="vision_per_minute">분당 시야 점수</option><option value="kill_participation">킬 관여율</option></select></div></div><div id="personal-analysis" aria-live="polite"></div><details class="comparison-details"><summary>최근 3경기와 직전 3경기 평균 비교</summary><div id="self-comparison" aria-live="polite"></div></details><details class="report-method"><summary>비교 기준과 해석 범위</summary><p class="muted">지역·큐·패치·티어·챔피언·포지션이 모두 같은 내 경기만 비교합니다. 추이는 최대 최근 10경기, 평균 비교는 최근 3경기와 직전 3경기입니다. 직접 입력·수정한 수치를 포함하며 실력 향상이나 행동의 효과를 판정하지 않습니다. 계산할 수 없는 킬 관여율은 평균에서 제외하고 유효 경기 수를 표시합니다.</p></details></article><aside class="card task-card"><div class="section-title"><h2>다음 경기 과제</h2><img src="/assets/images/icons/target.svg" alt="" class="section-icon"></div><div id="next-game-tasks" aria-live="polite"></div><p id="task-status" class="muted" role="status"></p></aside></div>
+
+  </section>
+  <section id="champions" role="tabpanel" aria-labelledby="tab-champions" hidden>
+    <div class="heading"><h1>챔피언 &amp; 메타</h1><p>현재 패치의 관측 통계와 챔피언 기술 정보를 한곳에서 확인하세요.</p></div>
+    <div class="insight-tabs" role="group" aria-label="챔피언 정보 보기"><button id="show-meta-data" aria-pressed="true">현재 패치 통계</button><button id="show-champion-guide" aria-pressed="false">챔피언 도감</button></div>
+    <section id="meta-panel" class="card meta-panel" aria-labelledby="meta-heading"><div class="section-title"><div><h2 id="meta-heading">현재 패치 · 챔피언 통계</h2><p id="meta-scope" class="muted">공식 경기 표본 확인 중</p></div><span id="meta-freshness" class="tag">표본 기반</span></div><div class="meta-controls"><div class="position-filters" id="meta-roles" role="group" aria-label="포지션 통계"><button data-role="TOP" aria-pressed="false">탑</button><button data-role="JUNGLE" aria-pressed="false">정글</button><button data-role="MID" aria-pressed="false">미드</button><button data-role="BOT" aria-pressed="true">원딜</button><button data-role="SUPPORT" aria-pressed="false">서포터</button></div><label>챔피언 검색<input id="meta-search" type="search" placeholder="챔피언 이름" maxlength="80" aria-keyshortcuts="Control+K Meta+K"></label><label>정렬<select id="meta-sort"><option value="games">많이 선택한 순</option><option value="lower">승률 구간 하한 순</option><option value="win_rate">관측 승률 순</option></select></label><label class="sample-toggle"><input id="meta-minimum" type="checkbox" checked>30회 이상만</label></div><p id="meta-status" class="muted" role="status"></p><div id="meta-highlights" class="meta-highlights"></div><div id="meta-table" class="table-scroll"></div><details class="meta-method"><summary>표본 범위·갱신·통계 읽는 법</summary><div id="meta-method-content"></div></details></section>
+    <div id="champion-guide-panel" hidden>
+    <div class="section-title champion-section-heading"><h2>챔피언 도감</h2><span>공식 정적 자료 · 기술 · 관측 통계</span></div>
+    <div class="champion-toolbar"><div><label class="search-label" for="champion-search">챔피언 검색 <kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd></label><input id="champion-search" class="search" type="search" placeholder="이즈리얼, Ezreal…" maxlength="80" autocomplete="off" aria-keyshortcuts="Control+K Meta+K"></div><div class="champion-category-select"><label class="search-label" for="champion-class">공식 분류</label><select id="champion-class"><option value="">전체 분류</option><option value="Fighter">전사</option><option value="Assassin">암살자</option><option value="Mage">마법사</option><option value="Marksman">원거리</option><option value="Tank">탱커</option><option value="Support">서포터</option></select></div><span id="champion-count" class="muted" role="status"></span><div id="champion-quick-filters" class="champion-quick-filters" role="group" aria-label="공식 분류 빠른 필터"></div></div>
+    <p id="champion-hint" class="muted">챔피언을 선택하면 공식 정보와 과거 집계를 볼 수 있습니다.</p>
+    <div class="explorer-layout"><div id="champion-list" class="champion-list" aria-label="챔피언 목록"></div><article id="champion-detail" class="card detail" aria-live="polite" hidden></article></div>
+    </div>
+    <details class="reference-drawer"><summary>공개 데이터와 과거 분석 <span>공개 경기 흐름 · 자료 출처</span></summary>
+    <article class="card public-flow-card"><div class="section-title"><div><h2>공개 경기 흐름</h2><p class="muted">2023년 팀 단위 표본 · 현재 개인 평가와 별개의 참고 자료</p></div><span class="tag">공개 표본</span></div><p id="public-data-status" class="muted" role="status">공개 자료 확인 중</p><div id="public-flow-content" hidden><label class="search-label" for="public-phase">종료 경기 길이에 따른 시점</label><select id="public-phase"><option value="20">경기 길이의 20%</option><option value="40">경기 길이의 40%</option><option value="60">경기 길이의 60%</option><option value="80">경기 길이의 80%</option></select><div id="public-flow-metrics" class="metrics"></div><p class="muted">당시 블루팀 골드 우위에 따른 최종 승률 · 실제 관측이며 실시간 예측값이 아닙니다.</p><div id="public-flow-table" class="table-scroll" aria-live="polite"></div><p class="muted">종료 길이를 기준으로 시점을 나누므로 고정 10분·15분 통계와 다릅니다. 지역·패치·개별 티어·챔피언 정보가 없어 현재 KR 개인 백분위에 사용하지 않습니다.</p><button class="text-button" data-open="review">내 경기 복기 열기 ↗</button><details class="public-provenance"><summary>출처·집계 기준·이용 조건</summary><div id="public-flow-source"></div></details></div><details class="public-source-drawer"><summary>조사한 데이터 출처와 적용 범위</summary><div id="public-data-sources"></div></details></article>
     <div class="section-title"><h2>참고 분석 · 2025년 EUN 표본</h2><span>내 전적과 별개의 분석 자료</span></div>
     <div class="insight-grid">
       <article class="card insight"><span class="number">01 / PATCH</span><h3>메타 변화는 표본에 얼마나 민감할까?</h3><p>이즈리얼의 픽 비중 변화는 전체 +0.35%p, 공통 티어 +0.13%p였습니다.</p><div class="evidence-note">관측 범위: EUN · 15.1→15.3<br>비교 조건에 민감한 신호. 인과효과는 미추정.</div><button class="text-button" data-question="패치 변화와 비교 조건을 설명해줘">분석 근거 확인 ↗</button></article>
       <article class="card insight"><span class="number">02 / BEHAVIOR</span><h3>한 경기의 행동은 어떻게 나뉠까?</h3><p>역할 안에서 표준화한 행동 지표로 네 가지 경기별 유형을 살펴봅니다.</p><div class="evidence-note">관측 단위: 경기×참여자<br>군집에는 승패와 경기 흐름의 영향도 남습니다.</div><button class="text-button" data-question="행동 유형과 군집의 한계는?">유형의 해석 범위 ↗</button></article>
       <article class="card insight accent"><span class="number">03 / PRACTICE</span><h3>다음 경기에서 무엇을 확인할까?</h3><p>시야 확보나 교전 준비처럼 직접 되짚을 행동을 하나 고르고 기록해보세요.</p><div class="evidence-note">연습 과제: 검토할 가설<br>효과를 판단하려면 반복 관찰과 조건 비교가 필요합니다.</div><button class="text-button" data-open="review">복기 노트 시작 ↗</button></article>
     </div>
-    <div class="two-column"><article class="card"><div class="section-title"><h2>경기별 행동 유형</h2><span>기존 K=4 집계</span></div><div id="segment-bars"></div><p class="muted">표본 비중이며 개인의 성격이나 장기적 성향을 뜻하지 않습니다.</p></article><article class="card"><p class="eyebrow">OFFICIAL REFERENCE</p><h2>현재 공식 자료</h2><p id="official-reference">확인 중</p><div id="official-links" class="source-list"></div><p class="muted">정적 자료는 챔피언 기본 정보입니다. 현재 패치 경기 통계는 후속 수집 단계에서 연결합니다.</p></article></div>
-  </section>
-  <section id="champions" role="tabpanel" aria-labelledby="tab-champions" hidden>
-    <div class="heading"><p class="eyebrow">CHAMPION EXPLORER</p><h1>챔피언을 조건과 함께 살펴보기.</h1><p>공식 챔피언 정보와 과거 역할·패치 집계를 각각 확인합니다.</p></div>
-    <label class="search-label" for="champion-search">챔피언 이름 검색</label><input id="champion-search" class="search" type="search" placeholder="이즈리얼, Ezreal…" maxlength="80" autocomplete="off">
-    <div class="explorer-layout"><div id="champion-list" class="champion-list" aria-label="챔피언 목록"></div><article id="champion-detail" class="card detail" aria-live="polite"><h2>챔피언을 선택해 주세요.</h2><p>과거 자료가 없는 챔피언은 관측 승률을 표시하지 않습니다.</p></article></div>
-  </section>
-  <section id="review" role="tabpanel" aria-labelledby="tab-review" hidden>
-    <div class="heading"><p class="eyebrow">POST-MATCH REVIEW</p><h1>한 경기에서, 한 가지 질문.</h1><p>완료된 경기 수치를 직접 입력해 요약하고 다음 플레이에서 확인할 행동을 남겨보세요.</p></div>
-    <article class="card notebook"><h2>공식 API로 최근 전적 불러오기</h2><p id="riot-status" class="muted">연결 설정 확인 중</p><a href="https://github.com/jinwon25/lol-live-ops-analytics/blob/main/service/README.md" target="_blank" rel="noopener noreferrer">연결 설정·실행 안내 ↗</a><form id="riot-form" class="form-grid"><label>Riot ID 게임 이름<input name="game_name" maxlength="70" required autocomplete="off" placeholder="GameName"></label><label>태그<input name="tag_line" maxlength="16" required autocomplete="off" placeholder="KR1"></label><button type="submit" class="primary wide">KR 솔로듀오 최근 5경기 조회</button></form><p class="muted">입력한 ID는 조회를 위해 로컬 서버와 Riot에만 전달됩니다. 이 화면에서는 ID·원본 전적을 디스크에 저장하지 않습니다. 키는 서버의 환경 변수로 설정합니다.</p><p id="riot-error" role="alert" class="error-text"></p><div id="riot-matches" aria-live="polite"></div></article>
-    <div class="two-column"><article class="card"><div class="section-title"><h2>경기 입력</h2><button id="fill-example" class="text-button">합성 예제 불러오기</button></div><button id="start-personal" class="text-button">입력 초기화 · 내 경기 입력 시작</button><p class="muted" id="review-source">직접 입력 · 전적 검증 전</p>
-      <form id="review-form" class="form-grid">
-        <label>챔피언<select name="champion_id" id="review-champion"><option value="">선택해 주세요</option></select></label>
-        <label>지역<select name="region"><option value="">선택해 주세요</option><option>KR</option><option>EUN</option><option>EUW</option><option>NA</option></select></label>
-        <label>랭크 큐<select name="queue"><option value="">선택해 주세요</option><option value="RANKED_SOLO">솔로듀오</option><option value="RANKED_FLEX">자유랭크</option></select></label>
-        <label>경기 당시 티어<select name="tier"><option value="">선택해 주세요</option><option>IRON</option><option>BRONZE</option><option>SILVER</option><option>GOLD</option><option>PLATINUM</option><option>EMERALD</option><option>DIAMOND</option><option>MASTER</option><option>GRANDMASTER</option><option>CHALLENGER</option></select></label>
-        <label>경기 게임 버전(앞 두 자리)<input name="patch" placeholder="예: 16.19" pattern="[0-9]{2}\.[0-9]{1,2}" maxlength="5"></label>
-        <label>완료 경기 일시(현재 기기 시간대)<input name="played_at" type="datetime-local"></label>
-        <label>포지션<select name="role"><option>TOP</option><option>JUNGLE</option><option selected>MID</option><option>BOT</option><option>SUPPORT</option></select></label>
-        <label>오늘의 복기 초점<select name="focus" id="review-focus"><option value="vision">오브젝트 전 시야 준비</option><option value="fight_setup">교전 전 합류와 자원</option><option value="resource">파밍과 귀환 선택</option><option value="matchup">라인전 상대와 선택</option></select></label>
-        <label>경기 시간(분)<input name="duration_minutes" type="number" min="5" max="90" step="0.01" required></label>
-        <label>획득 골드<input name="gold" type="number" min="0" max="100000" required></label>
-        <label>챔피언 대상 피해량<input name="damage" type="number" min="0" max="500000" required></label>
-        <label>시야 점수<input name="vision" type="number" min="0" max="1000" step="0.1" required></label>
-        <label>팀 킬<input name="team_kills" type="number" min="0" max="500" required></label>
-        <label>내 킬<input name="kills" type="number" min="0" max="200" required></label>
-        <label>내 도움<input name="assists" type="number" min="0" max="300" required></label>
-        <button class="primary wide" type="submit">경기 요약과 복기 질문 보기</button>
-      </form><p id="review-error" role="alert" class="error-text"></p></article>
-      <article class="card"><h2>복기 결과</h2><div id="review-result" aria-live="polite"><div class="empty-state">입력한 경기의 요약이 여기에 표시됩니다.<small>동티어 백분위와 개인 진단은 전적·비교 표본 연결 후 검증합니다.</small></div></div><div class="journal-fields"><label for="scene-note">장면에서 확인한 사실 · 시각</label><textarea id="scene-note" maxlength="400" placeholder="예: 18:20 귀환 후 드래곤 앞에 도착했을 때 아군 둘이 아직 이동 중이었다."></textarea><label for="next-action">다음 경기에서 확인할 행동 한 가지</label><textarea id="next-action" maxlength="200" placeholder="예: 오브젝트 쪽으로 이동하기 전 아군의 합류 위치를 확인한다."></textarea><button id="save-session" class="primary" disabled>내 경기와 행동 기록 저장</button><p id="save-status" role="status" class="muted">조건과 일시를 채운 직접 입력 경기만 저장할 수 있습니다. 같은 조건·일시는 기존 기록을 갱신합니다.</p></div></article></div>
-    <article class="card notebook"><div class="section-title"><h2>다음 경기에서 확인할 행동</h2><span>이 브라우저에만 저장</span></div><form id="note-form"><label class="search-label" for="practice-note">복기 질문 또는 행동 한 가지</label><div class="note-input"><input id="practice-note" maxlength="200" required placeholder="예: 첫 드래곤 전 시야를 확보한 시점과 경로를 되짚기"><button class="primary" type="submit">기록</button></div></form><ul id="practice-list"></ul><p id="note-status" role="status" class="muted"></p><button id="clear-notes" class="text-button">이 브라우저의 복기 기록 지우기</button></article>
-  </section>
-  <section id="assistant" role="tabpanel" aria-labelledby="tab-assistant" hidden>
-    <div class="heading"><p class="eyebrow">EVIDENCE ASSISTANT</p><h1>답변의 근거까지 함께.</h1><p>현재 등록된 분석을 질문으로 탐색합니다. 최신 전적·빌드는 아직 연결되지 않았습니다.</p></div>
+    <div class="two-column"><article class="card"><div class="section-title"><h2>경기별 행동 유형</h2><span>기존 K=4 집계</span></div><div id="segment-bars"></div><p class="muted">표본 비중이며 개인의 성격이나 장기적 성향을 뜻하지 않습니다.</p></article><article class="card"><p class="eyebrow">OFFICIAL REFERENCE</p><h2>현재 공식 자료</h2><a href="/assets/images/manifest.json" target="_blank" rel="noopener">이미지·아이콘 출처</a><p id="official-reference">확인 중</p><div id="official-links" class="source-list"></div><p class="muted">정적 자료는 챔피언 기본 정보입니다. 현재 패치 경기 통계는 후속 수집 단계에서 연결합니다.</p></article></div>
+    </details>
+    <details class="assistant-drawer"><summary id="tab-assistant">분석 근거를 도우미에게 묻기</summary>
+  <section id="assistant" aria-labelledby="assistant-heading">
+    <div class="heading"><h2 id="assistant-heading">분석 근거 질문</h2><p>패치·플레이 유형·복기에 관한 분석 근거를 확인하세요.</p></div>
     <div class="assistant-layout"><article class="card"><h2>무엇이 궁금한가요?</h2><div class="suggestions"><button data-question="패치 변화에서 표본 조건이 왜 중요해?">패치 변화의 비교 조건</button><button data-question="행동 유형은 내 성격이야?">행동 유형의 해석 범위</button><button data-question="최신 챔피언을 추천해줘">현재 추천 가능 범위</button><button data-question="시야를 어떻게 복기할까?">다음 경기 복기 질문</button></div><form id="assistant-form"><label class="search-label" for="assistant-question">분석 질문</label><textarea id="assistant-question" minlength="2" maxlength="300" required placeholder="패치·군집·복기에 관한 질문을 입력하세요. 선택한 챔피언의 과거 집계도 물을 수 있어요."></textarea><p id="selected-context" class="muted">선택된 챔피언 없음</p><button class="primary" type="submit">근거와 함께 확인</button></form><p id="assistant-error" role="alert" class="error-text"></p></article><article class="card answer-card" id="assistant-answer" aria-live="polite"><div class="empty-state">질문을 보내면 분석 범위와 출처가 함께 표시됩니다.<small>등록된 근거 밖의 질문은 확인이 필요하다고 안내합니다.</small></div></article></div>
   </section>
+    </details>
+  </section>
+  <section id="review" role="tabpanel" aria-labelledby="tab-review">
+    <div class="heading board-heading"><div><h1>내 전적·리포트</h1><p>전적을 불러오고, 경기별 수치와 다음 플레이를 확인하세요.</p></div><button class="text-button" data-open="overview">보관한 리포트 보기 →</button></div>
+    <article class="card notebook riot-card">
+      <h2>전적 불러오기</h2><p id="riot-status" class="muted">연결 설정 확인 중</p>
+      <form id="riot-form" class="form-grid">
+        <label>Riot ID 게임 이름 <kbd class="search-shortcut" aria-hidden="true">Ctrl K</kbd><input name="game_name" maxlength="70" required autocomplete="off" placeholder="게임 이름" aria-keyshortcuts="Control+K Meta+K"></label>
+        <label>태그<input name="tag_line" maxlength="16" required autocomplete="off" placeholder="KR1"></label>
+        <button type="submit" class="primary wide">전적 분석</button><label class="match-count-label">조회 범위<select name="count"><option value="5">최근 5경기</option><option value="10" selected>최근 10경기</option></select></label>
+      </form>
+      <details class="connection-help"><summary>전적 연결·개인정보 안내</summary><p class="muted">입력한 ID는 조회를 위해 로컬 서버와 Riot에만 전달됩니다. ID·원본 전적은 디스크에 저장하지 않습니다. 키는 서버 환경 변수로 설정합니다.</p><a href="https://github.com/jinwon25/lol-live-ops-analytics/blob/main/service/README.md" target="_blank" rel="noopener noreferrer">연결 설정·실행 안내 ↗</a></details>
+      <p id="riot-error" role="alert" class="error-text"></p>
+    </article>
+    <section id="account-summary" class="account-summary" hidden aria-label="조회한 계정 요약"></section>
+    <div class="match-workspace"><article class="card match-list-panel"><div class="section-title"><h2>최근 경기</h2><span>솔로듀오</span></div><label class="search-label match-role-control">포지션<select id="recent-role"><option value="">전체 포지션</option><option value="TOP">탑</option><option value="JUNGLE">정글</option><option value="MID">미드</option><option value="BOT">원딜</option><option value="SUPPORT">서포터</option></select></label><div id="riot-matches" aria-live="polite"><p class="muted">Riot ID를 조회하면 경기 목록이 표시됩니다.</p></div><p class="mobile-match-hint muted">경기 목록을 좌우로 넘겨 선택하세요.</p></article>
+    <article class="card auto-report-card" id="auto-report-card"><div class="section-title"><div><h2>경기 분석 리포트</h2></div><span class="tag">공식 전적 기반</span></div><div id="auto-report" aria-live="polite"><div class="report-start"><img src="/assets/images/icons/target.svg" alt="" width="28" height="28"><h3>경기를 불러오면 리포트가 열립니다</h3><p>전적을 불러오면 최신 경기의 리포트가 열립니다.<br>최근 경기 목록에서 다른 경기를 선택할 수 있습니다.</p></div></div></article>
+    </div>
+    <article class="card notebook"><div class="section-title"><h2>다음 경기에서 확인할 행동</h2><span>이 브라우저에만 저장</span></div><form id="note-form"><label class="search-label" for="practice-note">복기 질문 또는 행동 한 가지</label><div class="note-input"><input id="practice-note" maxlength="200" required placeholder="예: 첫 드래곤 전 시야를 확보한 시점과 경로를 되짚기"><button class="primary" type="submit">기록</button></div></form><ul id="practice-list"></ul><p id="note-status" role="status" class="muted"></p><button id="clear-notes" class="text-button">이 브라우저의 복기 기록 지우기</button></article>
+  </section>
+
+  <details class="data-drawer"><summary>자료 기준</summary><div id="data-status" class="data-status" role="status">자료 기준을 확인하는 중입니다.</div></details>
   <footer><p>LoL 인사이트 노트는 Riot Games의 승인이나 후원을 받은 서비스가 아닙니다.</p><p>LoL Insight Notes isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, and all associated properties are trademarks or registered trademarks of Riot Games, Inc.</p></footer>
 </main>
 </body>

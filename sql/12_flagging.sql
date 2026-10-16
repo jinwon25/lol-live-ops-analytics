@@ -64,6 +64,7 @@ SELECT
     pick_count, pick_rate_pct,
     ROUND(win_rate * 100, 2)   AS win_rate_pct,
     ROUND(wilson_low * 100, 2) AS wilson_low_pct,
+    ROUND((win_rate - 0.50) / SQRT(0.25 / pick_count), 4) AS wr_z_vs_50,
     pop_quartile,
     CASE
         WHEN pick_count >= 30 AND win_rate >= 0.52 AND pop_quartile  = 4 THEN 'NERF'
@@ -80,6 +81,7 @@ ORDER BY patch, role,
              ELSE 2
          END,
          win_rate DESC;
+
 
 
 -- [2] 패치 × role 별 NERF / BUFF 후보 수 (요약)

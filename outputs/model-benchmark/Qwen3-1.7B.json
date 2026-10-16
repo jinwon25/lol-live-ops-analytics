@@ -1,0 +1,125 @@
+{
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "adapter": false,
+  "transformers": "5.18.0",
+  "torch": "2.7.1+cpu",
+  "dtype": "float32",
+  "device": "cpu",
+  "threads": 4,
+  "decoding": "greedy, non-thinking",
+  "per_call_time_cap": 30,
+  "load_seconds": 27.09,
+  "peak_working_set_gib": 6.516,
+  "routing_valid": 8,
+  "routing_total": 8,
+  "median_seconds": 15.109,
+  "results": [
+    {
+      "case": "top",
+      "task": "routing",
+      "valid": true,
+      "focus": "vision",
+      "seconds": 26.547,
+      "tokens": 22,
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}"
+    },
+    {
+      "case": "jungle",
+      "task": "routing",
+      "valid": true,
+      "focus": "vision",
+      "seconds": 17.781,
+      "tokens": 22,
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}"
+    },
+    {
+      "case": "mid",
+      "task": "routing",
+      "valid": true,
+      "focus": "vision",
+      "seconds": 15.109,
+      "tokens": 22,
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}"
+    },
+    {
+      "case": "bot",
+      "task": "routing",
+      "valid": true,
+      "focus": "vision",
+      "seconds": 15.75,
+      "tokens": 22,
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}"
+    },
+    {
+      "case": "support",
+      "task": "routing",
+      "valid": true,
+      "focus": "vision",
+      "seconds": 14.531,
+      "tokens": 22,
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}"
+    },
+    {
+      "case": "zero-team-kills",
+      "task": "routing",
+      "valid": true,
+      "focus": "vision",
+      "seconds": 13.688,
+      "tokens": 22,
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}"
+    },
+    {
+      "case": "missing-cs-share",
+      "task": "routing",
+      "valid": true,
+      "focus": "vision",
+      "seconds": 14.516,
+      "tokens": 22,
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}"
+    },
+    {
+      "case": "zero-vision",
+      "task": "routing",
+      "valid": true,
+      "focus": "vision",
+      "seconds": 14.047,
+      "tokens": 22,
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}"
+    },
+    {
+      "case": "normal",
+      "task": "korean_summary",
+      "required_facts_present": true,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 23.89,
+      "tokens": 38,
+      "raw": "경기 30분 동안 분당 골드 400을 획득하며 12000 골드를 획득했습니다.",
+      "automatic_checks_are_not_semantic_review": true
+    },
+    {
+      "case": "missing",
+      "task": "korean_summary",
+      "required_facts_present": false,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 13.437,
+      "tokens": 19,
+      "raw": "팀 킬 0, 내 킬 0, 내 도움 0.",
+      "automatic_checks_are_not_semantic_review": true
+    },
+    {
+      "case": "comparison",
+      "task": "korean_summary",
+      "required_facts_present": true,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 27.282,
+      "tokens": 50,
+      "raw": "이번 경기에서 분당 골드가 400으로 증가했으며, 이는 전반기 평균 375보다 25가 더 높은 것으로 추정됩니다.",
+      "automatic_checks_are_not_semantic_review": true
+    }
+  ],
+  "coaching_effect_validated": false
+}

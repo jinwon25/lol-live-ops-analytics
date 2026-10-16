@@ -1,0 +1,66 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    env_file:
+      - path: ./service/.env
+        required: false
+    environment:
+      RIOT_API_KEY: ${RIOT_API_KEY:-}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      ALLOW_REMOTE_ACCESS: ${ALLOW_REMOTE_ACCESS:-true}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8001,http://127.0.0.1:8001}
+      LLAMA_SERVER_URL: ${LLAMA_SERVER_URL:-http://llama-server:8080}
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command:
+      - "redis-server"
+      - "--save"
+      - ""
+      - "--appendonly"
+      - "no"
+      - "--maxmemory"
+      - "128mb"
+      - "--maxmemory-policy"
+      - "allkeys-lru"
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  llama-server:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    profiles:
+      - llm
+    volumes:
+      - ./.local/models:/models:ro
+    command:
+      - "-m"
+      - "/models/Qwen3-4B-Q4_K_M/Qwen3-4B-Q4_K_M.gguf"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8080"
+      - "-c"
+      - "2048"
+      - "-t"
+      - "4"
+      - "-ngl"
+      - "0"
+      - "-np"
+      - "4"
+    expose:
+      - "8080"
+    restart: unless-stopped

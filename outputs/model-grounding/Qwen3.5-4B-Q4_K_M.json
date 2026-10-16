@@ -1,0 +1,303 @@
+{
+  "model": "Qwen3.5-4B-Q4_K_M",
+  "runtime": "llama.cpp b11398",
+  "context": 2048,
+  "threads": 4,
+  "decoding": "greedy, non-thinking",
+  "max_tokens": 64,
+  "stop": null,
+  "total": 12,
+  "valid": 12,
+  "median_seconds": 9.226,
+  "scope": "schema and present evidence keys only; no expert focus labels or coaching quality claim",
+  "results": [
+    {
+      "case": "en-all-optional-missing",
+      "input": {
+        "role": "BOT",
+        "metrics": {
+          "gpm": 400,
+          "dpm": 700,
+          "vision_per_minute": 0.8,
+          "kill_participation": null,
+          "cs_per_minute": null,
+          "damage_share": null
+        }
+      },
+      "prompt_sha256": "29b436d24d91ad7554ba65f7c49a70ae86db20c3b5f04986e48648f70ffd467e",
+      "raw": "{\"focus_id\": \"vision\", \"evidence_keys\": [\"vision_per_minute\"]}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 8.625,
+      "tokens": 18,
+      "error": null
+    },
+    {
+      "case": "en-all-zero",
+      "input": {
+        "role": "SUPPORT",
+        "metrics": {
+          "gpm": 0,
+          "dpm": 0,
+          "vision_per_minute": 0,
+          "kill_participation": 0,
+          "cs_per_minute": 0,
+          "damage_share": 0
+        }
+      },
+      "prompt_sha256": "b7ea3f3be1e3661a3c365a91b0b056b9f2502848b27b350b933534f15cedba98",
+      "raw": "{\"focus_id\": \"vision\", \"evidence_keys\": [\"vision_per_minute\"]}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 8.828,
+      "tokens": 18,
+      "error": null
+    },
+    {
+      "case": "en-kp-missing-high-vision",
+      "input": {
+        "role": "BOT",
+        "metrics": {
+          "gpm": 400,
+          "dpm": 700,
+          "vision_per_minute": 3.2,
+          "kill_participation": null,
+          "cs_per_minute": 1,
+          "damage_share": 0.35
+        }
+      },
+      "prompt_sha256": "4114ef40befdfedb6d3ed365ed36f328696eddcd066250d68315994867d1e465",
+      "raw": "{\"focus_id\": \"vision\", \"evidence_keys\": [\"vision_per_minute\"]}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 8.282,
+      "tokens": 18,
+      "error": null
+    },
+    {
+      "case": "en-resource-extreme",
+      "input": {
+        "role": "SUPPORT",
+        "metrics": {
+          "gpm": 1200,
+          "dpm": 200,
+          "vision_per_minute": 0.8,
+          "kill_participation": 0.54,
+          "cs_per_minute": 15,
+          "damage_share": 0.35
+        }
+      },
+      "prompt_sha256": "720fbc921b2cd8de3d15ca8a4ddda43ef2f8d3f4cf0f348d53302cd713fa6402",
+      "raw": "{\"focus_id\": \"vision\", \"evidence_keys\": [\"vision_per_minute\"]}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 8.547,
+      "tokens": 18,
+      "error": null
+    },
+    {
+      "case": "en-low-resource-high-damage",
+      "input": {
+        "role": "BOT",
+        "metrics": {
+          "gpm": 180,
+          "dpm": 2000,
+          "vision_per_minute": 0.8,
+          "kill_participation": 0.54,
+          "cs_per_minute": 2,
+          "damage_share": 0.35
+        }
+      },
+      "prompt_sha256": "b67fba6848206a2e40f6603e23effc2325d63c14acd7ebdd3e220da075a1ff18",
+      "raw": "{\"focus_id\": \"vision\", \"evidence_keys\": [\"vision_per_minute\"]}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 8.484,
+      "tokens": 18,
+      "error": null
+    },
+    {
+      "case": "en-one-optional-valid",
+      "input": {
+        "role": "SUPPORT",
+        "metrics": {
+          "gpm": 400,
+          "dpm": 700,
+          "vision_per_minute": 0.8,
+          "kill_participation": null,
+          "cs_per_minute": null,
+          "damage_share": 0.85
+        }
+      },
+      "prompt_sha256": "877b4d0f251ae2df962a69e7040f259ac1de922c9f373ecad233eb53f0650b96",
+      "raw": "{\"focus_id\": \"vision\", \"evidence_keys\": [\"vision_per_minute\"]}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 8.641,
+      "tokens": 18,
+      "error": null
+    },
+    {
+      "case": "ko-all-optional-missing",
+      "input": {
+        "role": "BOT",
+        "metrics": {
+          "gpm": 400,
+          "dpm": 700,
+          "vision_per_minute": 0.8,
+          "kill_participation": null,
+          "cs_per_minute": null,
+          "damage_share": null
+        }
+      },
+      "prompt_sha256": "132f053416ca594cc682bf0f9bc5a2d4a9c5511dc841b6054aaf59890fd46156",
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 9.625,
+      "tokens": 25,
+      "error": null
+    },
+    {
+      "case": "ko-all-zero",
+      "input": {
+        "role": "SUPPORT",
+        "metrics": {
+          "gpm": 0,
+          "dpm": 0,
+          "vision_per_minute": 0,
+          "kill_participation": 0,
+          "cs_per_minute": 0,
+          "damage_share": 0
+        }
+      },
+      "prompt_sha256": "ba005175d6f3f84220a61a1b6d5f19ffd9a4c5cdb9909bc59e9c4c3b6c79a8d7",
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 10.031,
+      "tokens": 25,
+      "error": null
+    },
+    {
+      "case": "ko-kp-missing-high-vision",
+      "input": {
+        "role": "BOT",
+        "metrics": {
+          "gpm": 400,
+          "dpm": 700,
+          "vision_per_minute": 3.2,
+          "kill_participation": null,
+          "cs_per_minute": 1,
+          "damage_share": 0.35
+        }
+      },
+      "prompt_sha256": "142f3e1914df4737559105ba443905ef4b592678a5b29b46f84d3c80da56aa08",
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 9.719,
+      "tokens": 25,
+      "error": null
+    },
+    {
+      "case": "ko-resource-extreme",
+      "input": {
+        "role": "SUPPORT",
+        "metrics": {
+          "gpm": 1200,
+          "dpm": 200,
+          "vision_per_minute": 0.8,
+          "kill_participation": 0.54,
+          "cs_per_minute": 15,
+          "damage_share": 0.35
+        }
+      },
+      "prompt_sha256": "ec7451e418123cb7afc488ffa8676aff2448382e5f7c6c6592abb4d679689278",
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 11.453,
+      "tokens": 25,
+      "error": null
+    },
+    {
+      "case": "ko-low-resource-high-damage",
+      "input": {
+        "role": "BOT",
+        "metrics": {
+          "gpm": 180,
+          "dpm": 2000,
+          "vision_per_minute": 0.8,
+          "kill_participation": 0.54,
+          "cs_per_minute": 2,
+          "damage_share": 0.35
+        }
+      },
+      "prompt_sha256": "9f85aeaac46f90275678a71235ccd3d156e9c0881342684cdb13a0a4cb7bd8e8",
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 11.109,
+      "tokens": 25,
+      "error": null
+    },
+    {
+      "case": "ko-one-optional-valid",
+      "input": {
+        "role": "SUPPORT",
+        "metrics": {
+          "gpm": 400,
+          "dpm": 700,
+          "vision_per_minute": 0.8,
+          "kill_participation": null,
+          "cs_per_minute": null,
+          "damage_share": 0.85
+        }
+      },
+      "prompt_sha256": "a603f25b2811e499da047fd0b222231160342ae757f29e66bed7f960b17a9f85",
+      "raw": "{\n  \"focus_id\": \"vision\",\n  \"evidence_keys\": [\"vision_per_minute\"]\n}",
+      "valid": true,
+      "focus": "vision",
+      "evidence_keys": [
+        "vision_per_minute"
+      ],
+      "seconds": 10.516,
+      "tokens": 25,
+      "error": null
+    }
+  ]
+}

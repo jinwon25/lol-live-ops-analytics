@@ -23,6 +23,7 @@
 - 키는 env RIOT_API_KEY (또는 api/.env 에 두고 python-dotenv 로 로드).
 - 본 스크립트는 표준 라이브러리 + requests + pandas + sqlite3 만 사용.
 """
+
 from __future__ import annotations
 import argparse
 import os
@@ -64,15 +65,19 @@ except Exception:
     pass
 
 ROOT = Path(__file__).resolve().parent.parent
-DB = ROOT / "data" / "processed" / "lol_api.db"   # 캐글 DB(lol.db)와 분리
+DB = ROOT / "data" / "processed" / "lol_api.db"  # 캐글 DB(lol.db)와 분리
 DB.parent.mkdir(parents=True, exist_ok=True)
 
 
 ROLE_MAP = {
-    "TOP": "TOP", "JUNGLE": "JUNGLE",
-    "MIDDLE": "MID", "MID": "MID",
-    "BOTTOM": "BOT", "BOT": "BOT",
-    "SUPPORT": "SUPPORT", "UTILITY": "SUPPORT",
+    "TOP": "TOP",
+    "JUNGLE": "JUNGLE",
+    "MIDDLE": "MID",
+    "MID": "MID",
+    "BOTTOM": "BOT",
+    "BOT": "BOT",
+    "SUPPORT": "SUPPORT",
+    "UTILITY": "SUPPORT",
 }
 
 
@@ -97,12 +102,14 @@ def participant_to_canonical(match: dict, p: dict) -> dict:
         "champion_name": p["championName"],
         "role": role,
         "win": int(p["win"]),
-        "kills": kills, "deaths": deaths, "assists": assists,
+        "kills": kills,
+        "deaths": deaths,
+        "assists": assists,
         "gold_earned": p["goldEarned"],
         "dmg_to_champ": p["totalDamageDealtToChampions"],
-        "dmg_taken":    p["totalDamageTaken"],
+        "dmg_taken": p["totalDamageTaken"],
         "vision_score": p["visionScore"],
-        "solo_tier": "UNKNOWN",   # 매치 V5 응답엔 solo tier 없음 — 별도 league API 필요
+        "solo_tier": "UNKNOWN",  # 매치 V5 응답엔 solo tier 없음 — 별도 league API 필요
         "duration_sec": duration_sec,
         "kda": (kills + assists) / max(deaths, 1),
         "gpm": p["goldEarned"] / duration_min,
@@ -176,18 +183,22 @@ def collect(seed_riot_id: str, match_limit: int = 20, queue: int = 420) -> None:
     for i, mid in enumerate(match_ids, 1):
         m = client.match_detail(mid)
         info = m["info"]
-        rows_match.append({
-            "patch": patch_from_version(info["gameVersion"]),
-            "game_id": int(mid.split("_")[-1]),
-            "duration_sec": info["gameDuration"],
-        })
+        rows_match.append(
+            {
+                "patch": patch_from_version(info["gameVersion"]),
+                "game_id": int(mid.split("_")[-1]),
+                "duration_sec": info["gameDuration"],
+            }
+        )
         for p in info["participants"]:
             rec = participant_to_canonical(m, p)
             if rec:
                 rows_part.append(rec)
         if i % 5 == 0 or i == len(match_ids):
-            print(f"    [{i}/{len(match_ids)}] 누적 participants = {len(rows_part)}"
-                  f"  elapsed = {time.monotonic()-t0:.1f}s")
+            print(
+                f"    [{i}/{len(match_ids)}] 누적 participants = {len(rows_part)}"
+                f"  elapsed = {time.monotonic() - t0:.1f}s"
+            )
 
     df_part = pd.DataFrame(rows_part)
     df_match = pd.DataFrame(rows_match).drop_duplicates(["patch", "game_id"])
@@ -240,10 +251,12 @@ def collect(seed_riot_id: str, match_limit: int = 20, queue: int = 420) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Riot API 소량 수집 PoC")
-    ap.add_argument("--seed", required=False,
-                    default=os.environ.get("RIOT_SEED_RIOT_ID",
-                                           os.environ.get("RIOT_SEED_SUMMONER", "")),
-                    help="시드 Riot ID 'GameName#TagLine' (또는 env RIOT_SEED_RIOT_ID)")
+    ap.add_argument(
+        "--seed",
+        required=False,
+        default=os.environ.get("RIOT_SEED_RIOT_ID", os.environ.get("RIOT_SEED_SUMMONER", "")),
+        help="시드 Riot ID 'GameName#TagLine' (또는 env RIOT_SEED_RIOT_ID)",
+    )
     ap.add_argument("--matches", type=int, default=20, help="수집할 매치 수 (rate limit 고려, 권장 ≤ 30)")
     ap.add_argument("--queue", type=int, default=420, help="큐 ID (기본 420 = 솔로/듀오)")
     args = ap.parse_args()

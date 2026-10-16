@@ -22,23 +22,58 @@
 5. K 결정은 엘보우(inertia) + 실루엣 동시 확인. silhouette은 5000행 샘플에서.
 """
 from __future__ import annotations
+
+from contextlib import closing
+import hashlib
 from pathlib import Path
+import platform
 import sqlite3
 import sys
 
+import matplotlib
+
+matplotlib.use("Agg")
+from matplotlib import font_manager
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-# 한글 폰트 (Windows)
-plt.rcParams["font.family"] = "Malgun Gothic"
-plt.rcParams["axes.unicode_minus"] = False
-
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
+
+OS_FONT_CANDIDATES: dict[str, tuple[str, ...]] = {
+    "Windows": ("Malgun Gothic", "NanumGothic", "DejaVu Sans"),
+    "Linux": ("NanumGothic", "Noto Sans CJK KR", "UnDotum", "DejaVu Sans"),
+    "Darwin": ("AppleGothic", "Apple SD Gothic Neo", "NanumGothic", "DejaVu Sans"),
+}
+HEADLESS_FALLBACK_FONT = "DejaVu Sans"
+DEFAULT_EWM_SPAN = 5
+ANON_HASH_PREFIX_LEN = 16
+
+
+def configure_matplotlib_font(
+    os_name: str | None = None,
+    installed_fonts: set[str] | None = None,
+) -> str:
+    """Configure Matplotlib font family dynamically by OS and installed fonts with headless fallback."""
+    detected_os = os_name or platform.system()
+    available_fonts = (
+        installed_fonts
+        if installed_fonts is not None
+        else {font_entry.name for font_entry in font_manager.fontManager.ttflist}
+    )
+    candidates = OS_FONT_CANDIDATES.get(detected_os, ("NanumGothic", HEADLESS_FALLBACK_FONT))
+    selected_font = HEADLESS_FALLBACK_FONT
+    for candidate in candidates:
+        if candidate in available_fonts:
+            selected_font = candidate
+            break
+    plt.rcParams["font.family"] = selected_font
+    plt.rcParams["axes.unicode_minus"] = False
+    return selected_font
+
+
+configure_matplotlib_font()
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -72,7 +107,7 @@ REFERENCE_METRICS = ["kda", "deaths"]  # 사후 클러스터 해석 참고용 (�
 
 # ─────────────────────────── 데이터 ─────────────────────────────────────────
 
-def load_cohort() -> pd.DataFrame:
+def load_cohort(db_path: Path = DB) -> pd.DataFrame:
     """v_cohort 의 참여 행 전부 로드 (PLAT+EM+DIA 양 패치)."""
     q = """
         SELECT
@@ -82,7 +117,7 @@ def load_cohort() -> pd.DataFrame:
         FROM participants
         WHERE solo_tier IN ('PLATINUM', 'EMERALD', 'DIAMOND')
     """
-    with sqlite3.connect(DB) as con:
+    with closing(sqlite3.connect(db_path)) as con:
         df = pd.read_sql_query(q, con)
     n0 = len(df)
     df = df.dropna(subset=FEATURES + REFERENCE_METRICS).reset_index(drop=True)
@@ -90,19 +125,144 @@ def load_cohort() -> pd.DataFrame:
     return df
 
 
-def role_internal_z(df: pd.DataFrame, features: list[str]) -> pd.DataFrame:
+def role_internal_z(df: pd.DataFrame, features: list[str] = FEATURES) -> pd.DataFrame:
     """역할 내 z-score: 각 role 그룹의 mean·std로 표준화. (c) 선택의 구현부."""
     z = pd.DataFrame(index=df.index)
     for f in features:
         mean = df.groupby("role")[f].transform("mean")
         std = df.groupby("role")[f].transform("std").replace(0, np.nan)
-        z[f"z_{f}"] = (df[f] - mean) / std
+        z[f"z_{f}"] = ((df[f] - mean) / std).fillna(0.0)
     return z
+
+
+def anonymize_puuid(raw_id: object) -> str:
+    """Hash a raw player identifier (PUUID) into a deterministic anonymized key."""
+    text = str(raw_id or "").strip()
+    if text.startswith("anon_"):
+        return text
+    digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:ANON_HASH_PREFIX_LEN]
+    return f"anon_{digest}"
+
+
+def build_player_temporal_features(
+    df: pd.DataFrame,
+    player_col: str = "puuid",
+    time_col: str = "game_id",
+    features: list[str] = FEATURES,
+    ewm_span: int = DEFAULT_EWM_SPAN,
+    min_games: int = 1,
+) -> pd.DataFrame:
+    """Aggregate match snapshots into anonymized player-level temporal behavioral features.
+
+    For each role-internal z-score feature (`z_gpm`, `z_dpm_champ`, `z_vision_score`, `z_kill_participation`),
+    computes:
+      - `z_<feat>_mean` : Cumulative mean across the player's match history
+      - `z_<feat>_ewm`  : Exponentially weighted moving average (recent form)
+      - `z_<feat>_std`  : Match-to-match standard deviation (consistency/volatility)
+      - `z_<feat>_trend`: Temporal shift (`ewm - mean`)
+    """
+    if df.empty:
+        return pd.DataFrame()
+
+    working = df.copy()
+    if player_col not in working.columns:
+        fallback_col = "participant_id" if "participant_id" in working.columns else working.columns[0]
+        working["anon_puuid"] = working[fallback_col].map(anonymize_puuid)
+    else:
+        working["anon_puuid"] = working[player_col].map(anonymize_puuid)
+
+    z_cols = [f"z_{f}" for f in features]
+    missing_z = [col for col in z_cols if col not in working.columns]
+    if missing_z:
+        z_df = role_internal_z(working, features)
+        for col in z_cols:
+            working[col] = z_df[col]
+
+    sort_cols = ["anon_puuid"] + ([time_col] if time_col in working.columns else [])
+    working = working.sort_values(sort_cols).reset_index(drop=True)
+
+    records: list[dict[str, object]] = []
+    for anon_id, group in working.groupby("anon_puuid", sort=False):
+        n_games = len(group)
+        if n_games < min_games:
+            continue
+        primary_role = (
+            str(group["role"].mode().iloc[0])
+            if "role" in group.columns and not group["role"].mode().empty
+            else "UNKNOWN"
+        )
+        row_dict: dict[str, object] = {
+            "anon_puuid": anon_id,
+            "games_played": n_games,
+            "primary_role": primary_role,
+            "win_rate_pct": round(float(group["win"].mean() * 100.0), 2) if "win" in group.columns else np.nan,
+        }
+        for z_col in z_cols:
+            series = group[z_col].astype(float)
+            mean_val = float(series.mean())
+            ewm_val = float(series.ewm(span=max(1, ewm_span), adjust=False).mean().iloc[-1])
+            std_val = float(series.std(ddof=0)) if n_games > 1 else 0.0
+            trend_val = ewm_val - mean_val
+            row_dict[f"{z_col}_mean"] = round(mean_val, 4)
+            row_dict[f"{z_col}_ewm"] = round(ewm_val, 4)
+            row_dict[f"{z_col}_std"] = round(std_val, 4)
+            row_dict[f"{z_col}_trend"] = round(trend_val, 4)
+        records.append(row_dict)
+
+    return pd.DataFrame(records)
+
+
+def cluster_player_temporal_profiles(
+    df: pd.DataFrame,
+    n_clusters: int = 4,
+    player_col: str = "puuid",
+    time_col: str = "game_id",
+    features: list[str] = FEATURES,
+    ewm_span: int = DEFAULT_EWM_SPAN,
+    min_games: int = 1,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Cluster anonymized player temporal profiles using cumulative mean, EWM, volatility, and trend."""
+    profiles = build_player_temporal_features(
+        df=df,
+        player_col=player_col,
+        time_col=time_col,
+        features=features,
+        ewm_span=ewm_span,
+        min_games=min_games,
+    )
+    if profiles.empty:
+        return profiles, pd.DataFrame()
+
+    z_cols = [f"z_{f}" for f in features]
+    temporal_cols = [
+        f"{z_col}_{suffix}"
+        for z_col in z_cols
+        for suffix in ("mean", "ewm", "std", "trend")
+    ]
+    matrix = profiles[temporal_cols].to_numpy(dtype=float)
+    effective_k = max(1, min(n_clusters, len(profiles)))
+
+    km = KMeans(n_clusters=effective_k, random_state=RNG, n_init=10).fit(matrix)
+    profiles["cluster"] = km.labels_
+
+    mean_cols = [f"{z_col}_mean" for z_col in z_cols]
+    centroid_means = profiles.groupby("cluster")[mean_cols].mean()
+    centroid_for_labeling = centroid_means.rename(
+        columns={f"{z_col}_mean": z_col for z_col in z_cols}
+    )
+    persona_map = label_personas(centroid_for_labeling)
+    profiles["persona"] = profiles["cluster"].map(persona_map)
+
+    centroid_summary = profiles.groupby("cluster")[temporal_cols].mean().round(4)
+    centroid_summary["players"] = profiles.groupby("cluster").size()
+    centroid_summary["persona"] = pd.Series(persona_map)
+    return profiles, centroid_summary
 
 
 # ─────────────────────────── K 선택 ─────────────────────────────────────────
 
 def k_selection(X: np.ndarray, k_range=range(2, 9)) -> pd.DataFrame:
+
     """엘보우(inertia) + 실루엣. silhouette은 5000행 샘플로(O(n²) 회피)."""
     rs = np.random.RandomState(RNG)
     sample_idx = rs.choice(X.shape[0], size=min(5000, X.shape[0]), replace=False)
@@ -225,8 +385,13 @@ def plot_cluster_role_heatmap(df: pd.DataFrame, names: dict[int, str],
 
 # ─────────────────────────── 메인 파이프라인 ────────────────────────────────
 
-def main() -> None:
-    df = load_cohort()
+def main(
+    db_path: Path = DB,
+    out_dir: Path = OUT,
+    k_range: range = range(2, 9),
+) -> None:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    df = load_cohort(db_path=db_path)
     print(f"[load] patches: {df['patch'].value_counts().to_dict()}")
     print(f"[load] roles  : {df['role'].value_counts().to_dict()}")
 
@@ -238,24 +403,18 @@ def main() -> None:
     print(f"  z matrix shape = {X.shape}")
 
     print("\n[step] K 선택 (엘보우 + 실루엣)")
-    k_stats = k_selection(X, range(2, 9))
-    k_stats.to_csv(OUT / "_k_selection_stats.csv", index=False)
-    plot_k_selection(k_stats, OUT / "_elbow_silhouette.png")
-    # 분석가 판단: silhouette 최댓값에 더해 elbow 꺾임도 고려.
-    # K=2 가 자명한 분리("이긴 게임 vs 진 게임")로 갈리지 않도록 프로세스 피처만 사용했음.
-    # 그 후엔 silhouette 추이를 보고 K 결정.  silhouette 단조 감소면 elbow 꺾임 ≥ K=4 우선.
+    k_stats = k_selection(X, k_range)
+    k_stats.to_csv(out_dir / "_k_selection_stats.csv", index=False)
+    plot_k_selection(k_stats, out_dir / "_elbow_silhouette.png")
     K_best = int(k_stats.loc[k_stats["silhouette"].idxmax(), "k"])
-    # 자명-분리 회피: K=2가 max라도 페르소나 다양성을 위해 inertia 감소율이 큰
-    # 다음 후보로 격상.  prev/cur 감소율을 보고 "꺾임" 직전을 선택.
     inertia = k_stats["inertia"].to_numpy()
-    drops = np.diff(inertia) / inertia[:-1]            # 음수, 작을수록 큰 감소
-    # 감소율이 직전 1.5배 이내로 줄어드는 첫 K 를 elbow 로 본다.
-    elbow_K = int(k_stats["k"].iloc[1])
+    drops = np.diff(inertia) / inertia[:-1]
+    elbow_K = int(k_stats["k"].iloc[min(1, len(k_stats) - 1)])
     for i in range(1, len(drops)):
         if abs(drops[i]) < abs(drops[i - 1]) * 0.55:
             elbow_K = int(k_stats["k"].iloc[i + 1])
             break
-    K = max(K_best, elbow_K, 4)                        # 최소 K=4 보장 (페르소나 다양성)
+    K = min(max(K_best, elbow_K, 4), len(df))
     print(f"  → silhouette max K = {K_best}, elbow K = {elbow_K}, 최종 K = {K}")
 
     print("\n[step] 최종 K-means 적합")
@@ -276,12 +435,10 @@ def main() -> None:
 
     # ── 산출 CSV ──────────────────────────────────────────────────────────
     print("\n[export] CSV")
-    # 1) per-row 세그먼트
     seg_cols = ["patch", "game_id", "participant_id", "champion_name", "role",
                 "win", "cluster", "persona"] + FEATURES
-    df[seg_cols].to_csv(OUT / "player_segments.csv", index=False, encoding="utf-8-sig")
+    df[seg_cols].to_csv(out_dir / "player_segments.csv", index=False, encoding="utf-8-sig")
 
-    # 2) 클러스터 요약(평균 + z + 비율)
     summary = centroid_raw.copy()
     summary.columns = [f"mean_{c}" for c in summary.columns]
     for c in z_cols:
@@ -289,38 +446,46 @@ def main() -> None:
     summary["n"] = df.groupby("cluster").size()
     summary["share_pct"] = (summary["n"] / len(df) * 100).round(2)
     summary["persona"] = pd.Series(persona)
-    summary.to_csv(OUT / "segment_centroids.csv", encoding="utf-8-sig")
+    summary.to_csv(out_dir / "segment_centroids.csv", encoding="utf-8-sig")
     print(f"  segment_centroids.csv\n{summary.round(3).to_string()}")
 
-    # 3) 클러스터 × 역할 분포
     role_pv = df.groupby(["cluster", "role"]).size().unstack(fill_value=0)
     role_pct = (role_pv.div(role_pv.sum(axis=1), axis=0) * 100).round(2)
     role_pct["persona"] = pd.Series(persona)
-    role_pct.to_csv(OUT / "segment_role_distribution.csv", encoding="utf-8-sig")
+    role_pct.to_csv(out_dir / "segment_role_distribution.csv", encoding="utf-8-sig")
     print("\n  segment_role_distribution.csv (cluster × role, %)")
     print(role_pct.to_string())
 
-    # 4) 패치별 클러스터 비율 (보너스)
     patch_pv = df.groupby(["patch", "cluster"]).size().unstack(fill_value=0)
     patch_pct = (patch_pv.div(patch_pv.sum(axis=1), axis=0) * 100).round(2)
     patch_pct.columns = [f"C{c}({persona[c]}) %" for c in patch_pct.columns]
-    patch_pct.to_csv(OUT / "segment_patch_shift.csv", encoding="utf-8-sig")
+    patch_pct.to_csv(out_dir / "segment_patch_shift.csv", encoding="utf-8-sig")
     print("\n  segment_patch_shift.csv (patch → cluster %)")
     print(patch_pct.to_string())
 
-    # 5) 클러스터 × 승률 (참고용, 군집화 입력은 아님)
     win_rate = (df.groupby("cluster")["win"].mean() * 100).round(2)
     win_rate.name = "win_rate_pct"
     print("\n[reference] cluster × win_rate_pct (군집화 입력 X)")
     print(win_rate.to_string())
 
-    # ── 그림 ──────────────────────────────────────────────────────────────
+    print("\n[step] 유저 시계열 누적 성향 군집")
+    temporal_profiles, temporal_centroids = cluster_player_temporal_profiles(
+        df=df,
+        n_clusters=K,
+        player_col="puuid" if "puuid" in df.columns else "participant_id",
+        time_col="game_id",
+    )
+    if not temporal_profiles.empty:
+        temporal_profiles.to_csv(out_dir / "player_temporal_segments.csv", index=False, encoding="utf-8-sig")
+        temporal_centroids.to_csv(out_dir / "player_temporal_centroids.csv", encoding="utf-8-sig")
+
     print("\n[plot] PCA 2D + role 분포 heatmap")
-    plot_pca_2d(X, df["cluster"].to_numpy(), persona, OUT / "_clusters_pca_2d.png")
-    plot_cluster_role_heatmap(df, persona, OUT / "_cluster_role_heatmap.png")
+    plot_pca_2d(X, df["cluster"].to_numpy(), persona, out_dir / "_clusters_pca_2d.png")
+    plot_cluster_role_heatmap(df, persona, out_dir / "_cluster_role_heatmap.png")
 
     print("\n[done]")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
+

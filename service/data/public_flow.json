@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "unit": "경기·팀",
+  "is_current_match_data": false,
+  "personal_comparison_eligible": false,
+  "median_duration_minutes": 30.0,
+  "audit": {
+    "phases": {
+      "20": {
+        "input_rows": 64556,
+        "invalid_rows": 2935,
+        "duplicate_rows": 0,
+        "conflicting_matches": 0,
+        "invalid_matches": 2935,
+        "valid_unique_matches": 61621,
+        "invalid_reasons": {
+          "duration_outside_5_90_minutes": 2935
+        }
+      },
+      "40": {
+        "input_rows": 64556,
+        "invalid_rows": 2935,
+        "duplicate_rows": 0,
+        "conflicting_matches": 0,
+        "invalid_matches": 2935,
+        "valid_unique_matches": 61621,
+        "invalid_reasons": {
+          "duration_outside_5_90_minutes": 2935
+        }
+      },
+      "60": {
+        "input_rows": 64556,
+        "invalid_rows": 2935,
+        "duplicate_rows": 0,
+        "conflicting_matches": 0,
+        "invalid_matches": 2935,
+        "valid_unique_matches": 61621,
+        "invalid_reasons": {
+          "duration_outside_5_90_minutes": 2935
+        }
+      },
+      "80": {
+        "input_rows": 64556,
+        "invalid_rows": 2935,
+        "duplicate_rows": 0,
+        "conflicting_matches": 0,
+        "invalid_matches": 2935,
+        "valid_unique_matches": 61621,
+        "invalid_reasons": {
+          "duration_outside_5_90_minutes": 2935
+        }
+      },
+      "100": {
+        "input_rows": 64556,
+        "invalid_rows": 2941,
+        "duplicate_rows": 0,
+        "conflicting_matches": 0,
+        "invalid_matches": 2941,
+        "valid_unique_matches": 61615,
+        "invalid_reasons": {
+          "duration_outside_5_90_minutes": 2935,
+          "frame_time_mismatch": 6
+        }
+      }
+    },
+    "common_matches": 61615,
+    "inconsistent_matches": 0,
+    "included_matches": 61615
+  },
+  "phases": [
+    {
+      "phase": 20,
+      "n": 61615,
+      "median_elapsed_minutes": 5.0,
+      "median_abs_gold_gap": 720,
+      "buckets": [
+        {
+          "id": "large_deficit",
+          "label": "2,000G 초과 열세",
+          "n": 2283,
+          "blue_win_pct": 31.4
+        },
+        {
+          "id": "deficit",
+          "label": "500G 초과~2,000G 열세",
+          "n": 17106,
+          "blue_win_pct": 34.7
+        },
+        {
+          "id": "balanced",
+          "label": "±500G 이내",
+          "n": 22422,
+          "blue_win_pct": 50.6
+        },
+        {
+          "id": "lead",
+          "label": "500G 초과~2,000G 우세",
+          "n": 17483,
+          "blue_win_pct": 65.9
+        },
+        {
+          "id": "large_lead",
+          "label": "2,000G 초과 우세",
+          "n": 2321,
+          "blue_win_pct": 68.6
+        }
+      ]
+    },
+    {
+      "phase": 40,
+      "n": 61615,
+      "median_elapsed_minutes": 11.0,
+      "median_abs_gold_gap": 1708,
+      "buckets": [
+        {
+          "id": "large_deficit",
+          "label": "2,000G 초과 열세",
+          "n": 13115,
+          "blue_win_pct": 22.8
+        },
+        {
+          "id": "deficit",
+          "label": "500G 초과~2,000G 열세",
+          "n": 12680,
+          "blue_win_pct": 32.9
+        },
+        {
+          "id": "balanced",
+          "label": "±500G 이내",
+          "n": 9570,
+          "blue_win_pct": 50.0
+        },
+        {
+          "id": "lead",
+          "label": "500G 초과~2,000G 우세",
+          "n": 12988,
+          "blue_win_pct": 68.1
+        },
+        {
+          "id": "large_lead",
+          "label": "2,000G 초과 우세",
+          "n": 13262,
+          "blue_win_pct": 77.8
+        }
+      ]
+    },
+    {
+      "phase": 60,
+      "n": 61615,
+      "median_elapsed_minutes": 17.0,
+      "median_abs_gold_gap": 3092,
+      "buckets": [
+        {
+          "id": "large_deficit",
+          "label": "2,000G 초과 열세",
+          "n": 20559,
+          "blue_win_pct": 16.5
+        },
+        {
+          "id": "deficit",
+          "label": "500G 초과~2,000G 열세",
+          "n": 7405,
+          "blue_win_pct": 34.5
+        },
+        {
+          "id": "balanced",
+          "label": "±500G 이내",
+          "n": 5001,
+          "blue_win_pct": 50.3
+        },
+        {
+          "id": "lead",
+          "label": "500G 초과~2,000G 우세",
+          "n": 7636,
+          "blue_win_pct": 66.1
+        },
+        {
+          "id": "large_lead",
+          "label": "2,000G 초과 우세",
+          "n": 21014,
+          "blue_win_pct": 83.8
+        }
+      ]
+    },
+    {
+      "phase": 80,
+      "n": 61615,
+      "median_elapsed_minutes": 23.0,
+      "median_abs_gold_gap": 4657,
+      "buckets": [
+        {
+          "id": "large_deficit",
+          "label": "2,000G 초과 열세",
+          "n": 24435,
+          "blue_win_pct": 10.3
+        },
+        {
+          "id": "deficit",
+          "label": "500G 초과~2,000G 열세",
+          "n": 4624,
+          "blue_win_pct": 35.4
+        },
+        {
+          "id": "balanced",
+          "label": "±500G 이내",
+          "n": 3021,
+          "blue_win_pct": 49.8
+        },
+        {
+          "id": "lead",
+          "label": "500G 초과~2,000G 우세",
+          "n": 4862,
+          "blue_win_pct": 66.1
+        },
+        {
+          "id": "large_lead",
+          "label": "2,000G 초과 우세",
+          "n": 24673,
+          "blue_win_pct": 90.1
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "2023년 표본이며 현재 KR·동티어·개인 챔피언 기준이 아닙니다.",
+    "공개 CSV에 지역·패치·참여자별 티어·챔피언·포지션이 없습니다.",
+    "종료 경기 길이의 비율로 시점을 정합니다. 고정 10/15분 자료나 실시간 예측 입력이 아닙니다.",
+    "골드 우위와 최종 승패의 관측 관계이며 골드 획득 행동의 인과효과가 아닙니다.",
+    "반복 플레이어를 식별할 수 없어 독립 표본으로 검증하거나 개인 실력으로 해석하지 않습니다."
+  ],
+  "source": {
+    "id": "zenodo-ranked-flow-2023",
+    "title": "League of Legends Match Data at Various Time Intervals",
+    "authors": [
+      "Jailson Barros da Silva Junior",
+      "Claudio Campelo"
+    ],
+    "url": "https://zenodo.org/records/8303397",
+    "doi": "10.5281/zenodo.8303397",
+    "license": "CC BY 4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "period": "2023-01-12~2023-05-18",
+    "cohort": "제공자 설명: IRON~DIAMOND · CSV에 개별 티어 없음",
+    "checked_at": "2026-10-04T20:45:54.186284+00:00",
+    "files": [
+      {
+        "path": "full_data_20.csv",
+        "url": "https://zenodo.org/api/records/8303397/files/full_data_20.csv/content",
+        "bytes": 8729874,
+        "md5": "a4758f4f04fbb1237059d9f74e1f56b1",
+        "sha256": "76ff2fd16076526a3eaca308272ec03e2bd0d5c0142b8eca76f1edaa351cd652"
+      },
+      {
+        "path": "full_data_40.csv",
+        "url": "https://zenodo.org/api/records/8303397/files/full_data_40.csv/content",
+        "bytes": 8987147,
+        "md5": "d8981ac98e6d8fd6582e73f965a04f34",
+        "sha256": "378774b4c348cf109303693c80ce5a8933fb46006d77cf232ec0eb5d18053614"
+      },
+      {
+        "path": "full_data_60.csv",
+        "url": "https://zenodo.org/api/records/8303397/files/full_data_60.csv/content",
+        "bytes": 9161043,
+        "md5": "27fd49aaf6c05bfbafc3856991d4c8c6",
+        "sha256": "268841cff712bbf3a477e796102e4543ab2565aefe1da9a3bdd7b9b8bee187f7"
+      },
+      {
+        "path": "full_data_80.csv",
+        "url": "https://zenodo.org/api/records/8303397/files/full_data_80.csv/content",
+        "bytes": 9267308,
+        "md5": "773db73d8b3fc2c6b1ca7272e62f26bd",
+        "sha256": "9407e87d44915da1a9b1958229fa9f0d5112cfda726994a4b62f23e31e1db772"
+      },
+      {
+        "path": "full_data_100.csv",
+        "url": "https://zenodo.org/api/records/8303397/files/full_data_100.csv/content",
+        "bytes": 9326431,
+        "md5": "26488b7f639a44fa476eab97cd8928d7",
+        "sha256": "b23a550139fba5cf879065e1080d1320c0a2146d795d31ff744f7a54b0a4e549"
+      }
+    ],
+    "transformation": "5개 시점 파일을 matchID로 결합, 중복·결측·불일치 제거, 경기별 식별자를 제외한 집계만 배포"
+  }
+}

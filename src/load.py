@@ -8,8 +8,11 @@
     python src/load.py
 """
 from __future__ import annotations
-import sqlite3
+
+from contextlib import closing
 from pathlib import Path
+import sqlite3
+
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -49,9 +52,9 @@ def patch_from_version(v: object) -> str | None:
     return None
 
 
-def load_p153() -> pd.DataFrame:
+def load_p153(csv_path: Path = P153_PATH) -> pd.DataFrame:
     """2025.csv (패치 15.3 위주, 솔랭만)"""
-    df = pd.read_csv(P153_PATH, usecols=[
+    df = pd.read_csv(csv_path, usecols=[
         "game_id", "duration", "game_version", "participant_id",
         "champion_name", "position", "win",
         "kills", "deaths", "assists",
@@ -76,9 +79,9 @@ def load_p153() -> pd.DataFrame:
     return df
 
 
-def load_p151() -> pd.DataFrame:
+def load_p151(xlsx_path: Path = P151_PATH) -> pd.DataFrame:
     """2024.xlsx / sheet=league_data.csv (패치 15.1 위주, 큐 혼합)"""
-    df = pd.read_excel(P151_PATH, sheet_name="league_data.csv", usecols=[
+    df = pd.read_excel(xlsx_path, sheet_name="league_data.csv", usecols=[
         "game_id", "game_duration", "game_version", "queue_id", "participant_id",
         "champion_name", "team_position", "win", "team_id",
         "kills", "deaths", "assists",
@@ -107,6 +110,7 @@ def load_p151() -> pd.DataFrame:
 
 def derive_metrics(df: pd.DataFrame) -> pd.DataFrame:
     """KDA / GPM / DPM / KP — 양쪽 동일 공식으로 재계산"""
+    df = df.copy()
     df["kda"] = (df["kills"] + df["assists"]) / df["deaths"].clip(lower=1)
     minutes = df["duration_sec"] / 60.0
     df["gpm"] = df["gold_earned"] / minutes
@@ -157,9 +161,13 @@ CREATE INDEX ix_part_tier           ON participants(solo_tier);
 """
 
 
-def main() -> None:
-    p153 = derive_metrics(load_p153())
-    p151 = derive_metrics(load_p151())
+def main(
+    db_path: Path = DB_PATH,
+    p153_path: Path = P153_PATH,
+    p151_path: Path = P151_PATH,
+) -> None:
+    p153 = derive_metrics(load_p153(p153_path))
+    p151 = derive_metrics(load_p151(p151_path))
     full = pd.concat([p153[COMMON_COLS], p151[COMMON_COLS]], ignore_index=True)
 
     matches = (
@@ -170,9 +178,10 @@ def main() -> None:
     participants_cols = [c for c in COMMON_COLS if c not in ("duration_sec", "team_side")]
     participants = full[participants_cols].copy()
 
-    if DB_PATH.exists():
-        DB_PATH.unlink()
-    with sqlite3.connect(DB_PATH) as con:
+    if db_path.exists():
+        db_path.unlink()
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    with closing(sqlite3.connect(db_path)) as con:
         con.executescript(SCHEMA)
         matches.to_sql("matches", con, if_exists="append", index=False)
         participants.to_sql("participants", con, if_exists="append", index=False)
@@ -185,8 +194,9 @@ def main() -> None:
         ]:
             print(label, "→", list(con.execute(sql)))
 
-    print(f"\n[done] wrote {DB_PATH}  size={DB_PATH.stat().st_size/1e6:.1f} MB")
+    print(f"\n[done] wrote {db_path}  size={db_path.stat().st_size/1e6:.1f} MB")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
+

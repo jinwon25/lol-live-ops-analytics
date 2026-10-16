@@ -44,10 +44,10 @@ def main() -> None:
     (OUT_DIR / "_inspect_p153.txt").write_text(p153_rep, encoding="utf-8")
 
     # ---- P151 (xlsx) ----
-    xls = pd.ExcelFile(P151_PATH)
-    print("[P151 sheets]", xls.sheet_names)
-    sheet = "league_data.csv" if "league_data.csv" in xls.sheet_names else xls.sheet_names[0]
-    p151 = pd.read_excel(P151_PATH, sheet_name=sheet, nrows=5000)
+    with pd.ExcelFile(P151_PATH) as xls:
+        print("[P151 sheets]", xls.sheet_names)
+        sheet = "league_data.csv" if "league_data.csv" in xls.sheet_names else xls.sheet_names[0]
+        p151 = pd.read_excel(xls, sheet_name=sheet, nrows=5000)
     p151_rep = report(f"P151 ({P151_PATH.name} / sheet={sheet}, 처음 5000행 표본)", p151)
     (OUT_DIR / "_inspect_p151.txt").write_text(p151_rep, encoding="utf-8")
 

@@ -144,7 +144,10 @@ def build_diversity(con: sqlite3.Connection) -> pd.DataFrame:
 
 # ── 3. patch_drift.csv ──────────────────────────────────────────────────
 def build_patch_drift(con: sqlite3.Connection) -> pd.DataFrame:
+    from run_meta import apply_fdr_postprocessing
+
     df = pd.read_sql_query("SELECT * FROM v_drift_cohort", con)
+    df = apply_fdr_postprocessing(df)
     df.insert(0, "champion",    df["champion_name"].map(to_kr))
     df.insert(1, "champion_en", df.pop("champion_name"))
     df["riot_15_3_action"] = df["champion_en"].map(RIOT_15_3_ACTIONS).fillna("")
@@ -154,6 +157,7 @@ def build_patch_drift(con: sqlite3.Connection) -> pd.DataFrame:
     df.to_csv(OUT / "patch_drift.csv", index=False, encoding="utf-8-sig")
     print(f"  ✓ patch_drift.csv            {len(df):,} rows")
     return df
+
 
 
 # ── 4. player_segments.csv (이미 존재, 컬럼 정렬·이름 깔끔하게) ──────────

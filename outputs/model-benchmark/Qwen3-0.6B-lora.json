@@ -1,0 +1,133 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+  "adapter": true,
+  "transformers": "5.18.0",
+  "torch": "2.7.1+cpu",
+  "dtype": "float32",
+  "device": "cpu",
+  "threads": 4,
+  "decoding": "greedy, non-thinking",
+  "per_call_time_cap": 30,
+  "load_seconds": 7.47,
+  "peak_working_set_gib": 3.337,
+  "routing_valid": 8,
+  "routing_total": 8,
+  "median_seconds": 5.531,
+  "results": [
+    {
+      "case": "top",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "resource",
+      "seconds": 5.719,
+      "tokens": 14,
+      "raw": "{\"focus_id\":\"resource\",\"evidence_keys\":[\"gpm\"]}"
+    },
+    {
+      "case": "jungle",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "resource",
+      "seconds": 6.015,
+      "tokens": 14,
+      "raw": "{\"focus_id\":\"resource\",\"evidence_keys\":[\"gpm\"]}"
+    },
+    {
+      "case": "mid",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "resource",
+      "seconds": 5.531,
+      "tokens": 14,
+      "raw": "{\"focus_id\":\"resource\",\"evidence_keys\":[\"gpm\"]}"
+    },
+    {
+      "case": "bot",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "resource",
+      "seconds": 4.985,
+      "tokens": 14,
+      "raw": "{\"focus_id\":\"resource\",\"evidence_keys\":[\"gpm\"]}"
+    },
+    {
+      "case": "support",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "resource",
+      "seconds": 5.062,
+      "tokens": 14,
+      "raw": "{\"focus_id\":\"resource\",\"evidence_keys\":[\"gpm\"]}"
+    },
+    {
+      "case": "zero-team-kills",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "resource",
+      "seconds": 4.047,
+      "tokens": 14,
+      "raw": "{\"focus_id\":\"resource\",\"evidence_keys\":[\"gpm\"]}"
+    },
+    {
+      "case": "missing-cs-share",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "resource",
+      "seconds": 4.391,
+      "tokens": 14,
+      "raw": "{\"focus_id\":\"resource\",\"evidence_keys\":[\"gpm\"]}"
+    },
+    {
+      "case": "zero-vision",
+      "task": "routing",
+      "strict_json": true,
+      "valid": true,
+      "focus": "resource",
+      "seconds": 4.109,
+      "tokens": 14,
+      "raw": "{\"focus_id\":\"resource\",\"evidence_keys\":[\"gpm\"]}"
+    },
+    {
+      "case": "normal",
+      "task": "korean_summary",
+      "required_facts_present": true,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 7.812,
+      "tokens": 29,
+      "raw": "경기 시간 30분, 골드 획득 12000, 분당 400.",
+      "automatic_checks_are_not_semantic_review": true
+    },
+    {
+      "case": "missing",
+      "task": "korean_summary",
+      "required_facts_present": false,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 5.531,
+      "tokens": 19,
+      "raw": "팀 킬 0, 내 킬 0, 내 도움 0.",
+      "automatic_checks_are_not_semantic_review": true
+    },
+    {
+      "case": "comparison",
+      "task": "korean_summary",
+      "required_facts_present": true,
+      "no_extra_numbers": true,
+      "hangul_ratio": 1.0,
+      "seconds": 11.188,
+      "tokens": 36,
+      "raw": "같은 조건 이전 경기 평균 분당 골드 375, 이번 경기 400, 차이 +25.",
+      "automatic_checks_are_not_semantic_review": true
+    }
+  ],
+  "coaching_effect_validated": false
+}

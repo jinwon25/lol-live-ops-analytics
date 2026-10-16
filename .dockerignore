@@ -1,0 +1,37 @@
+# Version control and CI
+.git
+.gitignore
+.github
+
+# Environment and secret files
+.env
+**/.env
+service/.env
+api/.env
+
+# Local runtime state, virtual environments, and model weights
+.local/
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Raw datasets, SQLite databases, and temporary outputs
+data/raw/
+data/processed/*.db
+outputs/_tmp/
+outputs/model-benchmark/
+outputs/model-grounding/
+outputs/*.png
+
+# Documentation and test suites not needed in production runtime
+docs/
+tests/
+scripts/
+src/
+sql/
+api/
+README.md

@@ -6,6 +6,7 @@
   토큰 버킷 두 단으로 추적 + 429 응답 시 Retry-After 헤더로 백오프.
 - 매치/플레이어 호출 분리. Platform routing(EUN1) vs Regional(europe) 자동 선택.
 """
+
 from __future__ import annotations
 import os
 import sys
@@ -25,19 +26,20 @@ WINDOW_LONG = 120.0
 PLATFORM_HOSTS = {
     "EUN1": "eun1.api.riotgames.com",
     "EUW1": "euw1.api.riotgames.com",
-    "KR":   "kr.api.riotgames.com",
-    "NA1":  "na1.api.riotgames.com",
+    "KR": "kr.api.riotgames.com",
+    "NA1": "na1.api.riotgames.com",
 }
 REGIONAL_HOSTS = {
-    "europe":   "europe.api.riotgames.com",
+    "europe": "europe.api.riotgames.com",
     "americas": "americas.api.riotgames.com",
-    "asia":     "asia.api.riotgames.com",
+    "asia": "asia.api.riotgames.com",
 }
 
 
 @dataclass
 class RateLimiter:
     """토큰 버킷 두 단 — 단기(1s) + 장기(120s)."""
+
     short_stamps: deque
     long_stamps: deque
 
@@ -66,10 +68,7 @@ class RateLimiter:
 
 
 class RiotClient:
-    def __init__(self,
-                 api_key: str | None = None,
-                 platform: str = "EUN1",
-                 region: str = "europe") -> None:
+    def __init__(self, api_key: str | None = None, platform: str = "EUN1", region: str = "europe") -> None:
         self.api_key = api_key or os.environ.get("RIOT_API_KEY")
         if not self.api_key:
             raise SystemExit(
@@ -98,14 +97,12 @@ class RiotClient:
                 return r.json()
             if r.status_code == 429:
                 retry = int(r.headers.get("Retry-After", "1"))
-                print(f"  [429] {path} retry-after {retry}s (attempt {attempt+1})",
-                      file=sys.stderr)
+                print(f"  [429] {path} retry-after {retry}s (attempt {attempt + 1})", file=sys.stderr)
                 time.sleep(retry + 0.5)
                 continue
             if r.status_code in (500, 502, 503, 504):
-                wait = 2 ** attempt
-                print(f"  [{r.status_code}] {path} 서버 일시 오류, {wait}s 대기",
-                      file=sys.stderr)
+                wait = 2**attempt
+                print(f"  [{r.status_code}] {path} 서버 일시 오류, {wait}s 대기", file=sys.stderr)
                 time.sleep(wait)
                 continue
             r.raise_for_status()
@@ -115,12 +112,11 @@ class RiotClient:
     def account_by_riot_id(self, game_name: str, tag_line: str) -> dict:
         """Riot ID(GameName#TagLine) → puuid. 2024년 이후 by-name 대체 표준 경로."""
         from urllib.parse import quote
-        path = (f"/riot/account/v1/accounts/by-riot-id/"
-                f"{quote(game_name)}/{quote(tag_line)}")
+
+        path = f"/riot/account/v1/accounts/by-riot-id/{quote(game_name)}/{quote(tag_line)}"
         return self._get(self.region_host, path)
 
-    def matches_by_puuid(self, puuid: str, *, queue: int = 420,
-                        count: int = 20, start: int = 0) -> list[str]:
+    def matches_by_puuid(self, puuid: str, *, queue: int = 420, count: int = 20, start: int = 0) -> list[str]:
         path = f"/lol/match/v5/matches/by-puuid/{puuid}/ids"
         params = {"queue": queue, "count": count, "start": start, "type": "ranked"}
         return self._get(self.region_host, path, params)
