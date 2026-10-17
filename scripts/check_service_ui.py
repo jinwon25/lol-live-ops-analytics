@@ -458,7 +458,9 @@ def main():
             page.route(
                 official_portrait,
                 lambda route: route.fulfill(
-                    path=str(ROOT / 'web/images/champions/Ezreal.png'), content_type='image/png'
+                    path=str(ROOT / 'web/images/champions/Ezreal.png'),
+                    content_type='image/png',
+                    headers={'Cache-Control': 'no-store'},
                 ),
             )
             page.reload()
