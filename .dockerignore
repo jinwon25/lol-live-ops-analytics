@@ -31,7 +31,6 @@ outputs/*.png
 docs/
 tests/
 scripts/
-src/
 sql/
 api/
 README.md
