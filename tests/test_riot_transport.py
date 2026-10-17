@@ -1,56 +1,84 @@
 import unittest
 from unittest.mock import patch
+
 import httpx
-from service.riot import RiotGateway, RiotError
+
+from service.riot import RiotError, RiotGateway
 from service.riot_transport import RequestBudget, windows
 from service.timeline import timeline_summary
 
 
 class TransportTests(unittest.IsolatedAsyncioTestCase):
     async def test_headers_reserve_remote_usage_and_regions_independently(self):
-        b=RequestBudget()
-        with patch('service.riot_transport.time.monotonic',return_value=1000):
-            b.update('asia','detail',httpx.Headers({'X-App-Rate-Limit':'100:120','X-App-Rate-Limit-Count':'99:120'}))
-            self.assertIsNone(await b.reserve('asia','detail'))
-            self.assertEqual(await b.reserve('asia','detail'),120)
-            self.assertIsNone(await b.reserve('kr','league'))
-        with patch('service.riot_transport.time.monotonic',return_value=1121):
-            self.assertIsNone(await b.reserve('asia','detail'))
+        b = RequestBudget()
+        with patch('service.riot_transport.time.monotonic', return_value=1000):
+            b.update(
+                'asia', 'detail', httpx.Headers({'X-App-Rate-Limit': '100:120', 'X-App-Rate-Limit-Count': '99:120'})
+            )
+            self.assertIsNone(await b.reserve('asia', 'detail'))
+            self.assertEqual(await b.reserve('asia', 'detail'), 120)
+            self.assertIsNone(await b.reserve('kr', 'league'))
+        with patch('service.riot_transport.time.monotonic', return_value=1121):
+            self.assertIsNone(await b.reserve('asia', 'detail'))
 
     async def test_method_budget_is_specific_and_bad_headers_ignored(self):
-        b=RequestBudget()
-        self.assertEqual(windows('bad,20:1,1:-1,inf:2'),{1:20})
-        b.update('asia','timeline',httpx.Headers({'X-Method-Rate-Limit':'1:10','X-Method-Rate-Limit-Count':'1:10'}))
-        self.assertGreater(await b.reserve('asia','timeline'),0)
-        self.assertIsNone(await b.reserve('asia','detail'))
+        b = RequestBudget()
+        self.assertEqual(windows('bad,20:1,1:-1,inf:2'), {1: 20})
+        b.update(
+            'asia', 'timeline', httpx.Headers({'X-Method-Rate-Limit': '1:10', 'X-Method-Rate-Limit-Count': '1:10'})
+        )
+        self.assertGreater(await b.reserve('asia', 'timeline'), 0)
+        self.assertIsNone(await b.reserve('asia', 'detail'))
 
     async def test_429_halts_future_calls_and_completion_cache_saves_calls(self):
-        calls=[]
+        calls = []
+
         def response(request):
             calls.append(request)
-            return httpx.Response(429,headers={'Retry-After':'17'})
-        gateway=RiotGateway()
+            return httpx.Response(429, headers={'Retry-After': '17'})
+
+        gateway = RiotGateway()
         async with httpx.AsyncClient(transport=httpx.MockTransport(response)) as c:
             for _ in range(2):
-                with self.assertRaises(RiotError): await gateway.get(c,'asia','/lol/match/v5/matches/KR_1')
-        self.assertEqual(len(calls),1)
-        calls.clear();gateway=RiotGateway()
-        async with httpx.AsyncClient(transport=httpx.MockTransport(lambda r:(calls.append(r) or httpx.Response(200,json={'info':{}})))) as c:
-            await gateway.get(c,'asia','/lol/match/v5/matches/KR_1')
-            await gateway.get(c,'asia','/lol/match/v5/matches/KR_1')
-        self.assertEqual(len(calls),1)
+                with self.assertRaises(RiotError):
+                    await gateway.get(c, 'asia', '/lol/match/v5/matches/KR_1')
+        self.assertEqual(len(calls), 1)
+        calls.clear()
+        gateway = RiotGateway()
+        async with httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda r: calls.append(r) or httpx.Response(200, json={'info': {}}))
+        ) as c:
+            await gateway.get(c, 'asia', '/lol/match/v5/matches/KR_1')
+            await gateway.get(c, 'asia', '/lol/match/v5/matches/KR_1')
+        self.assertEqual(len(calls), 1)
 
     def test_timeline_uses_actual_frame_and_missing_cs_not_zero(self):
-        raw={'info':{'frames':[{'timestamp':600000,'participantFrames':{'1':{'totalGold':4000,'minionsKilled':80,'jungleMinionsKilled':2},'6':{'totalGold':4400,'minionsKilled':90}},'events':[{'type':'CHAMPION_KILL','victimId':1,'timestamp':590000,'position':{'x':123}}]}]}}
-        result=timeline_summary(raw,1,6,100)
-        self.assertEqual(result['points'][0]['gold_difference'],-400)
-        self.assertEqual(result['points'][0]['cs'],82)
+        raw = {
+            'info': {
+                'frames': [
+                    {
+                        'timestamp': 600000,
+                        'participantFrames': {
+                            '1': {'totalGold': 4000, 'minionsKilled': 80, 'jungleMinionsKilled': 2},
+                            '6': {'totalGold': 4400, 'minionsKilled': 90},
+                        },
+                        'events': [
+                            {'type': 'CHAMPION_KILL', 'victimId': 1, 'timestamp': 590000, 'position': {'x': 123}}
+                        ],
+                    }
+                ]
+            }
+        }
+        result = timeline_summary(raw, 1, 6, 100)
+        self.assertEqual(result['points'][0]['gold_difference'], -400)
+        self.assertEqual(result['points'][0]['cs'], 82)
         self.assertIsNone(result['points'][0]['cs_difference'])
-        self.assertNotIn('position',str(result))
-        self.assertEqual(result['deaths'],[9.83])
+        self.assertNotIn('position', str(result))
+        self.assertEqual(result['deaths'], [9.83])
 
     async def test_redis_multi_worker_budget_and_cross_worker_timeline_token(self):
         import time
+
         from service.riot_transport import SLIDING_WINDOW_RESERVE_LUA, UPDATE_HEADERS_LUA
 
         class FakeAsyncRedis:
@@ -91,7 +119,15 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
                             self.kv[f'{obs_prefix}:{sec}'] = (f'{cnt}:{target_until}', target_until)
                     return 1
                 if script == SLIDING_WINDOW_RESERVE_LUA:
-                    cooldown_key, app_calls_key, method_calls_key, app_limits_key, method_limits_key, app_obs_prefix, method_obs_prefix = keys
+                    (
+                        cooldown_key,
+                        app_calls_key,
+                        method_calls_key,
+                        app_limits_key,
+                        method_limits_key,
+                        app_obs_prefix,
+                        method_obs_prefix,
+                    ) = keys
                     now_ms, req_id, default_app_raw = int(args[0]), str(args[1]), str(args[2])
                     max_wait_ms = 0
                     cd_raw = await self.get(cooldown_key)
@@ -158,7 +194,9 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
                 ]
             }
         }
-        async with httpx.AsyncClient(transport=httpx.MockTransport(lambda r: httpx.Response(200, json=raw_tl))) as client:
+        async with httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda r: httpx.Response(200, json=raw_tl))
+        ) as client:
             worker2_gw.set_client(client)
             with patch.dict('os.environ', {'RIOT_API_KEY': 'synthetic-key'}):
                 tl_result = await worker2_gw.timeline('shared-token-123')

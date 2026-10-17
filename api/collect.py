@@ -25,6 +25,7 @@
 """
 
 from __future__ import annotations
+
 import argparse
 import os
 import sqlite3
@@ -176,7 +177,7 @@ def collect(seed_riot_id: str, match_limit: int = 20, queue: int = 420) -> None:
     match_ids = client.matches_by_puuid(puuid, queue=queue, count=match_limit)
     print(f"    수집된 match_ids = {len(match_ids)}")
 
-    print(f"[3] 매치 상세 호출 (rate-limited)…")
+    print("[3] 매치 상세 호출 (rate-limited)…")
     rows_part: list[dict] = []
     rows_match: list[dict] = []
     t0 = time.monotonic()
@@ -246,7 +247,7 @@ def collect(seed_riot_id: str, match_limit: int = 20, queue: int = 420) -> None:
         """
         df_top = pd.read_sql_query(q, con)
         print(df_top.to_string(index=False))
-        print(f"\n[done] api 수집 → 공통 스키마 적재 → 동일 분석 쿼리 동작 확인 완료.")
+        print("\n[done] api 수집 → 공통 스키마 적재 → 동일 분석 쿼리 동작 확인 완료.")
 
 
 def main() -> None:

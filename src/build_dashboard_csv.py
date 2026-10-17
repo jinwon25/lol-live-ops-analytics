@@ -14,20 +14,21 @@
 - 라이엇 실제 패치 조정 컬럼(`riot_15_3_action`)을 챔프 단위 표에 부착해
   Looker P1 NERF/BUFF 테이블에서 "분석 신호 → 실제 패치"를 한 줄에서 보게.
 """
+
 from __future__ import annotations
-from pathlib import Path
+
+import io
 import sqlite3
 import sys
+from pathlib import Path
 
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from champion_kr import to_kr
 
-try:
+if isinstance(sys.stdout, io.TextIOWrapper):
     sys.stdout.reconfigure(encoding="utf-8")
-except Exception:
-    pass
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "processed" / "lol.db"
@@ -39,16 +40,32 @@ OUT.mkdir(exist_ok=True)
 # 출처: https://wiki.leagueoflegends.com/en-us/V15.3
 RIOT_15_3_ACTIONS: dict[str, str] = {
     # NERF
-    "Cassiopeia": "NERF", "Galio": "NERF", "Jayce": "NERF",
-    "MissFortune": "NERF", "Rell": "NERF", "Skarner": "NERF",
-    "Teemo": "NERF", "Viego": "NERF", "MonkeyKing": "NERF",
+    "Cassiopeia": "NERF",
+    "Galio": "NERF",
+    "Jayce": "NERF",
+    "MissFortune": "NERF",
+    "Rell": "NERF",
+    "Skarner": "NERF",
+    "Teemo": "NERF",
+    "Viego": "NERF",
+    "MonkeyKing": "NERF",
     # BUFF
-    "Evelynn": "BUFF", "Jax": "BUFF", "Kayn": "BUFF", "Nasus": "BUFF",
-    "Quinn": "BUFF", "Rakan": "BUFF", "Samira": "BUFF",
-    "Swain": "BUFF", "Thresh": "BUFF", "Varus": "BUFF",
+    "Evelynn": "BUFF",
+    "Jax": "BUFF",
+    "Kayn": "BUFF",
+    "Nasus": "BUFF",
+    "Quinn": "BUFF",
+    "Rakan": "BUFF",
+    "Samira": "BUFF",
+    "Swain": "BUFF",
+    "Thresh": "BUFF",
+    "Varus": "BUFF",
     # ADJUSTMENT (system / non-numeric)
-    "Ambessa": "ADJUSTMENT", "Elise": "ADJUSTMENT", "Mel": "ADJUSTMENT",
-    "Neeko": "ADJUSTMENT", "Viktor": "ADJUSTMENT",
+    "Ambessa": "ADJUSTMENT",
+    "Elise": "ADJUSTMENT",
+    "Mel": "ADJUSTMENT",
+    "Neeko": "ADJUSTMENT",
+    "Viktor": "ADJUSTMENT",
 }
 
 
@@ -58,6 +75,7 @@ def ensure_views(con: sqlite3.Connection) -> None:
         text = (ROOT / "sql" / sql_path).read_text(encoding="utf-8")
         # 13_patch_drift 는 numbered SELECT 블록도 있음 → 첫 [N] 전까지의 setup만 실행
         import re
+
         parts = re.split(r"(?m)^-- \[(\d+)\]\s*(.*)$", text)
         con.executescript(parts[0])
 
@@ -102,8 +120,8 @@ def build_champion_meta(con: sqlite3.Connection) -> pd.DataFrame:
     FROM scored
     """
     df = pd.read_sql_query(q, con)
-    df.insert(1, "champion",     df["champion_name"].map(to_kr))
-    df.insert(2, "champion_en",  df.pop("champion_name"))
+    df.insert(1, "champion", df["champion_name"].map(to_kr))
+    df.insert(2, "champion_en", df.pop("champion_name"))
     df["riot_15_3_action"] = df["champion_en"].map(RIOT_15_3_ACTIONS).fillna("")
     df = df.sort_values(["patch", "role", "pick_count"], ascending=[True, True, False])
     df.to_csv(OUT / "champion_meta.csv", index=False, encoding="utf-8-sig")
@@ -148,7 +166,7 @@ def build_patch_drift(con: sqlite3.Connection) -> pd.DataFrame:
 
     df = pd.read_sql_query("SELECT * FROM v_drift_cohort", con)
     df = apply_fdr_postprocessing(df)
-    df.insert(0, "champion",    df["champion_name"].map(to_kr))
+    df.insert(0, "champion", df["champion_name"].map(to_kr))
     df.insert(1, "champion_en", df.pop("champion_name"))
     df["riot_15_3_action"] = df["champion_en"].map(RIOT_15_3_ACTIONS).fillna("")
     # 표본 최소 컷 (양 패치 모두 n>=20) 안내 컬럼
@@ -159,18 +177,27 @@ def build_patch_drift(con: sqlite3.Connection) -> pd.DataFrame:
     return df
 
 
-
 # ── 4. player_segments.csv (이미 존재, 컬럼 정렬·이름 깔끔하게) ──────────
 def clean_player_segments() -> pd.DataFrame:
     df = pd.read_csv(OUT / "player_segments.csv", encoding="utf-8-sig")
     rename = {"champion_name_kr": "champion", "champion_name": "champion_en"}
     df = df.rename(columns=rename)
     desired = [
-        "patch", "game_id", "participant_id",
-        "champion", "champion_en", "role", "win",
-        "cluster", "persona",
-        "gpm", "dpm_champ", "vision_score", "kill_participation",
-        "kda", "deaths",
+        "patch",
+        "game_id",
+        "participant_id",
+        "champion",
+        "champion_en",
+        "role",
+        "win",
+        "cluster",
+        "persona",
+        "gpm",
+        "dpm_champ",
+        "vision_score",
+        "kill_participation",
+        "kda",
+        "deaths",
     ]
     cols = [c for c in desired if c in df.columns]
     df = df[cols]
@@ -188,16 +215,29 @@ def build_segment_summary() -> pd.DataFrame:
 
     df = cent.set_index("cluster").join(win_rate)
     # 컬럼 깔끔하게 정렬
-    keep = ["persona", "n", "share_pct", "win_rate_pct",
-            "mean_gpm", "mean_dpm_champ", "mean_vision_score",
-            "mean_kill_participation", "mean_kda", "mean_deaths",
-            "z_gpm_centroid", "z_dpm_champ_centroid",
-            "z_vision_score_centroid", "z_kill_participation_centroid"]
+    keep = [
+        "persona",
+        "n",
+        "share_pct",
+        "win_rate_pct",
+        "mean_gpm",
+        "mean_dpm_champ",
+        "mean_vision_score",
+        "mean_kill_participation",
+        "mean_kda",
+        "mean_deaths",
+        "z_gpm_centroid",
+        "z_dpm_champ_centroid",
+        "z_vision_score_centroid",
+        "z_kill_participation_centroid",
+    ]
     df = df[[c for c in keep if c in df.columns]].reset_index()
-    df = df.rename(columns={
-        "cluster": "cluster_id",
-        "n": "n_games",
-    })
+    df = df.rename(
+        columns={
+            "cluster": "cluster_id",
+            "n": "n_games",
+        }
+    )
     df.to_csv(OUT / "segment_summary.csv", index=False, encoding="utf-8-sig")
     print(f"  ✓ segment_summary.csv        {len(df):,} rows")
     return df

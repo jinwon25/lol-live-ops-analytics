@@ -1,9 +1,8 @@
 """공식 Riot API의 소량 본인 전적 조회. 원본 응답·식별자를 디스크에 저장하지 않는다."""
+
 from __future__ import annotations
 
 import asyncio
-from contextlib import asynccontextmanager
-from datetime import datetime, timezone
 import hashlib
 import json
 import logging
@@ -13,6 +12,8 @@ import random
 import re
 import secrets
 import time
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from typing import Any
 from urllib.parse import quote
 
@@ -86,11 +87,11 @@ class RiotGateway:
         client: httpx.AsyncClient | None = None,
         redis_client: Any | None = None,
     ):
-        self.cooldown = 0
-        self.cache = {}
+        self.cooldown: float = 0.0
+        self.cache: dict[str, Any] = {}
         self.budget = RequestBudget(redis_client=redis_client)
-        self.response_cache = {}
-        self.match_context = {}
+        self.response_cache: dict[str, tuple[float, Any]] = {}
+        self.match_context: dict[str, Any] = {}
         self.http_client: httpx.AsyncClient | None = client
         self.redis_client: Any | None = redis_client
 
@@ -156,9 +157,7 @@ class RiotGateway:
         """Execute a GET request against Riot API with rate-limit reservation and exponential backoff."""
         now = time.monotonic()
         token = api_key if api_key is not None else client.headers.get('X-Riot-Token', '')
-        cache_key = hashlib.sha256(
-            json.dumps([token, host, path, params], sort_keys=True).encode()
-        ).hexdigest()
+        cache_key = hashlib.sha256(json.dumps([token, host, path, params], sort_keys=True).encode()).hexdigest()
 
         redis_resp_key = f'riot:resp:{cache_key}'
         redis_cached = await self._redis_get_json(redis_resp_key)
@@ -179,11 +178,7 @@ class RiotGateway:
                 raise RiotError(429, '호출 제한에 도달했습니다. 잠시 뒤 다시 조회해주세요.', retry_wait)
             record_riot_api_call(1)
             try:
-                request_headers = (
-                    {'X-Riot-Token': token}
-                    if token and 'X-Riot-Token' not in client.headers
-                    else None
-                )
+                request_headers = {'X-Riot-Token': token} if token and 'X-Riot-Token' not in client.headers else None
                 if request_headers is not None:
                     response = await client.get(
                         f'https://{host}.api.riotgames.com{path}',
@@ -205,7 +200,7 @@ class RiotGateway:
                     error,
                 )
                 if attempt + 1 < MAX_RETRY_ATTEMPTS:
-                    backoff_delay = (BASE_BACKOFF_SECONDS * (2 ** attempt)) + random.uniform(0.0, MAX_JITTER_SECONDS)
+                    backoff_delay = (BASE_BACKOFF_SECONDS * (2**attempt)) + random.uniform(0.0, MAX_JITTER_SECONDS)
                     await asyncio.sleep(backoff_delay)
                     continue
                 raise RiotError(502, 'Riot API 연결에 실패했습니다. 잠시 뒤 다시 조회해주세요.') from None
@@ -220,10 +215,13 @@ class RiotGateway:
                     attempt + 1,
                     MAX_RETRY_ATTEMPTS,
                 )
-                backoff_delay = (BASE_BACKOFF_SECONDS * (2 ** attempt)) + random.uniform(0.0, MAX_JITTER_SECONDS)
+                backoff_delay = (BASE_BACKOFF_SECONDS * (2**attempt)) + random.uniform(0.0, MAX_JITTER_SECONDS)
                 await asyncio.sleep(backoff_delay)
                 continue
             break
+
+        if response is None:
+            raise RiotError(502, 'Riot API 연결에 실패했습니다. 잠시 뒤 다시 조회해주세요.')
 
         if response.status_code == 429:
             try:
@@ -259,9 +257,7 @@ class RiotGateway:
             else 600
         )
         current_mono = time.monotonic()
-        self.response_cache = {
-            key: value for key, value in self.response_cache.items() if current_mono < value[0]
-        }
+        self.response_cache = {key: value for key, value in self.response_cache.items() if current_mono < value[0]}
         if len(self.response_cache) >= RESPONSE_CACHE_MAX_ENTRIES:
             self.response_cache.pop(next(iter(self.response_cache)))
         self.response_cache[cache_key] = (current_mono + ttl_seconds, payload_data)
@@ -292,9 +288,7 @@ class RiotGateway:
             return {**redis_recent, 'cached': True}
 
         now = time.monotonic()
-        self.cache = {
-            key: value for key, value in self.cache.items() if now - value[0] < RECENT_CACHE_TTL_SECONDS
-        }
+        self.cache = {key: value for key, value in self.cache.items() if now - value[0] < RECENT_CACHE_TTL_SECONDS}
         if cache_key in self.cache:
             record_cache_hit(True)
             return {**self.cache[cache_key][1], 'cached': True}
@@ -352,18 +346,18 @@ class RiotGateway:
                     )
                     return match_id, detail
 
-            fetched_details = await asyncio.gather(
-                *(fetch_match_detail(match_id) for match_id in target_match_ids)
-            )
+            fetched_details = await asyncio.gather(*(fetch_match_detail(match_id) for match_id in target_match_ids))
 
-            items, skipped_count, excluded_reasons = [], 0, {}
+            items: list[dict[str, Any]] = []
+            skipped_count = 0
+            excluded_reasons: dict[str, int] = {}
             for match_id, detail in fetched_details:
                 normalized_item = normalize_match(detail, puuid)
                 if normalized_item:
                     normalized_item['report'] = match_report(normalized_item)
                     participants = detail['info']['participants']
                     player = next(participant for participant in participants if participant.get('puuid') == puuid)
-                    opponent = next(
+                    opponent: dict[str, Any] = next(
                         (
                             participant
                             for participant in participants
@@ -409,7 +403,7 @@ class RiotGateway:
                 'skipped': skipped_count,
                 'exclusion_counts': excluded_reasons,
                 'cached': False,
-                'checked_at': datetime.now(timezone.utc).isoformat(),
+                'checked_at': datetime.now(UTC).isoformat(),
                 'caveat': '현재 랭크는 경기 당시 티어가 아닙니다. 누락·리메이크·미지원 역할 경기는 리포트에서 제외합니다.',
             }
             if len(self.cache) >= RECENT_CACHE_MAX_ENTRIES:
@@ -452,14 +446,23 @@ def exclusion_reason(data, puuid):
         return '종료 기록 미확인'
     participants = info.get('participants', [])
     player = (
-        next((participant for participant in participants if isinstance(participant, dict) and participant.get('puuid') == puuid), None)
+        next(
+            (
+                participant
+                for participant in participants
+                if isinstance(participant, dict) and participant.get('puuid') == puuid
+            ),
+            None,
+        )
         if isinstance(participants, list)
         else None
     )
     if not player:
         return '본인 참여 정보 미확인'
     duration = info.get('gameDuration')
-    if player.get('gameEndedInEarlySurrender') or (type(duration) in (int, float) and duration < MIN_GAME_DURATION_SECONDS):
+    if player.get('gameEndedInEarlySurrender') or (
+        isinstance(duration, (int, float)) and not isinstance(duration, bool) and duration < MIN_GAME_DURATION_SECONDS
+    ):
         return '짧은 경기·조기 종료'
     if player.get('teamPosition') not in {'TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY'}:
         return '포지션 미확인'
@@ -471,7 +474,11 @@ def normalize_match(data, puuid):
     if not isinstance(data, dict) or not isinstance(data.get('info'), dict):
         return None
     info = data['info']
-    if info.get('queueId') != RANKED_SOLO_QUEUE_ID or info.get('platformId') != 'KR' or not info.get('gameEndTimestamp'):
+    if (
+        info.get('queueId') != RANKED_SOLO_QUEUE_ID
+        or info.get('platformId') != 'KR'
+        or not info.get('gameEndTimestamp')
+    ):
         return None
     participants = info.get('participants', [])
     if not isinstance(participants, list) or not all(isinstance(participant, dict) for participant in participants):
@@ -481,7 +488,9 @@ def normalize_match(data, puuid):
         return None
     roles = {'TOP': 'TOP', 'JUNGLE': 'JUNGLE', 'MIDDLE': 'MID', 'BOTTOM': 'BOT', 'UTILITY': 'SUPPORT'}
     role = roles.get(player.get('teamPosition'))
-    champion = next((champ for champ in catalogue()['champions'] if champ['key'] == str(player.get('championId'))), None)
+    champion = next(
+        (champ for champ in catalogue()['champions'] if champ['key'] == str(player.get('championId'))), None
+    )
     seconds = info.get('gameDuration')
     version = str(info.get('gameVersion', '')).split('.')
     if (
@@ -496,7 +505,7 @@ def normalize_match(data, puuid):
     try:
         if type(info['gameEndTimestamp']) not in (int, float) or not math.isfinite(info['gameEndTimestamp']):
             return None
-        ended = datetime.fromtimestamp(info['gameEndTimestamp'] / 1000, timezone.utc).isoformat()
+        ended = datetime.fromtimestamp(info['gameEndTimestamp'] / 1000, UTC).isoformat()
         metrics = {
             key: player.get(field)
             for key, field in [
@@ -524,7 +533,8 @@ def normalize_match(data, puuid):
             return None
         team = [participant for participant in participants if participant.get('teamId') == player.get('teamId')]
         if player.get('teamId') not in VALID_TEAM_IDS or any(
-            type(participant.get('kills')) is not int or not 0 <= participant['kills'] <= MAX_KILLS for participant in team
+            type(participant.get('kills')) is not int or not 0 <= participant['kills'] <= MAX_KILLS
+            for participant in team
         ):
             return None
         team_kills = sum(participant['kills'] for participant in team)
@@ -533,23 +543,21 @@ def normalize_match(data, puuid):
     except (ValueError, TypeError, OverflowError, OSError):
         return None
 
-    def optional_count(field, maximum):
-        value = player.get(field)
+    def bounded_count(source, field, maximum):
+        value = source.get(field)
         return value if type(value) is int and 0 <= value <= maximum else None
 
-    lane_cs = optional_count('totalMinionsKilled', MAX_MINIONS_KILLED)
-    jungle_cs = optional_count('neutralMinionsKilled', MAX_MINIONS_KILLED)
+    lane_cs = bounded_count(player, 'totalMinionsKilled', MAX_MINIONS_KILLED)
+    jungle_cs = bounded_count(player, 'neutralMinionsKilled', MAX_MINIONS_KILLED)
     team_damage = [participant.get('totalDamageDealtToChampions') for participant in team]
     valid_damage = all(type(value) is int and 0 <= value <= MAX_CHAMPION_DAMAGE for value in team_damage)
     scoreboard = []
     for participant in participants:
-        champ = next((item for item in catalogue()['champions'] if item['key'] == str(participant.get('championId'))), None)
+        champ = next(
+            (item for item in catalogue()['champions'] if item['key'] == str(participant.get('championId'))), None
+        )
         if not champ or participant.get('teamId') not in VALID_TEAM_IDS:
             continue
-
-        def safe(field, maximum):
-            value = participant.get(field)
-            return value if type(value) is int and 0 <= value <= maximum else None
 
         scoreboard.append(
             {
@@ -558,12 +566,12 @@ def normalize_match(data, puuid):
                 'role': roles.get(participant.get('teamPosition'), '—'),
                 'is_self': participant is player,
                 'is_ally': participant.get('teamId') == player['teamId'],
-                'kills': safe('kills', MAX_KILLS),
-                'deaths': safe('deaths', MAX_DEATHS),
-                'assists': safe('assists', MAX_ASSISTS),
-                'gold': safe('goldEarned', MAX_GOLD_EARNED),
-                'damage': safe('totalDamageDealtToChampions', MAX_CHAMPION_DAMAGE),
-                'vision': safe('visionScore', MAX_VISION_SCORE),
+                'kills': bounded_count(participant, 'kills', MAX_KILLS),
+                'deaths': bounded_count(participant, 'deaths', MAX_DEATHS),
+                'assists': bounded_count(participant, 'assists', MAX_ASSISTS),
+                'gold': bounded_count(participant, 'goldEarned', MAX_GOLD_EARNED),
+                'damage': bounded_count(participant, 'totalDamageDealtToChampions', MAX_CHAMPION_DAMAGE),
+                'vision': bounded_count(participant, 'visionScore', MAX_VISION_SCORE),
             }
         )
     return {
@@ -579,7 +587,7 @@ def normalize_match(data, puuid):
         'team_kills': team_kills,
         'win': player.get('win') if type(player.get('win')) is bool else None,
         'tier': None,
-        'deaths': optional_count('deaths', MAX_DEATHS),
+        'deaths': bounded_count(player, 'deaths', MAX_DEATHS),
         'scoreboard': scoreboard,
         'cs': lane_cs + jungle_cs if lane_cs is not None and jungle_cs is not None else None,
         'team_damage': sum(team_damage) if valid_damage else None,

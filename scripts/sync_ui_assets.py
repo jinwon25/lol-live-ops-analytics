@@ -1,9 +1,10 @@
 """공식 챔피언 초상·게임 아이콘과 고정 버전 Tabler 아이콘을 로컬에 보관한다."""
-from concurrent.futures import ThreadPoolExecutor
+
 import hashlib
 import json
-from pathlib import Path
 import re
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,12 +30,39 @@ def main():
             raise ValueError('공식 챔피언 ID를 확인하세요.')
         jobs.append((f'champions/{champion_id}.png', f'{base}/img/champion/{champion_id}.png', 'Riot Games'))
     items = json.loads(fetch(f'{base}/data/ko_KR/item.json'))['data']
-    for item_id in ['3340','1055','1054']:
-        jobs.append((f'game/{item_id}.png',f'{base}/img/item/{items[item_id]["image"]["full"]}', 'Riot Games'))
-    jobs.append(('game/SummonerFlash.png',f'{base}/img/spell/SummonerFlash.png','Riot Games'))
-    for icon in ['notebook','layout-dashboard','users','swords','message-circle','search','arrow-right','chart-line','target','download','chevron-right','check','clock','book-2']:
-        jobs.append((f'icons/{icon}.svg',f'https://raw.githubusercontent.com/tabler/tabler-icons/v{TABLER_VERSION}/icons/outline/{icon}.svg','Tabler Icons / MIT'))
-    jobs.append(('icons/LICENSE',f'https://raw.githubusercontent.com/tabler/tabler-icons/v{TABLER_VERSION}/LICENSE','Tabler Icons / MIT'))
+    for item_id in ['3340', '1055', '1054']:
+        jobs.append((f'game/{item_id}.png', f'{base}/img/item/{items[item_id]["image"]["full"]}', 'Riot Games'))
+    jobs.append(('game/SummonerFlash.png', f'{base}/img/spell/SummonerFlash.png', 'Riot Games'))
+    for icon in [
+        'notebook',
+        'layout-dashboard',
+        'users',
+        'swords',
+        'message-circle',
+        'search',
+        'arrow-right',
+        'chart-line',
+        'target',
+        'download',
+        'chevron-right',
+        'check',
+        'clock',
+        'book-2',
+    ]:
+        jobs.append(
+            (
+                f'icons/{icon}.svg',
+                f'https://raw.githubusercontent.com/tabler/tabler-icons/v{TABLER_VERSION}/icons/outline/{icon}.svg',
+                'Tabler Icons / MIT',
+            )
+        )
+    jobs.append(
+        (
+            'icons/LICENSE',
+            f'https://raw.githubusercontent.com/tabler/tabler-icons/v{TABLER_VERSION}/LICENSE',
+            'Tabler Icons / MIT',
+        )
+    )
 
     def save(job):
         path, url, owner = job
@@ -46,14 +74,25 @@ def main():
             raise ValueError(f'SVG 검증 실패: {path}')
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)
-        return {'path':path,'source':url,'owner':owner,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}
+        return {
+            'path': path,
+            'source': url,
+            'owner': owner,
+            'bytes': len(data),
+            'sha256': hashlib.sha256(data).hexdigest(),
+        }
 
     with ThreadPoolExecutor(max_workers=6) as executor:
         entries = list(executor.map(save, jobs))
-    manifest = {'version':version,'tabler_version':TABLER_VERSION,'reference':'https://developer.riotgames.com/docs/lol#data-dragon','assets':entries}
-    (DEST / 'manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    manifest = {
+        'version': version,
+        'tabler_version': TABLER_VERSION,
+        'reference': 'https://developer.riotgames.com/docs/lol#data-dragon',
+        'assets': entries,
+    }
+    (DEST / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(f'Assets: {len(entries)} / {sum(e["bytes"] for e in entries):,} bytes')
-    print(json.dumps({item_id:items[item_id]['name'] for item_id in ['3340','1055','1054']},ensure_ascii=True))
+    print(json.dumps({item_id: items[item_id]['name'] for item_id in ['3340', '1055', '1054']}, ensure_ascii=True))
 
 
 if __name__ == '__main__':

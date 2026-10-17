@@ -1,60 +1,90 @@
 import copy
 import unittest
+
 from service.evidence import catalogue
 from service.meta import aggregate, clean_game
 
 
 def game():
-    roles=['TOP','JUNGLE','MIDDLE','BOTTOM','UTILITY']
-    champions=[266,64,103,81,12,86,254,7,236,89]
-    return {'info':{'queueId':420,'platformId':'KR','gameDuration':1800,'gameEndTimestamp':1791158400000,
-                    'gameVersion':'16.19.123.1','participants':[
-                        {'puuid':'private-identity','championId':c,'teamId':100 if i<5 else 200,
-                         'teamPosition':roles[i%5],'win':i<5} for i,c in enumerate(champions)],
-                    'teams':[{'bans':[{'championId':-1} for _ in range(5)]},{'bans':[{'championId':-1} for _ in range(5)]}]}}
+    roles = ['TOP', 'JUNGLE', 'MIDDLE', 'BOTTOM', 'UTILITY']
+    champions = [266, 64, 103, 81, 12, 86, 254, 7, 236, 89]
+    return {
+        'info': {
+            'queueId': 420,
+            'platformId': 'KR',
+            'gameDuration': 1800,
+            'gameEndTimestamp': 1791158400000,
+            'gameVersion': '16.19.123.1',
+            'participants': [
+                {
+                    'puuid': 'private-identity',
+                    'championId': c,
+                    'teamId': 100 if i < 5 else 200,
+                    'teamPosition': roles[i % 5],
+                    'win': i < 5,
+                }
+                for i, c in enumerate(champions)
+            ],
+            'teams': [
+                {'bans': [{'championId': -1} for _ in range(5)]},
+                {'bans': [{'championId': -1} for _ in range(5)]},
+            ],
+        }
+    }
 
 
 class MetaTests(unittest.TestCase):
     def test_clean_removes_identity_and_validates_complete_roles(self):
-        clean=clean_game(game(),'16.19',catalogue())
-        self.assertEqual(len(clean['rows']),10)
-        self.assertNotIn('private',str(clean))
+        clean = clean_game(game(), '16.19', catalogue())
+        self.assertEqual(len(clean['rows']), 10)
+        self.assertNotIn('private', str(clean))
         self.assertTrue(clean['bans_known'])
-        for field,value in [('queueId',440),('gameVersion','16.18.1'),('platformId','NA1'),('gameDuration',150)]:
-            raw=game();raw['info'][field]=value
-            self.assertIsNone(clean_game(raw,'16.19',catalogue()))
-        raw=game();raw['info']['participants'][0]['teamPosition']='JUNGLE'
-        self.assertIsNone(clean_game(raw,'16.19',catalogue()))
-        raw=game();raw['info']['participants'][0]['win']=1
-        self.assertIsNone(clean_game(raw,'16.19',catalogue()))
+        for field, value in [
+            ('queueId', 440),
+            ('gameVersion', '16.18.1'),
+            ('platformId', 'NA1'),
+            ('gameDuration', 150),
+        ]:
+            raw = game()
+            raw['info'][field] = value
+            self.assertIsNone(clean_game(raw, '16.19', catalogue()))
+        raw = game()
+        raw['info']['participants'][0]['teamPosition'] = 'JUNGLE'
+        self.assertIsNone(clean_game(raw, '16.19', catalogue()))
+        raw = game()
+        raw['info']['participants'][0]['win'] = 1
+        self.assertIsNone(clean_game(raw, '16.19', catalogue()))
 
     def test_role_pick_denominator_and_small_sample_guard(self):
-        clean=clean_game(game(),'16.19',catalogue())
-        result=aggregate([copy.deepcopy(clean) for _ in range(30)],{'patch':'16.19'}, {})
-        row=next(r for r in result['items'] if r['champion_id']=='Ezreal')
-        self.assertEqual(result['games'],30)
-        self.assertEqual(result['role_denominators']['BOT'],60)
-        self.assertEqual(row['pick_rate'],50)
-        self.assertEqual(row['win_rate'],100)
-        self.assertEqual(row['ban_rate'],0)
-        self.assertEqual(row['signal'],'positive')
-        small=aggregate([clean],{'patch':'16.19'}, {})['items'][0]
-        self.assertIsNone(small['win_rate']);self.assertIsNone(small['interval'])
+        clean = clean_game(game(), '16.19', catalogue())
+        result = aggregate([copy.deepcopy(clean) for _ in range(30)], {'patch': '16.19'}, {})
+        row = next(r for r in result['items'] if r['champion_id'] == 'Ezreal')
+        self.assertEqual(result['games'], 30)
+        self.assertEqual(result['role_denominators']['BOT'], 60)
+        self.assertEqual(row['pick_rate'], 50)
+        self.assertEqual(row['win_rate'], 100)
+        self.assertEqual(row['ban_rate'], 0)
+        self.assertEqual(row['signal'], 'positive')
+        small = aggregate([clean], {'patch': '16.19'}, {})['items'][0]
+        self.assertIsNone(small['win_rate'])
+        self.assertIsNone(small['interval'])
 
     def test_unknown_bans_are_not_zero_filled(self):
-        raw=game();raw['info']['teams']=[]
-        result=aggregate([clean_game(raw,'16.19',catalogue())],{}, {})
-        self.assertEqual(result['ban_denominator'],0)
+        raw = game()
+        raw['info']['teams'] = []
+        result = aggregate([clean_game(raw, '16.19', catalogue())], {}, {})
+        self.assertEqual(result['ban_denominator'], 0)
         self.assertTrue(all(r['ban_rate'] is None for r in result['items']))
-        raw['info']['teams']=None
-        self.assertIsNotNone(clean_game(raw,'16.19',catalogue()))
+        raw['info']['teams'] = None
+        self.assertIsNotNone(clean_game(raw, '16.19', catalogue()))
 
     def test_stratified_seed_allocation_and_endpoints(self):
         import argparse
         import asyncio
-        from pathlib import Path
         import tempfile
+        from pathlib import Path
         from unittest.mock import patch
+
         import scripts.collect_riot_meta as collector
         from scripts.collect_riot_meta import TIERS, allocate_stratified_seeds, build_league_endpoint
         from service.evidence import ReviewSyncStore
@@ -66,7 +96,9 @@ class MetaTests(unittest.TestCase):
         self.assertIn('/lol/league/v4/masterleagues/by-queue/', build_league_endpoint('RANKED_SOLO_5x5', 'MASTER', 'I'))
         self.assertIn('/lol/league/v4/grandmasterleagues/by-queue/', build_league_endpoint('GRANDMASTER'))
         self.assertIn('/lol/league/v4/challengerleagues/by-queue/', build_league_endpoint('CHALLENGER'))
-        self.assertIn('/lol/league/v4/entries/RANKED_SOLO_5x5/GOLD/II', build_league_endpoint('RANKED_SOLO_5x5', 'GOLD', 'II'))
+        self.assertIn(
+            '/lol/league/v4/entries/RANKED_SOLO_5x5/GOLD/II', build_league_endpoint('RANKED_SOLO_5x5', 'GOLD', 'II')
+        )
 
         seed_maps = {
             'IRON': {'puuid-iron-1': 50, 'puuid-iron-2': 30},
@@ -81,7 +113,9 @@ class MetaTests(unittest.TestCase):
             tmp_path = Path(tmpdir)
             store = ReviewSyncStore(db_path=tmp_path / 'meta_test.db')
             clean = clean_game(game(), '16.19', catalogue())
-            agg = aggregate([copy.deepcopy(clean) for _ in range(5)], {'patch': '16.19', 'region': 'KR'}, {'tiers': TIERS})
+            agg = aggregate(
+                [copy.deepcopy(clean) for _ in range(5)], {'patch': '16.19', 'region': 'KR'}, {'tiers': TIERS}
+            )
             snap_id = store.persist_meta_snapshot({**agg, 'generated_at': '2026-10-16T00:00:00+00:00'})
             self.assertTrue(snap_id)
             latest = store.latest_meta_snapshot()
@@ -130,5 +164,3 @@ class MetaTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-

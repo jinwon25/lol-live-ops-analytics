@@ -1,16 +1,17 @@
 """추적 가능한 집계만 읽는다. 인메모리 프리로딩·DuckDB/Parquet 어댑터·복기 동기화 저장소를 제공한다."""
+
 from __future__ import annotations
 
-from contextlib import closing
 import csv
-from datetime import datetime, timezone
-from functools import lru_cache
 import json
 import logging
-from pathlib import Path
 import sqlite3
-from typing import Any
 import uuid
+from contextlib import closing
+from datetime import UTC, datetime
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -95,11 +96,14 @@ class DuckDBAdapter:
     def is_duckdb_available() -> bool:
         try:
             import duckdb  # noqa: F401
+
             return True
         except ImportError:
             return False
 
-    def query_parquet(self, parquet_path: Path | str, sql_query: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
+    def query_parquet(
+        self, parquet_path: Path | str, sql_query: str, params: list[Any] | None = None
+    ) -> list[dict[str, Any]]:
         """Execute an analytical SQL query against a Parquet file using DuckDB (or fallback)."""
         resolved_path = Path(parquet_path)
         if self.is_duckdb_available() and resolved_path.exists():
@@ -109,14 +113,14 @@ class DuckDBAdapter:
                 formatted_sql = sql_query.replace('{parquet}', f"read_parquet('{resolved_path.as_posix()}')")
                 cursor = connection.execute(formatted_sql, params or [])
                 columns = [col[0] for col in cursor.description]
-                return [dict(zip(columns, row)) for row in cursor.fetchall()]
+                return [dict(zip(columns, row, strict=True)) for row in cursor.fetchall()]
 
         if self.sqlite_path.exists():
             with closing(sqlite3.connect(self.sqlite_path)) as connection:
                 connection.row_factory = sqlite3.Row
                 fallback_sql = sql_query.replace('{parquet}', 'participants')
-                cursor = connection.execute(fallback_sql, params or [])
-                return [dict(row) for row in cursor.fetchall()]
+                sqlite_cursor = connection.execute(fallback_sql, params or [])
+                return [dict(row) for row in sqlite_cursor.fetchall()]
         return []
 
     def query_champion_history(self, champion_id: str) -> list[dict[str, Any]]:
@@ -146,7 +150,6 @@ class DuckDBAdapter:
                 f"TO '{target_parquet.as_posix()}' (FORMAT PARQUET)"
             )
         return target_parquet
-
 
 
 REVIEW_SYNC_SCHEMA = """
@@ -272,8 +275,8 @@ class ReviewSyncStore:
             if payload.get(field_name) is not None and field_name not in context:
                 context[field_name] = payload[field_name]
         metrics = payload.get('metrics') or {}
-        played_at = str(context.get('played_at') or payload.get('played_at') or datetime.now(timezone.utc).isoformat())
-        updated_at = datetime.now(timezone.utc).isoformat()
+        played_at = str(context.get('played_at') or payload.get('played_at') or datetime.now(UTC).isoformat())
+        updated_at = datetime.now(UTC).isoformat()
         focus = str(payload.get('focus') or 'vision')
         scene = str(payload.get('scene') or '').strip()
         action = str(payload.get('action') or '').strip()
@@ -351,7 +354,7 @@ class ReviewSyncStore:
         scope = report.get('scope') or {}
         patch = str(scope.get('patch') or '')
         region = str(scope.get('region') or 'KR')
-        collected_at = str(report.get('collected_at') or report.get('generated_at') or datetime.now(timezone.utc).isoformat())
+        collected_at = str(report.get('collected_at') or report.get('generated_at') or datetime.now(UTC).isoformat())
         games = int(report.get('games') or 0)
         participants = int(report.get('participants') or 0)
 
@@ -431,14 +434,15 @@ duckdb_adapter = DuckDBAdapter()
 review_store = ReviewSyncStore()
 
 
-
 def answer(question, champion_id=None):
     query_lower = question.casefold()
-    result = {
+    sources_list: list[dict[str, Any]] = []
+    caveats_list: list[str] = ['기존 경기 표본은 2025년 초 패치 15.1·15.3이며 현재 메타를 대표하지 않습니다.']
+    result: dict[str, Any] = {
         'status': 'documented',
         'scope': SCOPE,
-        'sources': [],
-        'caveats': ['기존 경기 표본은 2025년 초 패치 15.1·15.3이며 현재 메타를 대표하지 않습니다.'],
+        'sources': sources_list,
+        'caveats': caveats_list,
         'next_step': '근거와 비교 조건을 확인한 뒤 검토할 질문 한 가지를 복기 노트에 남겨보세요.',
     }
     if any(word in query_lower for word in ['내 전적', '내 최근', '내 승률', '내 실력', '팀운', '내 티어']):
@@ -453,9 +457,13 @@ def answer(question, champion_id=None):
                 'is_current_match_data': False,
             },
             sources=[{'title': '개인 복기와 비교 조건', 'url': REPO + 'docs/06_companion_plan.md'}],
-            caveats=['직접 입력은 전적 API로 확인되지 않은 기록입니다. 내 기록의 전후 차이는 인과효과나 실력 점수가 아닙니다.'],
+            caveats=[
+                '직접 입력은 전적 API로 확인되지 않은 기록입니다. 내 기록의 전후 차이는 인과효과나 실력 점수가 아닙니다.'
+            ],
         )
-    elif any(word in query_lower for word in ['최신', '지금', '현재', '추천', '사기', '티어리스트', '아이템', '룬', '빌드']):
+    elif any(
+        word in query_lower for word in ['최신', '지금', '현재', '추천', '사기', '티어리스트', '아이템', '룬', '빌드']
+    ):
         cat = catalogue()
         result.update(
             status='insufficient_data',
@@ -467,14 +475,23 @@ def answer(question, champion_id=None):
         )
         champ = next((item for item in cat['champions'] if item['id'] == champion_id), None)
         result['external_references'] = [
-            {'title': 'LOL.PS 챔피언 통계·매치업', 'url': f'https://lol.ps/champ/{champ["key"]}' if champ else 'https://lol.ps/'},
+            {
+                'title': 'LOL.PS 챔피언 통계·매치업',
+                'url': f'https://lol.ps/champ/{champ["key"]}' if champ else 'https://lol.ps/',
+            },
             {'title': 'FOW 전적·챔피언 정보', 'url': 'https://www.fow.lol/'},
         ]
-        result['next_step'] = '외부 통계에서 패치·티어·역할·표본 수를 확인하고, 내 경기에서 검토할 질문으로 가져오세요. 외부 자료는 이 서비스에 자동 수집되지 않습니다.'
+        result['next_step'] = (
+            '외부 통계에서 패치·티어·역할·표본 수를 확인하고, 내 경기에서 검토할 질문으로 가져오세요. 외부 자료는 이 서비스에 자동 수집되지 않습니다.'
+        )
         from service.meta import current_meta
 
         meta_data = current_meta()
-        if meta_data.get('available') and not meta_data.get('stale') and not any(word in query_lower for word in ['아이템', '룬', '빌드']):
+        if (
+            meta_data.get('available')
+            and not meta_data.get('stale')
+            and not any(word in query_lower for word in ['아이템', '룬', '빌드'])
+        ):
             observed = [
                 row
                 for row in meta_data['items']
@@ -514,32 +531,44 @@ def answer(question, champion_id=None):
                 for row in eligible[:5]
             )
             result['answer'] = (
-                '선택한 챔피언의 과거 코호트 집계입니다. ' + detail + '. 표본 수·역할을 함께 확인하세요. 다른 챔피언·상대·숙련도 차이는 남아 있습니다.'
+                '선택한 챔피언의 과거 코호트 집계입니다. '
+                + detail
+                + '. 표본 수·역할을 함께 확인하세요. 다른 챔피언·상대·숙련도 차이는 남아 있습니다.'
                 if eligible
                 else '선택한 챔피언은 과거 역할별 표본이 모두 30행 미만이라 승률로 강함을 판단하지 않습니다.'
             )
             if len(eligible) < len(history):
-                result['caveats'].append('30행 미만인 역할·패치의 승률 설명은 보류했습니다. 30행은 표시용 최소 기준이며 충분한 정밀도를 보장하지 않습니다.')
+                caveats_list.append(
+                    '30행 미만인 역할·패치의 승률 설명은 보류했습니다. 30행은 표시용 최소 기준이며 충분한 정밀도를 보장하지 않습니다.'
+                )
         else:
-            result['answer'] = '기존 분석에서 이즈리얼의 픽 비중 변화는 전체 표본 +0.35%p, 공통 티어 표본 +0.13%p였습니다. 비교 조건에 민감한 신호라는 뜻이며 티어가 변화를 전부 설명하거나 패치의 인과효과를 측정했다는 뜻은 아닙니다.'
+            result['answer'] = (
+                '기존 분석에서 이즈리얼의 픽 비중 변화는 전체 표본 +0.35%p, 공통 티어 표본 +0.13%p였습니다. 비교 조건에 민감한 신호라는 뜻이며 티어가 변화를 전부 설명하거나 패치의 인과효과를 측정했다는 뜻은 아닙니다.'
+            )
             if champion_id:
                 result['status'] = 'insufficient_data'
-                result['answer'] = '선택한 챔피언에 대한 과거 집계가 없습니다. 현재 공식 목록에 있다는 사실만으로 승률이나 추천을 만들 수 없습니다.'
+                result['answer'] = (
+                    '선택한 챔피언에 대한 과거 집계가 없습니다. 현재 공식 목록에 있다는 사실만으로 승률이나 추천을 만들 수 없습니다.'
+                )
         result['sources'] = [
             {'title': '챔피언별 역할·패치 집계', 'url': REPO + 'outputs/champion_meta.csv'},
             {'title': '메타 분석 설계와 해석', 'url': REPO + 'docs/02_phase2_notes.md'},
         ]
-        result['caveats'].append('여러 챔피언 비교의 다중검정과 경기 내 관측 의존성은 후속 검증 대상입니다.')
+        caveats_list.append('여러 챔피언 비교의 다중검정과 경기 내 관측 의존성은 후속 검증 대상입니다.')
     elif any(word in query_lower for word in ['군집', '유형', '성향', '스타일', '페르소나']):
-        result['answer'] = 'K=4 군집은 한 경기의 행동 유형을 요약합니다. 분당 골드·딜, 시야 점수, 킬 관여율을 역할 안에서 표준화했습니다. 같은 사람을 여러 경기에서 추적한 성격 검사가 아니며, 승패와 경기 흐름의 영향도 남아 있습니다.'
+        result['answer'] = (
+            'K=4 군집은 한 경기의 행동 유형을 요약합니다. 분당 골드·딜, 시야 점수, 킬 관여율을 역할 안에서 표준화했습니다. 같은 사람을 여러 경기에서 추적한 성격 검사가 아니며, 승패와 경기 흐름의 영향도 남아 있습니다.'
+        )
         result['sources'] = [
             {'title': '행동 군집의 입력과 한계', 'url': REPO + 'docs/03_phase3_notes.md'},
             {'title': '군집 집계', 'url': REPO + 'outputs/segment_summary.csv'},
         ]
     elif any(word in query_lower for word in ['복기', '시야', '연습', '교전', '골드']):
-        result['answer'] = '완료된 경기에서 확인할 질문을 하나 정해보세요. 예를 들어 오브젝트 직전의 시야 확보 과정이나 교전 전 자원 차이를 기록할 수 있습니다. 집계 수치 하나로 잘못된 플레이나 실력을 판정할 수 없어, 현재 복기 화면은 수동 입력의 요약과 질문만 제공합니다.'
+        result['answer'] = (
+            '완료된 경기에서 확인할 질문을 하나 정해보세요. 예를 들어 오브젝트 직전의 시야 확보 과정이나 교전 전 자원 차이를 기록할 수 있습니다. 집계 수치 하나로 잘못된 플레이나 실력을 판정할 수 없어, 현재 복기 화면은 수동 입력의 요약과 질문만 제공합니다.'
+        )
         result['sources'] = [{'title': '복기 데이터와 검증 계획', 'url': REPO + 'docs/06_companion_plan.md'}]
-        result['caveats'].append('연습 과제는 검증할 가설입니다. 승률 향상 효과가 입증된 처방은 아닙니다.')
+        caveats_list.append('연습 과제는 검증할 가설입니다. 승률 향상 효과가 입증된 처방은 아닙니다.')
     else:
         result.update(
             status='insufficient_data',

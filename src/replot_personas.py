@@ -7,14 +7,17 @@ SQLite DB 없이 outputs/player_segments.csv 만으로 두 PNG 를 다시 그린
 실행:
     python src/replot_personas.py
 """
-from __future__ import annotations
-from pathlib import Path
-import sys
 
+from __future__ import annotations
+
+import io
+import sys
+from pathlib import Path
+
+import matplotlib
 import numpy as np
 import pandas as pd
 
-import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -26,10 +29,8 @@ configure_matplotlib_font()
 
 from sklearn.decomposition import PCA
 
-try:
+if isinstance(sys.stdout, io.TextIOWrapper):
     sys.stdout.reconfigure(encoding="utf-8")
-except Exception:
-    pass
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "outputs"
@@ -49,8 +50,7 @@ def main() -> None:
         z_cols.append(f"z_{f}")
     df = df.dropna(subset=z_cols).reset_index(drop=True)
 
-    persona_map = (df.drop_duplicates("cluster")
-                     .set_index("cluster")["persona"].to_dict())
+    persona_map = df.drop_duplicates("cluster").set_index("cluster")["persona"].to_dict()
     print(f"[persona] {persona_map}")
 
     # 1) PCA 2D
@@ -67,8 +67,7 @@ def main() -> None:
     cmap = plt.get_cmap("tab10")
     for cid in sorted(np.unique(labels)):
         m = labels == cid
-        ax.scatter(coords[m, 0], coords[m, 1], s=8, alpha=0.45,
-                   color=cmap(cid), label=f"C{cid}: {persona_map[cid]}")
+        ax.scatter(coords[m, 0], coords[m, 1], s=8, alpha=0.45, color=cmap(cid), label=f"C{cid}: {persona_map[cid]}")
     ax.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0]:.1%})")
     ax.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1]:.1%})")
     ax.set_title("플레이 스타일 클러스터 (PCA 2D)")
@@ -85,14 +84,14 @@ def main() -> None:
 
     fig, ax = plt.subplots(figsize=(8, max(4, len(pct) * 0.7)))
     im = ax.imshow(pct.values, aspect="auto", cmap="Blues", vmin=0, vmax=100)
-    ax.set_xticks(range(pct.shape[1])); ax.set_xticklabels(pct.columns)
+    ax.set_xticks(range(pct.shape[1]))
+    ax.set_xticklabels(pct.columns)
     ax.set_yticks(range(pct.shape[0]))
     ax.set_yticklabels([f"C{c}: {persona_map[c]}" for c in pct.index])
     for i in range(pct.shape[0]):
         for j in range(pct.shape[1]):
             v = pct.values[i, j]
-            ax.text(j, i, f"{v:.0f}%", ha="center", va="center",
-                    color="white" if v > 50 else "black", fontsize=10)
+            ax.text(j, i, f"{v:.0f}%", ha="center", va="center", color="white" if v > 50 else "black", fontsize=10)
     ax.set_title("클러스터 × 역할 비율 (행 합 100%)")
     fig.colorbar(im, ax=ax, label="% within cluster")
     fig.tight_layout()

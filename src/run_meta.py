@@ -8,22 +8,22 @@
   계산하여 1종 오류(위양성)를 통제한다.
 - 블록별 CSV는 outputs/ 로 export (Looker Studio 연결 후보).
 """
+
 from __future__ import annotations
 
-from contextlib import closing
+import io
 import math
-from pathlib import Path
 import re
 import sqlite3
 import sys
+from contextlib import closing
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-try:
+if isinstance(sys.stdout, io.TextIOWrapper):
     sys.stdout.reconfigure(encoding="utf-8")
-except Exception:
-    pass
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "processed" / "lol.db"
@@ -42,8 +42,7 @@ def two_sided_normal_p_values(z_scores: pd.Series | np.ndarray) -> np.ndarray:
     valid_mask = np.isfinite(z_array)
     if np.any(valid_mask):
         p_values[valid_mask] = [
-            min(1.0, max(0.0, math.erfc(abs(float(z_val)) / SQRT_TWO)))
-            for z_val in z_array[valid_mask]
+            min(1.0, max(0.0, math.erfc(abs(float(z_val)) / SQRT_TWO))) for z_val in z_array[valid_mask]
         ]
     return p_values
 
@@ -112,10 +111,7 @@ def split_setup_and_blocks(text: str) -> tuple[str, list[tuple[str, str, str]]]:
         n = parts[i]
         label = parts[i + 1].strip()
         body = parts[i + 2]
-        sql = "\n".join(
-            line for line in body.splitlines()
-            if not line.strip().startswith("--")
-        ).strip()
+        sql = "\n".join(line for line in body.splitlines() if not line.strip().startswith("--")).strip()
         if sql:
             blocks.append((n, label, sql))
     return setup, blocks
@@ -159,27 +155,42 @@ def run_sql_file(
 def main() -> None:
     with closing(sqlite3.connect(DB)) as con:
         run_sql_file(con, SQL_DIR / "05_views.sql")
-        run_sql_file(con, SQL_DIR / "10_champ_stats.sql", csv_map={
-            "1": "10_champ_stats_cohort.csv",
-        })
-        run_sql_file(con, SQL_DIR / "11_diversity.sql", csv_map={
-            "1": "11_diversity_by_role_cohort.csv",
-        })
-        run_sql_file(con, SQL_DIR / "12_flagging.sql", csv_map={
-            "1": "12_flagging_cohort.csv",
-            "2": "12_flagging_summary.csv",
-        })
-        run_sql_file(con, SQL_DIR / "13_patch_drift.sql", csv_map={
-            "1": "13_rising_champs_cohort.csv",
-            "2": "13_falling_champs_cohort.csv",
-            "3": "13_winrate_up_cohort.csv",
-            "4": "13_winrate_down_cohort.csv",
-            "5": "13_diversity_drift_by_role.csv",
-            "6": "13_rising_champs_naive.csv",
-            "7": "13_cohort_vs_naive_top.csv",
-        })
+        run_sql_file(
+            con,
+            SQL_DIR / "10_champ_stats.sql",
+            csv_map={
+                "1": "10_champ_stats_cohort.csv",
+            },
+        )
+        run_sql_file(
+            con,
+            SQL_DIR / "11_diversity.sql",
+            csv_map={
+                "1": "11_diversity_by_role_cohort.csv",
+            },
+        )
+        run_sql_file(
+            con,
+            SQL_DIR / "12_flagging.sql",
+            csv_map={
+                "1": "12_flagging_cohort.csv",
+                "2": "12_flagging_summary.csv",
+            },
+        )
+        run_sql_file(
+            con,
+            SQL_DIR / "13_patch_drift.sql",
+            csv_map={
+                "1": "13_rising_champs_cohort.csv",
+                "2": "13_falling_champs_cohort.csv",
+                "3": "13_winrate_up_cohort.csv",
+                "4": "13_winrate_down_cohort.csv",
+                "5": "13_diversity_drift_by_role.csv",
+                "6": "13_rising_champs_naive.csv",
+                "7": "13_cohort_vs_naive_top.csv",
+            },
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover
     main()
-

@@ -1,4 +1,5 @@
 """Centralized application configuration loaded via pydantic-settings."""
+
 from __future__ import annotations
 
 import json
@@ -33,9 +34,7 @@ class Settings(BaseSettings):
     )
 
     RIOT_API_KEY: str = Field(default='')
-    ALLOWED_ORIGINS: Annotated[list[str], NoDecode] = Field(
-        default_factory=lambda: list(DEFAULT_ALLOWED_ORIGINS)
-    )
+    ALLOWED_ORIGINS: Annotated[list[str], NoDecode] = Field(default_factory=lambda: list(DEFAULT_ALLOWED_ORIGINS))
     ALLOW_REMOTE_ACCESS: bool = Field(default=False)
     REDIS_URL: str | None = Field(default=None)
     LLAMA_SERVER_URL: str = Field(default=DEFAULT_LLAMA_SERVER_URL)

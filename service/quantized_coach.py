@@ -1,10 +1,11 @@
 """Asynchronous HTTP client for a persistent llama-server OpenAI-compatible daemon."""
+
 from __future__ import annotations
 
-from contextlib import contextmanager
 import logging
-from pathlib import Path
 import time
+from contextlib import contextmanager
+from pathlib import Path
 
 import httpx
 
@@ -21,7 +22,9 @@ DEFAULT_SEED = 17
 MAX_RAW_RESPONSE_LENGTH = 4096
 
 
-def build_completion_request(messages: list[dict], limit: int = DEFAULT_MAX_TOKENS, stop: list[str] | None = None) -> dict:
+def build_completion_request(
+    messages: list[dict], limit: int = DEFAULT_MAX_TOKENS, stop: list[str] | None = None
+) -> dict:
     """Construct the OpenAI-compatible chat completion payload for llama-server."""
     request_payload = {
         'messages': messages,
@@ -62,7 +65,9 @@ def local_server(weights: Path | None = None, base_url: str | None = None):
         yield client, None, time.monotonic() - started
 
 
-def generate(client: httpx.Client, messages: list[dict], limit: int = DEFAULT_MAX_TOKENS, stop: list[str] | None = None) -> tuple[str, int]:
+def generate(
+    client: httpx.Client, messages: list[dict], limit: int = DEFAULT_MAX_TOKENS, stop: list[str] | None = None
+) -> tuple[str, int]:
     """Send a synchronous chat completion request to the persistent llama-server daemon."""
     request_payload = build_completion_request(messages, limit=limit, stop=stop)
     response = client.post('/v1/chat/completions', json=request_payload)

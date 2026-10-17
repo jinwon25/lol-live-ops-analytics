@@ -7,11 +7,12 @@
 실행:
     python src/load.py
 """
+
 from __future__ import annotations
 
+import sqlite3
 from contextlib import closing
 from pathlib import Path
-import sqlite3
 
 import pandas as pd
 
@@ -34,10 +35,25 @@ ROLE_MAP = {
 }
 
 COMMON_COLS = [
-    "patch", "game_id", "participant_id", "champion_name", "role", "win",
-    "kills", "deaths", "assists", "gold_earned",
-    "dmg_to_champ", "dmg_taken", "vision_score", "solo_tier",
-    "duration_sec", "kda", "gpm", "dpm_champ", "kill_participation",
+    "patch",
+    "game_id",
+    "participant_id",
+    "champion_name",
+    "role",
+    "win",
+    "kills",
+    "deaths",
+    "assists",
+    "gold_earned",
+    "dmg_to_champ",
+    "dmg_taken",
+    "vision_score",
+    "solo_tier",
+    "duration_sec",
+    "kda",
+    "gpm",
+    "dpm_champ",
+    "kill_participation",
     "team_side",
 ]
 
@@ -54,24 +70,39 @@ def patch_from_version(v: object) -> str | None:
 
 def load_p153(csv_path: Path = P153_PATH) -> pd.DataFrame:
     """2025.csv (패치 15.3 위주, 솔랭만)"""
-    df = pd.read_csv(csv_path, usecols=[
-        "game_id", "duration", "game_version", "participant_id",
-        "champion_name", "position", "win",
-        "kills", "deaths", "assists",
-        "gold_earned", "damage_to_champ", "damage_taken",
-        "vision_score", "solo_tier",
-    ])
+    df = pd.read_csv(
+        csv_path,
+        usecols=[
+            "game_id",
+            "duration",
+            "game_version",
+            "participant_id",
+            "champion_name",
+            "position",
+            "win",
+            "kills",
+            "deaths",
+            "assists",
+            "gold_earned",
+            "damage_to_champ",
+            "damage_taken",
+            "vision_score",
+            "solo_tier",
+        ],
+    )
     n0 = len(df)
     df["patch"] = df["game_version"].map(patch_from_version)
     df = df[df["patch"] == "15.3"].copy()
     df["role"] = df["position"].map(ROLE_MAP)
-    df = df[df["role"].notna()].copy()                  # MIDDLE 등은 위에서 매핑됨, 그 외(Invalid 등) 제외
+    df = df[df["role"].notna()].copy()  # MIDDLE 등은 위에서 매핑됨, 그 외(Invalid 등) 제외
     df["win"] = df["win"].astype(int)
-    df = df.rename(columns={
-        "duration": "duration_sec",
-        "damage_to_champ": "dmg_to_champ",
-        "damage_taken": "dmg_taken",
-    })
+    df = df.rename(
+        columns={
+            "duration": "duration_sec",
+            "damage_to_champ": "dmg_to_champ",
+            "damage_taken": "dmg_taken",
+        }
+    )
     df["solo_tier"] = df["solo_tier"].fillna("UNKNOWN")
     # P153은 명시적 팀 구분 컬럼이 없음 → 같은 게임에서 win값이 같은 5명이 한 팀.
     df["team_side"] = df["win"]
@@ -81,15 +112,31 @@ def load_p153(csv_path: Path = P153_PATH) -> pd.DataFrame:
 
 def load_p151(xlsx_path: Path = P151_PATH) -> pd.DataFrame:
     """2024.xlsx / sheet=league_data.csv (패치 15.1 위주, 큐 혼합)"""
-    df = pd.read_excel(xlsx_path, sheet_name="league_data.csv", usecols=[
-        "game_id", "game_duration", "game_version", "queue_id", "participant_id",
-        "champion_name", "team_position", "win", "team_id",
-        "kills", "deaths", "assists",
-        "gold_earned", "total_damage_dealt_to_champions", "total_damage_taken",
-        "vision_score", "solo_tier",
-    ])
+    df = pd.read_excel(
+        xlsx_path,
+        sheet_name="league_data.csv",
+        usecols=[
+            "game_id",
+            "game_duration",
+            "game_version",
+            "queue_id",
+            "participant_id",
+            "champion_name",
+            "team_position",
+            "win",
+            "team_id",
+            "kills",
+            "deaths",
+            "assists",
+            "gold_earned",
+            "total_damage_dealt_to_champions",
+            "total_damage_taken",
+            "vision_score",
+            "solo_tier",
+        ],
+    )
     n0 = len(df)
-    df = df[df["queue_id"] == 420].copy()               # 솔로/듀오만
+    df = df[df["queue_id"] == 420].copy()  # 솔로/듀오만
     n_q = len(df)
     df["patch"] = df["game_version"].map(patch_from_version)
     df = df[df["patch"] == "15.1"].copy()
@@ -97,13 +144,15 @@ def load_p151(xlsx_path: Path = P151_PATH) -> pd.DataFrame:
     df["role"] = df["team_position"].map(ROLE_MAP)
     df = df[df["role"].notna()].copy()
     df["win"] = df["win"].astype(int)
-    df = df.rename(columns={
-        "game_duration": "duration_sec",
-        "total_damage_dealt_to_champions": "dmg_to_champ",
-        "total_damage_taken": "dmg_taken",
-    })
+    df = df.rename(
+        columns={
+            "game_duration": "duration_sec",
+            "total_damage_dealt_to_champions": "dmg_to_champ",
+            "total_damage_taken": "dmg_taken",
+        }
+    )
     df["solo_tier"] = df["solo_tier"].fillna("UNKNOWN")
-    df["team_side"] = df["team_id"]                     # 100/200
+    df["team_side"] = df["team_id"]  # 100/200
     print(f"[P151] {n0:,} → queue420 {n_q:,} → patch15.1 {n_p:,} → role-ok {len(df):,}")
     return df
 
@@ -170,11 +219,7 @@ def main(
     p151 = derive_metrics(load_p151(p151_path))
     full = pd.concat([p153[COMMON_COLS], p151[COMMON_COLS]], ignore_index=True)
 
-    matches = (
-        full[["patch", "game_id", "duration_sec"]]
-        .drop_duplicates(["patch", "game_id"])
-        .reset_index(drop=True)
-    )
+    matches = full[["patch", "game_id", "duration_sec"]].drop_duplicates(["patch", "game_id"]).reset_index(drop=True)
     participants_cols = [c for c in COMMON_COLS if c not in ("duration_sec", "team_side")]
     participants = full[participants_cols].copy()
 
@@ -194,9 +239,8 @@ def main(
         ]:
             print(label, "→", list(con.execute(sql)))
 
-    print(f"\n[done] wrote {db_path}  size={db_path.stat().st_size/1e6:.1f} MB")
+    print(f"\n[done] wrote {db_path}  size={db_path.stat().st_size / 1e6:.1f} MB")
 
 
 if __name__ == "__main__":  # pragma: no cover
     main()
-

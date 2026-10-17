@@ -21,22 +21,24 @@
 
 5. K 결정은 엘보우(inertia) + 실루엣 동시 확인. silhouette은 5000행 샘플에서.
 """
+
 from __future__ import annotations
 
-from contextlib import closing
 import hashlib
-from pathlib import Path
+import io
 import platform
 import sqlite3
 import sys
+from contextlib import closing
+from pathlib import Path
 
 import matplotlib
 
 matplotlib.use("Agg")
-from matplotlib import font_manager
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib import font_manager
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
@@ -75,10 +77,8 @@ def configure_matplotlib_font(
 
 configure_matplotlib_font()
 
-try:
+if isinstance(sys.stdout, io.TextIOWrapper):
     sys.stdout.reconfigure(encoding="utf-8")
-except Exception:
-    pass
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "processed" / "lol.db"
@@ -106,6 +106,7 @@ REFERENCE_METRICS = ["kda", "deaths"]  # 사후 클러스터 해석 참고용 (�
 
 
 # ─────────────────────────── 데이터 ─────────────────────────────────────────
+
 
 def load_cohort(db_path: Path = DB) -> pd.DataFrame:
     """v_cohort 의 참여 행 전부 로드 (PLAT+EM+DIA 양 패치)."""
@@ -234,11 +235,7 @@ def cluster_player_temporal_profiles(
         return profiles, pd.DataFrame()
 
     z_cols = [f"z_{f}" for f in features]
-    temporal_cols = [
-        f"{z_col}_{suffix}"
-        for z_col in z_cols
-        for suffix in ("mean", "ewm", "std", "trend")
-    ]
+    temporal_cols = [f"{z_col}_{suffix}" for z_col in z_cols for suffix in ("mean", "ewm", "std", "trend")]
     matrix = profiles[temporal_cols].to_numpy(dtype=float)
     effective_k = max(1, min(n_clusters, len(profiles)))
 
@@ -247,9 +244,7 @@ def cluster_player_temporal_profiles(
 
     mean_cols = [f"{z_col}_mean" for z_col in z_cols]
     centroid_means = profiles.groupby("cluster")[mean_cols].mean()
-    centroid_for_labeling = centroid_means.rename(
-        columns={f"{z_col}_mean": z_col for z_col in z_cols}
-    )
+    centroid_for_labeling = centroid_means.rename(columns={f"{z_col}_mean": z_col for z_col in z_cols})
     persona_map = label_personas(centroid_for_labeling)
     profiles["persona"] = profiles["cluster"].map(persona_map)
 
@@ -261,8 +256,8 @@ def cluster_player_temporal_profiles(
 
 # ─────────────────────────── K 선택 ─────────────────────────────────────────
 
-def k_selection(X: np.ndarray, k_range=range(2, 9)) -> pd.DataFrame:
 
+def k_selection(X: np.ndarray, k_range=range(2, 9)) -> pd.DataFrame:
     """엘보우(inertia) + 실루엣. silhouette은 5000행 샘플로(O(n²) 회피)."""
     rs = np.random.RandomState(RNG)
     sample_idx = rs.choice(X.shape[0], size=min(5000, X.shape[0]), replace=False)
@@ -283,16 +278,19 @@ def plot_k_selection(stats: pd.DataFrame, out_path: Path) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(12, 4))
     axes[0].plot(stats["k"], stats["inertia"], marker="o", color="steelblue")
     axes[0].set_title("Elbow — inertia (↓)")
-    axes[0].set_xlabel("K"); axes[0].set_ylabel("inertia")
+    axes[0].set_xlabel("K")
+    axes[0].set_ylabel("inertia")
     axes[1].plot(stats["k"], stats["silhouette"], marker="o", color="darkorange")
     axes[1].set_title("Silhouette (↑ better)")
-    axes[1].set_xlabel("K"); axes[1].set_ylabel("score")
+    axes[1].set_xlabel("K")
+    axes[1].set_ylabel("score")
     fig.tight_layout()
     fig.savefig(out_path, dpi=130)
     plt.close(fig)
 
 
 # ─────────────────────────── 페르소나 명명 ──────────────────────────────────
+
 
 def label_personas(centroid_z: pd.DataFrame) -> dict[int, str]:
     """클러스터 중심 z-score(프로세스 4지표) 기반 휴리스틱 라벨링.
@@ -302,8 +300,10 @@ def label_personas(centroid_z: pd.DataFrame) -> dict[int, str]:
     """
     names: dict[int, str] = {}
     for cid, r in centroid_z.iterrows():
-        gpm = r["z_gpm"]; dpm = r["z_dpm_champ"]
-        vis = r["z_vision_score"]; kp = r["z_kill_participation"]
+        gpm = r["z_gpm"]
+        dpm = r["z_dpm_champ"]
+        vis = r["z_vision_score"]
+        kp = r["z_kill_participation"]
 
         if gpm > 0.8 and dpm > 0.8:
             # 자원·딜·교전 기여가 모두 높은 주도적 플레이.
@@ -335,8 +335,8 @@ def label_personas(centroid_z: pd.DataFrame) -> dict[int, str]:
 
 # ─────────────────────────── 시각화 ─────────────────────────────────────────
 
-def plot_pca_2d(X: np.ndarray, labels: np.ndarray, names: dict[int, str],
-                out_path: Path) -> None:
+
+def plot_pca_2d(X: np.ndarray, labels: np.ndarray, names: dict[int, str], out_path: Path) -> None:
     pca = PCA(n_components=2, random_state=RNG).fit(X)
     coords = pca.transform(X)
     rs = np.random.RandomState(RNG)
@@ -348,8 +348,7 @@ def plot_pca_2d(X: np.ndarray, labels: np.ndarray, names: dict[int, str],
     cmap = plt.get_cmap("tab10")
     for cid in sorted(np.unique(labels)):
         m = labels == cid
-        ax.scatter(coords[m, 0], coords[m, 1], s=8, alpha=0.45,
-                   color=cmap(cid), label=f"C{cid}: {names[cid]}")
+        ax.scatter(coords[m, 0], coords[m, 1], s=8, alpha=0.45, color=cmap(cid), label=f"C{cid}: {names[cid]}")
     ax.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0]:.1%})")
     ax.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1]:.1%})")
     ax.set_title("플레이 스타일 클러스터 (PCA 2D)")
@@ -359,8 +358,7 @@ def plot_pca_2d(X: np.ndarray, labels: np.ndarray, names: dict[int, str],
     plt.close(fig)
 
 
-def plot_cluster_role_heatmap(df: pd.DataFrame, names: dict[int, str],
-                              out_path: Path) -> None:
+def plot_cluster_role_heatmap(df: pd.DataFrame, names: dict[int, str], out_path: Path) -> None:
     """각 클러스터의 role 비율. role-z 가 잘 작동하면 한 role 에 100% 쏠리지 않음."""
     pv = df.groupby(["cluster", "role"]).size().unstack(fill_value=0)
     pct = pv.div(pv.sum(axis=1), axis=0) * 100
@@ -368,14 +366,14 @@ def plot_cluster_role_heatmap(df: pd.DataFrame, names: dict[int, str],
 
     fig, ax = plt.subplots(figsize=(8, max(4, len(pct) * 0.7)))
     im = ax.imshow(pct.values, aspect="auto", cmap="Blues", vmin=0, vmax=100)
-    ax.set_xticks(range(pct.shape[1])); ax.set_xticklabels(pct.columns)
+    ax.set_xticks(range(pct.shape[1]))
+    ax.set_xticklabels(pct.columns)
     ax.set_yticks(range(pct.shape[0]))
     ax.set_yticklabels([f"C{c}: {names[c]}" for c in pct.index])
     for i in range(pct.shape[0]):
         for j in range(pct.shape[1]):
             v = pct.values[i, j]
-            ax.text(j, i, f"{v:.0f}%", ha="center", va="center",
-                    color="white" if v > 50 else "black", fontsize=10)
+            ax.text(j, i, f"{v:.0f}%", ha="center", va="center", color="white" if v > 50 else "black", fontsize=10)
     ax.set_title("클러스터 × 역할 비율 (행 합 100%)")
     fig.colorbar(im, ax=ax, label="% within cluster")
     fig.tight_layout()
@@ -384,6 +382,7 @@ def plot_cluster_role_heatmap(df: pd.DataFrame, names: dict[int, str],
 
 
 # ─────────────────────────── 메인 파이프라인 ────────────────────────────────
+
 
 def main(
     db_path: Path = DB,
@@ -435,8 +434,7 @@ def main(
 
     # ── 산출 CSV ──────────────────────────────────────────────────────────
     print("\n[export] CSV")
-    seg_cols = ["patch", "game_id", "participant_id", "champion_name", "role",
-                "win", "cluster", "persona"] + FEATURES
+    seg_cols = ["patch", "game_id", "participant_id", "champion_name", "role", "win", "cluster", "persona"] + FEATURES
     df[seg_cols].to_csv(out_dir / "player_segments.csv", index=False, encoding="utf-8-sig")
 
     summary = centroid_raw.copy()
@@ -488,4 +486,3 @@ def main(
 
 if __name__ == "__main__":  # pragma: no cover
     main()
-

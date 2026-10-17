@@ -1,4 +1,5 @@
 """직접 입력한 완료 경기의 요약과 복기 질문. 실력 점수나 원인 판정을 만들지 않는다."""
+
 FOCUSES = {
     'vision': {
         'label': '오브젝트 전 시야 준비',
@@ -34,8 +35,11 @@ FOCUSES = {
 def review_summary(request, champion):
     focus = FOCUSES[request.focus]
     context = {
-        'region': request.region, 'queue': request.queue, 'tier': request.tier,
-        'role': request.role, 'patch': request.patch,
+        'region': request.region,
+        'queue': request.queue,
+        'tier': request.tier,
+        'role': request.role,
+        'patch': request.patch,
         'champion_id': request.champion_id,
         'champion_name': champion['name'] if champion else None,
         'played_at': request.played_at.isoformat() if request.played_at else None,
@@ -43,14 +47,18 @@ def review_summary(request, champion):
     complete = all(context.values())
     return {
         'source': '합성 예제' if request.is_example else '직접 입력 · 전적 검증 전',
-        'role': request.role, 'is_example': request.is_example,
-        'context': context, 'personal_record_eligible': complete and not request.is_example,
+        'role': request.role,
+        'is_example': request.is_example,
+        'context': context,
+        'personal_record_eligible': complete and not request.is_example,
         'focus': {'id': request.focus, **focus},
         'metrics': {
             'gpm': round(request.gold / request.duration_minutes, 1),
             'dpm': round(request.damage / request.duration_minutes, 1),
             'vision_per_minute': round(request.vision / request.duration_minutes, 2),
-            'kill_participation': round((request.kills + request.assists) / request.team_kills, 3) if request.team_kills else None,
+            'kill_participation': round((request.kills + request.assists) / request.team_kills, 3)
+            if request.team_kills
+            else None,
         },
         'peer_percentile': None,
         'explanation': '한 경기의 직접 입력을 요약했습니다. 지표·리플레이에서 확인한 사실·내 가설을 구분해 복기하세요. 동티어 백분위와 승리 원인은 판정하지 않습니다.',

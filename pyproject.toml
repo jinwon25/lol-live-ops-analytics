@@ -51,42 +51,33 @@ target-version = "py311"
 line-length = 120
 
 [tool.ruff.lint]
-select = ["E9", "F63", "F7", "F82"]
+select = ["E", "F", "I", "B", "UP"]
+# Line length is enforced by `ruff format`; remaining E501 hits are long user-facing string literals.
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# These entry points must extend sys.path / configure matplotlib before importing project modules.
+"scripts/*.py" = ["E402"]
+"src/replot_personas.py" = ["E402"]
+"tests/*.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["service", "src", "scripts"]
 
 [tool.ruff.format]
 quote-style = "preserve"
-exclude = [
-    "scripts/**",
-    "service/**",
-    "src/[!_]*.py",
-    "tests/**",
-]
 
 
 [tool.mypy]
 python_version = "3.11"
 ignore_missing_imports = true
-check_untyped_defs = false
-warn_return_any = false
-disable_error_code = [
-    "import-untyped",
-    "attr-defined",
-    "arg-type",
-    "assignment",
-    "return-value",
-    "index",
-    "operator",
-    "union-attr",
-    "call-overload",
-    "misc",
-    "valid-type",
-    "var-annotated",
-    "override",
-]
+check_untyped_defs = true
+warn_unused_ignores = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+pythonpath = ["."]
 
 [tool.coverage.run]
 source = ["service", "src"]

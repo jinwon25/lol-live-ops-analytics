@@ -1,20 +1,21 @@
 """로컬 LoL 분석 도우미. 실행: python -m uvicorn service.main:app --reload"""
-from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
-from functools import lru_cache
+
 import ipaddress
 import json
 import logging
-from pathlib import Path
 import time
+import uuid
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime, timedelta
+from functools import lru_cache
+from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import urlparse
-import uuid
 
+import httpx
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-import httpx
 from pydantic import BaseModel, Field, model_validator
 
 from service.champion_details import abilities
@@ -29,8 +30,8 @@ from service.evidence import (
     review_store,
     rows,
 )
-
-from service.local_coach import CoachInput, coach, status as coach_status
+from service.local_coach import CoachInput, coach
+from service.local_coach import status as coach_status
 from service.meta import current_meta
 from service.public_data import public_flow, source_catalogue
 from service.review import FOCUSES, review_summary
@@ -168,11 +169,7 @@ def _emit_http_log(
 
 @app.middleware('http')
 async def guard_personal_api(request: Request, call_next):
-    incoming_trace_id = (
-        request.headers.get('x-trace-id')
-        or request.headers.get('x-request-id')
-        or uuid.uuid4().hex
-    )
+    incoming_trace_id = request.headers.get('x-trace-id') or request.headers.get('x-request-id') or uuid.uuid4().hex
     telemetry, context_token = init_request_telemetry(incoming_trace_id)
     started_at = time.perf_counter()
     try:
@@ -184,10 +181,7 @@ async def guard_personal_api(request: Request, call_next):
             if current_settings.ALLOW_REMOTE_ACCESS:
                 allowed_origin = not normalized_origin or (
                     urlparse(normalized_origin).scheme in {'http', 'https'}
-                    and (
-                        normalized_origin == base_origin
-                        or normalized_origin in current_settings.ALLOWED_ORIGINS
-                    )
+                    and (normalized_origin == base_origin or normalized_origin in current_settings.ALLOWED_ORIGINS)
                 )
                 if not allowed_origin:
                     blocked_response = JSONResponse(
@@ -200,8 +194,7 @@ async def guard_personal_api(request: Request, call_next):
                     return blocked_response
             else:
                 allowed_origin = not normalized_origin or (
-                    urlparse(normalized_origin).scheme in {'http', 'https'}
-                    and normalized_origin == base_origin
+                    urlparse(normalized_origin).scheme in {'http', 'https'} and normalized_origin == base_origin
                 )
                 if (
                     not is_trusted_network_host(request.url.hostname)
@@ -385,9 +378,7 @@ async def champions(q: str = Query(default='', max_length=80)):
     cat = catalogue()
     query = q.strip().casefold()
     selected = [
-        champ
-        for champ in cat['champions']
-        if query in champ['name'].casefold() or query in champ['id'].casefold()
+        champ for champ in cat['champions'] if query in champ['name'].casefold() or query in champ['id'].casefold()
     ]
     return {
         'version': cat['version'],
@@ -454,18 +445,21 @@ class Review(BaseModel):
     champion_id: str | None = Field(default=None, max_length=40)
     region: Literal['KR', 'EUN', 'EUW', 'NA'] | None = None
     queue: Literal['RANKED_SOLO', 'RANKED_FLEX'] | None = None
-    tier: Literal[
-        'IRON',
-        'BRONZE',
-        'SILVER',
-        'GOLD',
-        'PLATINUM',
-        'EMERALD',
-        'DIAMOND',
-        'MASTER',
-        'GRANDMASTER',
-        'CHALLENGER',
-    ] | None = None
+    tier: (
+        Literal[
+            'IRON',
+            'BRONZE',
+            'SILVER',
+            'GOLD',
+            'PLATINUM',
+            'EMERALD',
+            'DIAMOND',
+            'MASTER',
+            'GRANDMASTER',
+            'CHALLENGER',
+        ]
+        | None
+    ) = None
     patch: str | None = Field(default=None, pattern=r'^\d{2}\.\d{1,2}$')
     played_at: datetime | None = None
     focus: Literal['vision', 'fight_setup', 'resource', 'matchup'] = 'vision'
@@ -477,7 +471,7 @@ class Review(BaseModel):
         if self.played_at:
             if self.played_at.tzinfo is None:
                 raise ValueError('플레이 일시에는 시간대가 필요합니다.')
-            if self.played_at > datetime.now(timezone.utc) + timedelta(minutes=5):
+            if self.played_at > datetime.now(UTC) + timedelta(minutes=5):
                 raise ValueError('완료된 경기의 일시를 입력하세요. 미래 경기는 저장할 수 없습니다.')
         return self
 
@@ -540,5 +534,3 @@ async def delete_synced_review(
     if not deleted:
         raise HTTPException(404, '삭제할 복기 기록을 찾지 못했습니다.')
     return {'deleted': True, 'record_id': record_id}
-
-

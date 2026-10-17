@@ -1,4 +1,5 @@
 """공식 완료 경기의 설명 가능한 요약. 집계만으로 플레이 원인을 단정하지 않는다."""
+
 from service.review import FOCUSES
 
 
@@ -20,12 +21,23 @@ def match_report(item):
     if kp is None:
         facts.append('팀 킬이 0이라 킬 관여율은 계산할 수 없습니다.')
     else:
-        facts.append(f"팀 {item['team_kills']}킬 중 킬·도움으로 {item['kills'] + item['assists']}회 관여했습니다 ({kp * 100:.1f}%).")
+        facts.append(
+            f"팀 {item['team_kills']}킬 중 킬·도움으로 {item['kills'] + item['assists']}회 관여했습니다 ({kp * 100:.1f}%)."
+        )
     if item.get('deaths') is not None:
-        facts.append(f"데스 {item['deaths']}회를 기록했습니다. 위치·시점·교환 이득은 종료 수치만으로 판단할 수 없습니다.")
-    return {'version': 1, 'metrics': metrics, 'facts': facts,
-            'focus': {'id': focus_id, 'label': focus['label']},
-            'questions': [focus['observation'], focus['hypothesis']],
-            'next_step': focus['action'], 'peer_percentile': None,
-            'limitations': ['핵심 요약은 공식 Match-V5 종료 수치로 만듭니다. 시간대별 흐름은 별도 공식 타임라인이며 리플레이 장면 분석은 포함하지 않습니다.',
-                            '현재 랭크를 경기 당시 티어로 대체하지 않습니다. 동티어 점수·승패 원인은 산출하지 않습니다.']}
+        facts.append(
+            f"데스 {item['deaths']}회를 기록했습니다. 위치·시점·교환 이득은 종료 수치만으로 판단할 수 없습니다."
+        )
+    return {
+        'version': 1,
+        'metrics': metrics,
+        'facts': facts,
+        'focus': {'id': focus_id, 'label': focus['label']},
+        'questions': [focus['observation'], focus['hypothesis']],
+        'next_step': focus['action'],
+        'peer_percentile': None,
+        'limitations': [
+            '핵심 요약은 공식 Match-V5 종료 수치로 만듭니다. 시간대별 흐름은 별도 공식 타임라인이며 리플레이 장면 분석은 포함하지 않습니다.',
+            '현재 랭크를 경기 당시 티어로 대체하지 않습니다. 동티어 점수·승패 원인은 산출하지 않습니다.',
+        ],
+    }

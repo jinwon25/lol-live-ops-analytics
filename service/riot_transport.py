@@ -1,20 +1,23 @@
 """Distributed (Redis Lua sliding-window) and in-memory fallback Riot API request budget."""
+
 from __future__ import annotations
 
 import asyncio
-from collections import defaultdict, deque
 import contextvars
-from datetime import datetime, timezone
 import json
 import logging
 import math
 import re
 import sys
 import time
-from typing import Any
 import uuid
+from collections import defaultdict, deque
+from datetime import UTC, datetime
+from typing import Any
 
 logger = logging.getLogger(__name__)
+
+ScopeKey = str | tuple[str, str]
 
 MAX_WINDOW_SECONDS = 86400
 DEFAULT_MAX_WINDOW_SECONDS = 120
@@ -65,7 +68,7 @@ class StructuredJsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
-            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'timestamp': datetime.now(UTC).isoformat(),
             'level': record.levelname,
             'logger': record.name,
             'message': record.getMessage(),
@@ -88,6 +91,7 @@ def configure_json_logger(logger_name: str = 'lol_live_ops', stream: Any = None)
     handler.setFormatter(StructuredJsonFormatter())
     target_logger.handlers = [handler]
     return target_logger
+
 
 # Atomic Redis Lua script for multi-worker sliding-window reservation across app and method scopes.
 SLIDING_WINDOW_RESERVE_LUA = """
@@ -279,11 +283,11 @@ class RequestBudget:
     """Hybrid Rate Limit budget supporting Redis Lua sliding-window with in-memory fallback."""
 
     def __init__(self, redis_client: Any | None = None):
-        self.calls = defaultdict(deque)
-        self.methods = defaultdict(deque)
-        self.limits = {}
-        self.observed = {}
-        self.cooldowns = {}
+        self.calls: dict[str, deque[float]] = defaultdict(deque)
+        self.methods: dict[tuple[str, str], deque[float]] = defaultdict(deque)
+        self.limits: dict[ScopeKey, dict[int, int]] = {}
+        self.observed: dict[tuple[ScopeKey, int], tuple[int, float]] = {}
+        self.cooldowns: dict[str, float] = {}
         self.lock = asyncio.Lock()
         self.redis_client = redis_client
 
@@ -327,7 +331,7 @@ class RequestBudget:
         async with self.lock:
             now = time.monotonic()
             waits = [self.cooldowns.get(host, 0) - now]
-            scopes = [
+            scopes: list[tuple[ScopeKey, deque[float], dict[int, int]]] = [
                 (host, self.calls[host], DEFAULT_APP_LIMITS),
                 ((host, method), self.methods[(host, method)], {}),
             ]
@@ -347,9 +351,10 @@ class RequestBudget:
                 return max(1, math.ceil(wait))
             self.calls[host].append(now)
             self.methods[(host, method)].append(now)
-            for scope in (host, (host, method)):
-                for seconds in self.limits.get(scope, {}):
-                    key = (scope, seconds)
+            target_scopes: list[ScopeKey] = [host, (host, method)]
+            for target_scope in target_scopes:
+                for seconds in self.limits.get(target_scope, {}):
+                    key = (target_scope, seconds)
                     count, until = self.observed.get(key, (0, 0))
                     if now < until:
                         self.observed[key] = (count + 1, until)
@@ -367,7 +372,8 @@ class RequestBudget:
 
     def _update_in_memory(self, host: str, method: str, headers: Any) -> None:
         now = time.monotonic()
-        for scope, prefix in [(host, 'X-App'), ((host, method), 'X-Method')]:
+        scope_prefixes: list[tuple[ScopeKey, str]] = [(host, 'X-App'), ((host, method), 'X-Method')]
+        for scope, prefix in scope_prefixes:
             limits = windows(headers.get(prefix + '-Rate-Limit', ''))
             counts = windows(headers.get(prefix + '-Rate-Limit-Count', ''))
             if limits:

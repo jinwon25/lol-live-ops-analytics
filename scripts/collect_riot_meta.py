@@ -1,25 +1,26 @@
 """현재 패치 KR 솔로랭크 표본을 티어별 층화 추출(Stratified Sampling)로 수집한다."""
+
 from __future__ import annotations
 
 import argparse
 import asyncio
-from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import math
 import os
-from pathlib import Path
 import re
 import sys
 import time
+from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from typing import Any
 from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dotenv import load_dotenv
 import httpx
+from dotenv import load_dotenv
 
 from service.evidence import catalogue, review_store
 from service.meta import aggregate, clean_game
@@ -90,10 +91,7 @@ def allocate_stratified_seeds(
         if not target_tiers or total_quota <= 0:
             return {}
         base_quota, remainder = divmod(total_quota, len(target_tiers))
-        return {
-            tier: base_quota + (1 if idx < remainder else 0)
-            for idx, tier in enumerate(target_tiers)
-        }
+        return {tier: base_quota + (1 if idx < remainder else 0) for idx, tier in enumerate(target_tiers)}
 
     tier_seed_maps = tier_seed_maps_or_total
     total_seeds = int(total_seeds_or_tiers) if isinstance(total_seeds_or_tiers, int) else 40
@@ -162,7 +160,7 @@ async def collect(args: argparse.Namespace) -> dict[str, Any]:
             state = saved
             state.setdefault('tier_counts', {tier: 0 for tier in selected_tiers})
 
-    cutoff = (datetime.now(timezone.utc) - timedelta(days=args.days)).isoformat()
+    cutoff = (datetime.now(UTC) - timedelta(days=args.days)).isoformat()
     state['games'] = {key: game for key, game in state['games'].items() if game['played_at'] >= cutoff}
     attempted = set(state['attempted'])
     gateway_instance = RiotGateway()
@@ -218,7 +216,7 @@ async def collect(args: argparse.Namespace) -> dict[str, Any]:
             if not stratified_seeds:
                 raise RiotError(502, '티어별 랭크 표본에서 PUUID를 확인하지 못했습니다.')
 
-            start_epoch = int((datetime.now(timezone.utc) - timedelta(days=args.days)).timestamp())
+            start_epoch = int((datetime.now(UTC) - timedelta(days=args.days)).timestamp())
             stop_collection = False
             for index, (seed_tier, puuid) in enumerate(stratified_seeds):
                 match_ids = await fetch_riot(

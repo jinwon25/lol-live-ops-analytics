@@ -5,12 +5,14 @@
     docs/_inspect_p151.txt
 콘솔에도 핵심 요약만 출력.
 """
+
 from pathlib import Path
+
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
-P153_PATH = ROOT / "data" / "raw" / "2025.csv"           # 패치 15.3 위주, 솔랭만
-P151_PATH = ROOT / "data" / "raw" / "2024.xlsx"          # 패치 15.1 위주, 큐 혼합
+P153_PATH = ROOT / "data" / "raw" / "2025.csv"  # 패치 15.3 위주, 솔랭만
+P151_PATH = ROOT / "data" / "raw" / "2024.xlsx"  # 패치 15.1 위주, 큐 혼합
 OUT_DIR = ROOT / "docs"
 OUT_DIR.mkdir(exist_ok=True)
 
@@ -27,8 +29,7 @@ def report(name: str, df: pd.DataFrame) -> str:
     lines.append(df.head(2).to_string())
     lines.append("")
     # 패치/큐/포지션 핵심 컬럼 값 분포
-    for candidate in ["game_version", "queue_id", "position", "team_position",
-                      "team_id", "win", "solo_tier"]:
+    for candidate in ["game_version", "queue_id", "position", "team_position", "team_id", "win", "solo_tier"]:
         if candidate in df.columns:
             vc = df[candidate].astype(str).value_counts(dropna=False).head(10)
             lines.append(f"value_counts[{candidate}] (top10):\n{vc.to_string()}\n")
@@ -37,7 +38,7 @@ def report(name: str, df: pd.DataFrame) -> str:
 
 def main() -> None:
     # ---- P153 (csv) ----
-    p153 = pd.read_csv(P153_PATH, nrows=5000)        # 헤더+표본만
+    p153 = pd.read_csv(P153_PATH, nrows=5000)  # 헤더+표본만
     p153_full_cols = pd.read_csv(P153_PATH, nrows=0).columns.tolist()
     p153_rep = report("P153 (2025.csv, 처음 5000행 표본)", p153)
     p153_rep += f"\n\nFULL_COLUMNS({len(p153_full_cols)}): {p153_full_cols}"

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from contextlib import closing
-from pathlib import Path
 import sqlite3
 import sys
 import tempfile
 import unittest
+from contextlib import closing
+from pathlib import Path
 from unittest.mock import patch
 
 import numpy as np
@@ -334,9 +334,11 @@ class LoadAndSegmentTests(unittest.TestCase):
             with patch.object(run_validate, "DB", db_path):
                 run_validate.main()
 
-            with patch.object(inspect_raw, "P153_PATH", csv_path), patch.object(
-                inspect_raw, "P151_PATH", xlsx_path
-            ), patch.object(inspect_raw, "OUT_DIR", out_dir):
+            with (
+                patch.object(inspect_raw, "P153_PATH", csv_path),
+                patch.object(inspect_raw, "P151_PATH", xlsx_path),
+                patch.object(inspect_raw, "OUT_DIR", out_dir),
+            ):
                 inspect_raw.main()
             self.assertTrue((out_dir / "_inspect_p153.txt").exists())
             self.assertTrue((out_dir / "_inspect_p151.txt").exists())
@@ -349,6 +351,7 @@ class LoadAndSegmentTests(unittest.TestCase):
 
             # 6) Test champion_details.abilities and additional service routes
             import asyncio
+
             from service import champion_details
             from service.main import app
 
@@ -360,7 +363,11 @@ class LoadAndSegmentTests(unittest.TestCase):
                 "data": {
                     "Ezreal": {
                         "title": "<b>무모한 탐험가</b>",
-                        "passive": {"name": "끓어오르는 주문의 힘", "description": "공격 속도 증가", "image": {"full": "Ezreal_Passive.png"}},
+                        "passive": {
+                            "name": "끓어오르는 주문의 힘",
+                            "description": "공격 속도 증가",
+                            "image": {"full": "Ezreal_Passive.png"},
+                        },
                         "spells": [
                             {"name": "신비한 화살", "description": "화살 발사", "image": {"full": "EzrealQ.png"}},
                             {"name": "정수의 흐름", "description": "고리 발사", "image": {"full": "EzrealW.png"}},
@@ -376,16 +383,20 @@ class LoadAndSegmentTests(unittest.TestCase):
             class FakeResp:
                 def raise_for_status(self):
                     return None
+
                 def json(self):
                     return fake_dd_payload
 
             class FakeAsyncClient:
                 def __init__(self, **_kwargs):
                     pass
+
                 async def __aenter__(self):
                     return self
+
                 async def __aexit__(self, *_args):
                     return False
+
                 async def get(self, _url):
                     return FakeResp()
 
@@ -397,6 +408,7 @@ class LoadAndSegmentTests(unittest.TestCase):
                 self.assertTrue(cached_res["available"])
 
             import httpx
+
             from service import evidence
 
             adapter = evidence.DuckDBAdapter(parquet_dir=tmpdir, sqlite_path=db_path)
@@ -493,19 +505,30 @@ class LoadAndSegmentTests(unittest.TestCase):
                         )
                         self.assertEqual((await client.delete("/api/reviews/sync/rec_1?client_id=c1")).status_code, 200)
                         self.assertEqual(
-                            (await client.post("/api/assistant", json={"question": "군집 유형 성향 알려줘"})).json()["status"],
+                            (await client.post("/api/assistant", json={"question": "군집 유형 성향 알려줘"})).json()[
+                                "status"
+                            ],
                             "documented",
                         )
                         self.assertEqual(
-                            (await client.post("/api/assistant", json={"question": "복기 시야 연습 질문"})).json()["status"],
+                            (await client.post("/api/assistant", json={"question": "복기 시야 연습 질문"})).json()[
+                                "status"
+                            ],
                             "documented",
                         )
                         self.assertEqual(
-                            (await client.post("/api/assistant", json={"question": "패치 15.3 메타 변화 요약"})).json()["status"],
+                            (await client.post("/api/assistant", json={"question": "패치 15.3 메타 변화 요약"})).json()[
+                                "status"
+                            ],
                             "documented",
                         )
                         self.assertEqual(
-                            (await client.post("/api/assistant", json={"question": "Ezreal 챔피언 지표 알려줘", "champion_id": "Ezreal"})).json()["status"],
+                            (
+                                await client.post(
+                                    "/api/assistant",
+                                    json={"question": "Ezreal 챔피언 지표 알려줘", "champion_id": "Ezreal"},
+                                )
+                            ).json()["status"],
                             "documented",
                         )
 
@@ -514,5 +537,3 @@ class LoadAndSegmentTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-

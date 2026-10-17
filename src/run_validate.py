@@ -1,15 +1,16 @@
 """sql/00_validate.sql 의 각 블록을 실행해 라벨과 함께 출력."""
-from pathlib import Path
+
+import io
 import re
 import sqlite3
 import sys
+from pathlib import Path
+
 import pandas as pd
 
 # Windows 콘솔이 기본 cp949라 em-dash/한글에서 깨짐 → UTF-8 강제.
-try:
+if isinstance(sys.stdout, io.TextIOWrapper):
     sys.stdout.reconfigure(encoding="utf-8")
-except Exception:
-    pass
 
 ROOT = Path(__file__).resolve().parent.parent
 DB = ROOT / "data" / "processed" / "lol.db"
@@ -23,10 +24,7 @@ def split_blocks(text: str) -> list[tuple[str, str]]:
     # chunks: [pre, n1, label1, body1, n2, label2, body2, ...]
     for i in range(1, len(chunks), 3):
         n, label, body = chunks[i], chunks[i + 1], chunks[i + 2]
-        sql = "\n".join(
-            line for line in body.splitlines()
-            if not line.strip().startswith("--")
-        ).strip()
+        sql = "\n".join(line for line in body.splitlines() if not line.strip().startswith("--")).strip()
         if sql:
             blocks.append((f"[{n}] {label}".strip(), sql))
     return blocks

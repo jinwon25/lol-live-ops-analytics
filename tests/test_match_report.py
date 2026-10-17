@@ -11,7 +11,7 @@ class MatchReportTests(unittest.TestCase):
         report = match_report(item)
         self.assertEqual(report['metrics']['gpm'], 400)
         self.assertEqual(report['metrics']['dpm'], 700)
-        self.assertEqual(report['metrics']['kill_participation'], .542)
+        self.assertEqual(report['metrics']['kill_participation'], 0.542)
         self.assertIsNone(report['metrics']['cs_per_minute'])
         self.assertIsNone(report['metrics']['damage_share'])
         self.assertIsNone(report['peer_percentile'])
@@ -24,7 +24,7 @@ class MatchReportTests(unittest.TestCase):
         item = normalize_match(data, 'synthetic-self')
         report = match_report(item)
         self.assertEqual(report['metrics']['cs_per_minute'], 6)
-        self.assertEqual(report['metrics']['damage_share'], .42)
+        self.assertEqual(report['metrics']['damage_share'], 0.42)
         self.assertIn('데스 4회', report['facts'][-1])
         data['info']['participants'][0]['totalMinionsKilled'] = True
         item = normalize_match(data, 'synthetic-self')

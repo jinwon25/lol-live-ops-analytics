@@ -3,18 +3,20 @@
 대상: champion_name 컬럼이 있는 모든 outputs CSV.
 한글 매핑: src/champion_kr.py
 """
+
 from __future__ import annotations
-from pathlib import Path
+
+import io
 import sys
+from pathlib import Path
+
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from champion_kr import to_kr
 
-try:
+if isinstance(sys.stdout, io.TextIOWrapper):
     sys.stdout.reconfigure(encoding="utf-8")
-except Exception:
-    pass
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "outputs"

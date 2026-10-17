@@ -1,13 +1,14 @@
 """로컬 실험 모델은 복기 초점만 제안한다. 수치·사실·승패 판정은 생성하지 않는다."""
+
 import asyncio
 import json
 import logging
 import os
-from pathlib import Path
 import re
 import subprocess
 import sys
 import threading
+from pathlib import Path
 from typing import Literal
 from unittest.mock import Mock
 
@@ -84,7 +85,11 @@ def validate_choice(raw, payload):
         raw = fence.group(1).strip()
     choice = json.loads(raw)
     available = {key for key, value in payload.metrics.model_dump().items() if value is not None}
-    if not isinstance(choice, dict) or set(choice) != {'focus_id', 'evidence_keys'} or choice['focus_id'] not in FOCUSES:
+    if (
+        not isinstance(choice, dict)
+        or set(choice) != {'focus_id', 'evidence_keys'}
+        or choice['focus_id'] not in FOCUSES
+    ):
         raise ValueError('invalid focus')
     keys = choice['evidence_keys']
     if (
@@ -146,7 +151,9 @@ def status():
         'available': ready,
         'stage': 'experimental' if ready else 'not_installed',
         'model': chosen['model'] if ready else None,
-        'description': '로컬 실험 모델 · 요청할 때만 실행' if ready else '로컬 모델 준비 중 · 기본 리포트는 바로 이용 가능',
+        'description': '로컬 실험 모델 · 요청할 때만 실행'
+        if ready
+        else '로컬 모델 준비 중 · 기본 리포트는 바로 이용 가능',
     }
 
 
@@ -197,7 +204,9 @@ class LocalCoach:
                             )
                     except (httpx.HTTPError, OSError, ValueError, KeyError, TypeError) as error:
                         logger.warning('Quantized coach mocked call failed: %s', error)
-                        raise RuntimeError('로컬 모델 실행을 완료하지 못했습니다. 기본 리포트는 계속 사용할 수 있습니다.') from None
+                        raise RuntimeError(
+                            '로컬 모델 실행을 완료하지 못했습니다. 기본 리포트는 계속 사용할 수 있습니다.'
+                        ) from None
                 else:
                     try:
                         raw_output, _tokens = await quantized_coach.generate_async(
@@ -207,7 +216,9 @@ class LocalCoach:
                         )
                     except (httpx.HTTPError, OSError, ValueError, KeyError, TypeError) as error:
                         logger.warning('Async llama-server inference failed: %s', error)
-                        raise RuntimeError('로컬 모델 실행을 완료하지 못했습니다. 기본 리포트는 계속 사용할 수 있습니다.') from None
+                        raise RuntimeError(
+                            '로컬 모델 실행을 완료하지 못했습니다. 기본 리포트는 계속 사용할 수 있습니다.'
+                        ) from None
 
                 try:
                     verified_answer = validate_choice(raw_output, payload)
@@ -235,7 +246,9 @@ class LocalCoach:
                         raw_output, _tokens = generate(client, messages(payload), MAX_COMPLETION_TOKENS)
                 except (httpx.HTTPError, OSError, ValueError, KeyError, TypeError) as error:
                     logger.warning('Quantized coach sync inference failed: %s', error)
-                    raise RuntimeError('로컬 모델 실행을 완료하지 못했습니다. 기본 리포트는 계속 사용할 수 있습니다.') from None
+                    raise RuntimeError(
+                        '로컬 모델 실행을 완료하지 못했습니다. 기본 리포트는 계속 사용할 수 있습니다.'
+                    ) from None
                 try:
                     verified_answer = validate_choice(raw_output, payload)
                     verified_answer['model'] = chosen['model']
@@ -267,7 +280,9 @@ class LocalCoach:
                 raw_output = json.loads(result.stdout)['raw']
             except (OSError, subprocess.TimeoutExpired, ValueError, KeyError, TypeError) as error:
                 logger.warning('Local coach subprocess worker failed: %s', error)
-                raise RuntimeError('로컬 모델 실행을 완료하지 못했습니다. 기본 리포트는 계속 사용할 수 있습니다.') from None
+                raise RuntimeError(
+                    '로컬 모델 실행을 완료하지 못했습니다. 기본 리포트는 계속 사용할 수 있습니다.'
+                ) from None
             try:
                 verified_answer = validate_choice(raw_output, payload)
                 verified_answer['model'] = chosen['model']

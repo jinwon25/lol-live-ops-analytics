@@ -1,8 +1,9 @@
 """API 키 없이 공식 한국어 챔피언 정적 자료를 갱신한다. 경기 통계 수집과 별개다."""
-from datetime import datetime, timezone
-from hashlib import sha256
+
 import argparse
 import json
+from datetime import UTC, datetime
+from hashlib import sha256
 from pathlib import Path
 from urllib.request import urlopen
 
@@ -26,13 +27,15 @@ def main():
     url = f'{BASE}/cdn/{version}/data/ko_KR/champion.json'
     raw = fetch(url)
     result = {
-        'version': version, 'locale': 'ko_KR', 'realm': 'KR',
-        'checked_at': datetime.now(timezone.utc).isoformat(),
-        'source_url': url, 'realm_url': realm_url,
+        'version': version,
+        'locale': 'ko_KR',
+        'realm': 'KR',
+        'checked_at': datetime.now(UTC).isoformat(),
+        'source_url': url,
+        'realm_url': realm_url,
         'source_sha256': sha256(json.dumps(raw, ensure_ascii=False, sort_keys=True).encode()).hexdigest(),
         'champions': [
-            {k: champ[k] for k in ['id', 'key', 'name', 'tags', 'info', 'stats']}
-            for champ in raw['data'].values()
+            {k: champ[k] for k in ['id', 'key', 'name', 'tags', 'info', 'stats']} for champ in raw['data'].values()
         ],
     }
     path = ROOT / 'service/data/catalogue.json'
