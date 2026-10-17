@@ -476,6 +476,11 @@ def main():
             # 양쪽 경로 모두 실패해도 이름과 선택은 보존하고 재시도를 반복하지 않는다.
             page.unroute(official_portrait)
             page.route(official_portrait, lambda route: route.abort())
+            page.reload()
+            page.locator('#tab-overview').click()
+            page.wait_for_function("document.querySelectorAll('#champion-list button').length > 1")
+            page.locator('#tab-champions').click()
+            page.locator('#show-champion-guide').click()
             page.locator('#champion-search').fill('Ez')
             page.wait_for_function("document.querySelector('#champion-list img').hidden")
             page.locator('#champion-list button').click()
