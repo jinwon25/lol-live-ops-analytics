@@ -122,7 +122,9 @@ extract_snapshot
 - 과거 고정 파일을 매일 재적재할 이유가 없으므로 **수동 실행**으로 시작한다. 최신 API 수집의 기간·체크포인트 계약을 만든 후 주기를 연결한다.
 - Airflow 전용 Docker ignore는 배치 코드·필요한 SQL만 빌드 컨텍스트에 포함한다. 원본·개인 파일·모델·서비스 환경 파일은 이미지에 넣지 않는다.
 
-현재 PC에는 Docker와 설치된 WSL 배포판이 없어 컨테이너 실기동을 로컬에서 검증하지 못했다. `.github/workflows/pipeline.yml`에 이미지 빌드와 실제 `DagBag` 파싱·`dag.test()`를 추가했다. CI 등록과 실제 실행 성공 여부는 구분해 확인한다.
+현재 PC에는 Docker와 설치된 WSL 배포판이 없어 컨테이너 실기동은 GitHub의 Linux CI에서 확인했다. [성공한 CI 실행](https://github.com/jinwon25/lol-live-ops-analytics/actions/runs/44107889851)에서 이미지 빌드·`pip check`·실제 `DagBag` 파싱·Task SDK의 `dag.test()`가 통과했다. 합성 64경기·640행의 네 작업이 모두 성공하고 게시 레지스트리가 갱신되었다. UI에서 스케줄러를 계속 실행한 운영 검증과는 범위를 구분한다.
+
+Airflow 3.4에서는 `airflow.dag_processing.dagbag.DagBag`을 사용하며, 제거된 `include_examples` 인자를 전달하지 않는다. 파싱 결과인 scheduler용 `BaggedDAG`와 실제 테스트할 Task SDK DAG를 구분해 검사한다.
 
 ## 실패·복구 절차
 
@@ -157,4 +159,6 @@ extract_snapshot
 
 커밋할 인덱스만 LF 줄바꿈으로 별도 내보낸 검증본에서는 **77개 테스트 전부 통과**, 합성 CLI 실행, 전체 Ruff lint·포맷 검사도 통과했다. 이 검증본에는 비공개 원본과 작업 시작 전의 미커밋 변경을 포함하지 않았다.
 
-Airflow의 실제 실행 결과는 Linux CI에서 별도로 확인해야 한다. 위 Python 검사 통과를 Airflow 운영·실기동 성공으로 확대해서 설명하지 않는다.
+같은 코드 커밋의 [기존 서비스 CI](https://github.com/jinwon25/lol-live-ops-analytics/actions/runs/44107889818)도 성공했다. 여기에는 전체 정적 검사·80% 커버리지 기준·프런트엔드 단위 검사·브라우저 UI 검사·서비스 Docker 이미지 빌드가 포함된다.
+
+Airflow의 실제 합성 배치 실행은 위 Linux CI에서 확인했다. 실제 원본의 CLI 처리, Airflow 합성 실행, 정기 스케줄 운영은 서로 다른 검증 범위다. 장기 운영·대규모 처리·Riot 증분 수집은 아직 검증하지 않았다.

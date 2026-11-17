@@ -48,5 +48,20 @@
     "duckdb": "1.5.3",
     "openpyxl": "3.1.5"
   },
-  "airflow_local_runtime": "Docker·WSL 실행 환경 부재로 미실행"
+  "airflow_local_runtime": "Docker·WSL 실행 환경 부재로 미실행",
+  "airflow_ci": {
+    "version": "3.4.0",
+    "result": "success",
+    "workflow_url": "https://github.com/jinwon25/lol-live-ops-analytics/actions/runs/44107889851",
+    "code_commit": "4ad56421a5ff3bbaf2e4afc285d10ff3de9a2113",
+    "docker_build": true,
+    "dependency_check": true,
+    "dag_parse": true,
+    "task_sdk_execution": true,
+    "input_kind": "합성",
+    "games": 64,
+    "participant_rows": 640,
+    "successful_tasks": 4,
+    "scheduled_production_operation": false
+  }
 }
