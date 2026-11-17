@@ -68,7 +68,7 @@ def patch_from_version(v: object) -> str | None:
     return None
 
 
-def load_p153(csv_path: Path = P153_PATH) -> pd.DataFrame:
+def load_p153(csv_path: Path = P153_PATH, *, strict: bool = False) -> pd.DataFrame:
     """2025.csv (패치 15.3 위주, 솔랭만)"""
     df = pd.read_csv(
         csv_path,
@@ -95,6 +95,8 @@ def load_p153(csv_path: Path = P153_PATH) -> pd.DataFrame:
     df = df[df["patch"] == "15.3"].copy()
     df["role"] = df["position"].map(ROLE_MAP)
     df = df[df["role"].notna()].copy()  # MIDDLE 등은 위에서 매핑됨, 그 외(Invalid 등) 제외
+    if strict and not df["win"].isin([0, 1, True, False]).all():
+        raise ValueError("승패 값은 0/1 또는 bool이어야 합니다.")
     df["win"] = df["win"].astype(int)
     df = df.rename(
         columns={
@@ -110,7 +112,7 @@ def load_p153(csv_path: Path = P153_PATH) -> pd.DataFrame:
     return df
 
 
-def load_p151(xlsx_path: Path = P151_PATH) -> pd.DataFrame:
+def load_p151(xlsx_path: Path = P151_PATH, *, strict: bool = False) -> pd.DataFrame:
     """2024.xlsx / sheet=league_data.csv (패치 15.1 위주, 큐 혼합)"""
     df = pd.read_excel(
         xlsx_path,
@@ -143,6 +145,8 @@ def load_p151(xlsx_path: Path = P151_PATH) -> pd.DataFrame:
     n_p = len(df)
     df["role"] = df["team_position"].map(ROLE_MAP)
     df = df[df["role"].notna()].copy()
+    if strict and not df["win"].isin([0, 1, True, False]).all():
+        raise ValueError("승패 값은 0/1 또는 bool이어야 합니다.")
     df["win"] = df["win"].astype(int)
     df = df.rename(
         columns={

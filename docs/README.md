@@ -4,6 +4,8 @@
 
 ## 목적에 따른 읽는 순서
 
+데이터 처리의 최신 검토는 [프로젝트 검토·고도화 순서](24_project_review.md), 새 배치 실행은 [과거 경기 데이터 파이프라인](25_data_pipeline.md)에서 확인한다. 기존 분석 결과와 별도 마트의 필터·분모, 실제 검증과 Airflow 실행 구성의 범위를 구분한다.
+
 최신 구현은 [전적 중심 흐름·서비스 기반 점검](18_service_foundation_and_api_only_flow.md), [경기 탐색·현재 메타·Riot 수집](17_match_explorer_and_riot_collection.md), [Gen.G 컬러·검색·챔피언 탐색](16_geng_theme_and_navigation.md), [상용 서비스 참고·넓은 화면 개선](15_commercial_ui_refinement.md), [공개 모델 비교 범위 재점검](14_model_selection_audit.md), [화면 구조·자동 리포트](12_structure_and_auto_reports.md), [공개 데이터셋 조사](11_public_data_research.md)을 먼저 읽는다. [초기 모델 비교·학습 실험](13_local_llm_research.md)과 아래 기획·현황 문서는 작성 시점의 기록이다.
 
 | 목적 | 순서 | 확인할 점 |

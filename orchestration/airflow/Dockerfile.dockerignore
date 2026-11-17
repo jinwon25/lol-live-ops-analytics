@@ -1,0 +1,17 @@
+# Airflow 이미지에 배치 코드와 해당 SQL만 전송한다.
+**
+!pipeline/
+!pipeline/**
+!src/
+!src/__init__.py
+!src/load.py
+!sql/
+!sql/pipeline/
+!sql/pipeline/**
+!orchestration/
+!orchestration/airflow/
+!orchestration/airflow/Dockerfile
+!orchestration/airflow/dags/
+!orchestration/airflow/dags/**
+**/__pycache__/
+**/*.pyc

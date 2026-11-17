@@ -1,0 +1,5 @@
+# Airflow와 서비스 전체 의존성을 분리한 배치 실행 의존성.
+pandas>=2.2,<3
+numpy>=1.24,<3
+duckdb>=1.4,<2
+openpyxl>=3.1,<4

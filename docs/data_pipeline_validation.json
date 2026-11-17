@@ -1,0 +1,52 @@
+{
+  "checked_on": "2026-11-17",
+  "input_kind": "로컬에 보관한 과거 CSV·Excel 원본과 공식 도감 JSON",
+  "batch_date": "2026-11-17",
+  "dataset_id": "f3048a40dee877e300ca1842c39c7c2549dced02dbe678a2e4b0ec7e572c6303",
+  "pipeline_version": "historic-v1",
+  "audit": {
+    "selected_rows_by_patch": {
+      "15.1": 20719,
+      "15.3": 62847
+    },
+    "selected_rows": 83566,
+    "accepted_rows": 82000,
+    "accepted_games": 8200,
+    "quarantined_rows": 1566,
+    "quarantined_games": 158,
+    "quarantined_games_by_reason": {
+      "incomplete_participants": 14,
+      "invalid_winner_count": 0,
+      "inconsistent_duration": 0,
+      "duration_outside_5_90_minutes": 40,
+      "duplicate_team_role": 111,
+      "invalid_team_structure": 14
+    },
+    "unknown_champion_names": 0,
+    "catalogue_version": "16.19.1",
+    "minimum_picks_for_rates": 30,
+    "unit": "경기×참여자",
+    "region": "EUN",
+    "is_current_match_data": false,
+    "partition_semantics": "입력 스냅샷의 수집 배치 날짜이며 경기 발생 날짜가 아님"
+  },
+  "quality_checks": {
+    "nonempty": true,
+    "counts_match": true,
+    "complete_games": true,
+    "unique_keys": true,
+    "metric_ranges": true,
+    "mart_denominators": true,
+    "mart_covers_participants": true,
+    "small_sample_suppression": true,
+    "row_reconciliation": true
+  },
+  "null_kill_participation": 15,
+  "runtime": {
+    "python": "3.11.2",
+    "pandas": "2.2.3",
+    "duckdb": "1.5.3",
+    "openpyxl": "3.1.5"
+  },
+  "airflow_local_runtime": "Docker·WSL 실행 환경 부재로 미실행"
+}

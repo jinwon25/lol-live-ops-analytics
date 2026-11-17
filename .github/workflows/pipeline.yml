@@ -1,0 +1,49 @@
+name: 데이터 파이프라인 검증
+
+on:
+  push:
+    paths:
+      - 'pipeline/**'
+      - 'sql/pipeline/**'
+      - 'src/load.py'
+      - 'scripts/run_data_pipeline.py'
+      - 'tests/test_data_pipeline.py'
+      - 'orchestration/airflow/**'
+      - '.github/workflows/pipeline.yml'
+  pull_request:
+    paths:
+      - 'pipeline/**'
+      - 'sql/pipeline/**'
+      - 'src/load.py'
+      - 'scripts/run_data_pipeline.py'
+      - 'tests/test_data_pipeline.py'
+      - 'orchestration/airflow/**'
+      - '.github/workflows/pipeline.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: 배치 의존성 설치
+        run: python -m pip install -r pipeline/requirements.txt 'pytest>=8,<9' 'ruff>=0.6,<1'
+      - name: 분모·재실행·실패 복구 검사
+        run: python -m pytest tests/test_data_pipeline.py -q
+      - name: 새 파이프라인 정적 검사
+        run: |
+          ruff check pipeline scripts/run_data_pipeline.py tests/test_data_pipeline.py orchestration/airflow
+          ruff format --check pipeline scripts/run_data_pipeline.py tests/test_data_pipeline.py orchestration/airflow
+      - name: 공개 원본 없이 합성 CLI 실행
+        run: python scripts/run_data_pipeline.py --demo --batch-date 2026-11-17
+      - name: Airflow 이미지 빌드·실제 DAG 실행
+        run: |
+          docker compose -f orchestration/airflow/compose.yml config --quiet
+          docker build -f orchestration/airflow/Dockerfile -t lol-airflow-check .
+          docker run --rm --entrypoint bash -v "${PWD}/orchestration/airflow/check_dag.py:/opt/project/orchestration/airflow/check_dag.py:ro" lol-airflow-check -c "airflow db migrate && python /opt/project/orchestration/airflow/check_dag.py"

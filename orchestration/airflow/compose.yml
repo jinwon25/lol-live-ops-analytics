@@ -1,0 +1,19 @@
+# 로컬 학습용. 기존 API/Redis/LLM Compose와 별도 프로젝트로 실행한다.
+name: lol-pipeline-lab
+services:
+  airflow:
+    build:
+      context: ../..
+      dockerfile: orchestration/airflow/Dockerfile
+    command: standalone
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - airflow-home:/opt/airflow
+      - ../../data/raw:/opt/inputs/raw:ro
+      - ../../service/data/catalogue.json:/opt/inputs/catalogue.json:ro
+    environment:
+      LOL_PIPELINE_WORK_DIR: /opt/airflow/pipeline
+    init: true
+volumes:
+  airflow-home:
