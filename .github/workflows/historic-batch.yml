@@ -1,0 +1,71 @@
+name: 과거 경기 배치
+on:
+  schedule:
+    - cron: '17 22 * * 0'
+  workflow_dispatch:
+    inputs:
+      demo:
+        description: 합성 데이터로 실행
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - '.github/workflows/historic-batch.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  batch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEMO: ${{ github.event_name == 'pull_request' || inputs.demo == true }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: 실행 디렉터리 준비
+        run: |
+          mkdir -p raw published
+          sudo chown 50000:0 published
+      - name: 실데이터 입력 준비
+        if: env.DEMO == 'false'
+        env:
+          CSV_URL: ${{ secrets.HISTORIC_CSV_URL }}
+          XLSX_URL: ${{ secrets.HISTORIC_XLSX_URL }}
+        run: |
+          : "${CSV_URL:?Set HISTORIC_CSV_URL}" "${XLSX_URL:?Set HISTORIC_XLSX_URL}"
+          curl -fsSL --proto '=https' --proto-redir '=https' --retry 3 "$CSV_URL" -o raw/2025.csv
+          curl -fsSL --proto '=https' --proto-redir '=https' --retry 3 "$XLSX_URL" -o raw/2024.xlsx
+      - name: 게시 결과 추출 준비
+        run: |
+          cat > export_marts.py <<'PY'
+          import json, os, shutil
+          from pathlib import Path
+          from pipeline.historic import status
+          work = Path('/opt/airflow/pipeline')
+          if json.loads(os.environ['CONF'])['demo']:
+              work /= 'demo'
+          latest = status(work)['latest']
+          if not latest:
+              raise RuntimeError('Missing publication')
+          for name in ('champion_patch.csv', 'patch_health.csv', 'quality.json'):
+              shutil.copyfile(work / latest['run_dir'] / name, Path('/export') / name)
+          PY
+      - name: Airflow 배치 실행
+        run: |
+          batch_date=$(TZ=Asia/Seoul date +%F)
+          conf=$(jq -nc --arg day "$batch_date" --argjson demo "$DEMO" '{batch_date:$day,demo:$demo}')
+          docker build -f orchestration/airflow/Dockerfile -t historic-batch .
+          docker run --rm --entrypoint bash \
+            -v "$PWD/raw:/opt/inputs/raw:ro" \
+            -v "$PWD/service/data/catalogue.json:/opt/inputs/catalogue.json:ro" \
+            -v "$PWD/published:/export" \
+            -v "$PWD/export_marts.py:/tmp/export_marts.py:ro" \
+            -e CONF="$conf" historic-batch -ec \
+            'airflow db migrate && airflow dags test -c "$CONF" lol_historic_pipeline && python /tmp/export_marts.py'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: historic-marts-${{ github.run_id }}-${{ github.run_attempt }}
+          path: published/
+          if-no-files-found: error
+          retention-days: 30
