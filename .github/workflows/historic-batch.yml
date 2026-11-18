@@ -2,6 +2,13 @@ name: Riot KR 최근 경기 수집
 on:
   schedule:
     - cron: '17 */6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/historic-batch.yml'
+      - 'orchestration/riot/**'
+      - 'scripts/collect_riot_meta.py'
+      - 'service/meta.py'
   workflow_dispatch:
   pull_request:
     paths:
@@ -48,6 +55,19 @@ jobs:
         run: |
           : "${RIOT_API_KEY:?Set RIOT_API_KEY in repository secrets}"
           airflow dags test riot_recent_matches
+      - name: 수집 범위와 실제 호출량 기록
+        if: success() && github.event_name != 'pull_request'
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path('service/data/current_meta.json').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              print(f"KR 솔로랭크 · 패치 {report['scope']['patch']}", file=summary)
+              print(f"경기 {report['games']}건 · 참여자 {report['participants']}행", file=summary)
+              print(f"Riot API 호출 {report['collection']['calls_this_run']}회", file=summary)
+          PY
       - uses: actions/upload-artifact@v4
         if: success() && github.event_name != 'pull_request'
         with:
