@@ -1,71 +1,56 @@
-name: 과거 경기 배치
+name: Riot KR 최근 경기 수집
 on:
   schedule:
-    - cron: '17 22 * * 0'
+    - cron: '17 */6 * * *'
   workflow_dispatch:
-    inputs:
-      demo:
-        description: 합성 데이터로 실행
-        type: boolean
-        default: false
   pull_request:
     paths:
       - '.github/workflows/historic-batch.yml'
-
+      - 'orchestration/riot/**'
 permissions:
   contents: read
-
+concurrency:
+  group: riot-collection-${{ github.event_name == 'pull_request' && github.run_id || 'live' }}
+  cancel-in-progress: false
 jobs:
-  batch:
+  collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     env:
-      DEMO: ${{ github.event_name == 'pull_request' || inputs.demo == true }}
+      AIRFLOW_HOME: ${{ runner.temp }}/airflow
+      AIRFLOW__CORE__DAGS_FOLDER: ${{ github.workspace }}/orchestration/riot/dags
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
     steps:
       - uses: actions/checkout@v4
-      - name: 실행 디렉터리 준비
-        run: |
-          mkdir -p raw published
-          sudo chown 50000:0 published
-      - name: 실데이터 입력 준비
-        if: env.DEMO == 'false'
-        env:
-          CSV_URL: ${{ secrets.HISTORIC_CSV_URL }}
-          XLSX_URL: ${{ secrets.HISTORIC_XLSX_URL }}
-        run: |
-          : "${CSV_URL:?Set HISTORIC_CSV_URL}" "${XLSX_URL:?Set HISTORIC_XLSX_URL}"
-          curl -fsSL --proto '=https' --proto-redir '=https' --retry 3 "$CSV_URL" -o raw/2025.csv
-          curl -fsSL --proto '=https' --proto-redir '=https' --retry 3 "$XLSX_URL" -o raw/2024.xlsx
-      - name: 게시 결과 추출 준비
-        run: |
-          cat > export_marts.py <<'PY'
-          import json, os, shutil
-          from pathlib import Path
-          from pipeline.historic import status
-          work = Path('/opt/airflow/pipeline')
-          if json.loads(os.environ['CONF'])['demo']:
-              work /= 'demo'
-          latest = status(work)['latest']
-          if not latest:
-              raise RuntimeError('Missing publication')
-          for name in ('champion_patch.csv', 'patch_health.csv', 'quality.json'):
-              shutil.copyfile(work / latest['run_dir'] / name, Path('/export') / name)
-          PY
-      - name: Airflow 배치 실행
-        run: |
-          batch_date=$(TZ=Asia/Seoul date +%F)
-          conf=$(jq -nc --arg day "$batch_date" --argjson demo "$DEMO" '{batch_date:$day,demo:$demo}')
-          docker build -f orchestration/airflow/Dockerfile -t historic-batch .
-          docker run --rm --entrypoint bash \
-            -v "$PWD/raw:/opt/inputs/raw:ro" \
-            -v "$PWD/service/data/catalogue.json:/opt/inputs/catalogue.json:ro" \
-            -v "$PWD/published:/export" \
-            -v "$PWD/export_marts.py:/tmp/export_marts.py:ro" \
-            -e CONF="$conf" historic-batch -ec \
-            'airflow db migrate && airflow dags test -c "$CONF" lol_historic_pipeline && python /tmp/export_marts.py'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/setup-python@v5
         with:
-          name: historic-marts-${{ github.run_id }}-${{ github.run_attempt }}
-          path: published/
+          python-version: '3.11'
+      - name: 실행 환경 준비
+        run: |
+          python -m venv "$RUNNER_TEMP/service"
+          "$RUNNER_TEMP/service/bin/pip" install . pytest
+          echo "SERVICE_PYTHON=$RUNNER_TEMP/service/bin/python" >> "$GITHUB_ENV"
+          pip install apache-airflow==3.4.0 --constraint https://raw.githubusercontent.com/apache/airflow/constraints-3.4.0/constraints-3.11.txt
+          airflow db migrate
+      - name: DAG 구성과 경기 집계 검사
+        run: |
+          python - <<'PY'
+          from orchestration.riot.dags.riot_recent_matches import riot_recent_matches_dag as dag
+          assert dag.get_task('validate_report').upstream_task_ids == {'collect_matches'}
+          assert dag.get_task('collect_matches').upstream_task_ids == {'sync_catalogue'}
+          PY
+          "$SERVICE_PYTHON" -m pytest tests/test_meta.py -q -o addopts=""
+      - name: Riot API 배치 실행
+        if: github.event_name != 'pull_request'
+        env:
+          RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+        run: |
+          : "${RIOT_API_KEY:?Set RIOT_API_KEY in repository secrets}"
+          airflow dags test riot_recent_matches
+      - uses: actions/upload-artifact@v4
+        if: success() && github.event_name != 'pull_request'
+        with:
+          name: kr-solo-meta-${{ github.run_id }}-${{ github.run_attempt }}
+          path: service/data/current_meta.json
           if-no-files-found: error
           retention-days: 30
