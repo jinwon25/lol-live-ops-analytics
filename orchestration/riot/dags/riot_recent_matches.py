@@ -16,7 +16,10 @@ def riot_recent_matches():
         subprocess.run([os.environ['SERVICE_PYTHON'], 'scripts/sync_catalogue.py'], check=True)
 
     @task
-    def collect_matches():
+    def collect_matches(logical_date=None):
+        # 같은 6시간 구간의 재실행은 같은 조회 기간 [end-7일, end)를 쓴다.
+        moment = (logical_date or pendulum.now('UTC')).in_timezone('UTC')
+        end = moment.start_of('day').add(hours=moment.hour // 6 * 6)
         Path('service/data/current_meta.json').unlink(missing_ok=True)
         subprocess.run(
             [
@@ -28,10 +31,13 @@ def riot_recent_matches():
                 '8',
                 '--per-seed',
                 '5',
+                # 체크포인트에 누적된 7일 경기 수 상한. 실행당 비용은 --max-calls로 제한한다.
                 '--matches',
-                '40',
+                '1000',
                 '--max-calls',
                 '55',
+                '--end',
+                end.isoformat(),
             ],
             check=True,
         )

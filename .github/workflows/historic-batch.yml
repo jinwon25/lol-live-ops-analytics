@@ -48,6 +48,14 @@ jobs:
           assert dag.get_task('collect_matches').upstream_task_ids == {'sync_catalogue'}
           PY
           "$SERVICE_PYTHON" -m pytest tests/test_meta.py -q -o addopts=""
+      # 실행마다 40경기로는 챔피언·포지션별 최소 30경기에 닿지 않아, 7일 체크포인트를 이어서 누적한다.
+      - name: 이전 수집 체크포인트 복원
+        if: github.event_name != 'pull_request'
+        uses: actions/cache/restore@v4
+        with:
+          path: .local/meta-active-checkpoint.json
+          key: riot-kr-meta-${{ github.run_id }}
+          restore-keys: riot-kr-meta-
       - name: Riot API 배치 실행
         if: github.event_name != 'pull_request'
         env:
@@ -66,7 +74,9 @@ jobs:
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
               print(f"KR 솔로랭크 · 패치 {report['scope']['patch']}", file=summary)
               print(f"경기 {report['games']}건 · 참여자 {report['participants']}행", file=summary)
-              print(f"Riot API 호출 {report['collection']['calls_this_run']}회", file=summary)
+              print(f"Riot API 호출 {report['collection']['calls_this_run']}회 · 이번 실행 제외 {report['collection']['excluded_this_run']}건", file=summary)
+              ready = sum(item['win_rate'] is not None for item in report['items'])
+              print(f"최소 {report['minimum_games']}경기를 채운 챔피언·포지션 {ready}개", file=summary)
           PY
       - uses: actions/upload-artifact@v4
         if: success() && github.event_name != 'pull_request'
@@ -75,3 +85,9 @@ jobs:
           path: service/data/current_meta.json
           if-no-files-found: error
           retention-days: 30
+      - name: 수집 체크포인트 저장
+        if: always() && github.event_name != 'pull_request' && hashFiles('.local/meta-active-checkpoint.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: .local/meta-active-checkpoint.json
+          key: riot-kr-meta-${{ github.run_id }}-${{ github.run_attempt }}

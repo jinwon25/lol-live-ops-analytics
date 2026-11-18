@@ -160,7 +160,10 @@ async def collect(args: argparse.Namespace) -> dict[str, Any]:
             state = saved
             state.setdefault('tier_counts', {tier: 0 for tier in selected_tiers})
 
-    cutoff = (datetime.now(UTC) - timedelta(days=args.days)).isoformat()
+    # 재실행해도 같은 기간을 조회하도록 종료 시각을 고정한다. 생략하면 지금 시각.
+    window_end = getattr(args, 'end', None) or datetime.now(UTC)
+    window_start = window_end - timedelta(days=args.days)
+    cutoff = window_start.isoformat()
     state['games'] = {key: game for key, game in state['games'].items() if game['played_at'] >= cutoff}
     attempted = set(state['attempted'])
     gateway_instance = RiotGateway()
@@ -216,7 +219,6 @@ async def collect(args: argparse.Namespace) -> dict[str, Any]:
             if not stratified_seeds:
                 raise RiotError(502, '티어별 랭크 표본에서 PUUID를 확인하지 못했습니다.')
 
-            start_epoch = int((datetime.now(UTC) - timedelta(days=args.days)).timestamp())
             stop_collection = False
             for index, (seed_tier, puuid) in enumerate(stratified_seeds):
                 match_ids = await fetch_riot(
@@ -227,7 +229,8 @@ async def collect(args: argparse.Namespace) -> dict[str, Any]:
                         'type': 'ranked',
                         'start': 0,
                         'count': args.per_seed,
-                        'startTime': start_epoch,
+                        'startTime': int(window_start.timestamp()),
+                        'endTime': int(window_end.timestamp()),
                     },
                 )
                 if not isinstance(match_ids, list):
@@ -295,6 +298,7 @@ async def collect(args: argparse.Namespace) -> dict[str, Any]:
             'excluded_this_run': skipped,
             'max_calls': args.max_calls,
             'max_matches': args.matches,
+            'window_end': window_end.isoformat(),
             'tier_counts': state.get('tier_counts', {}),
             'stopped': stopped,
         },
@@ -330,7 +334,10 @@ def main() -> None:
     parser.add_argument('--pages', type=int, default=1, choices=range(1, 6))
     parser.add_argument('--tiers', nargs='+', choices=TIERS, default=list(TIERS))
     parser.add_argument('--fresh', action='store_true')
+    parser.add_argument('--end', type=datetime.fromisoformat, help='조회 종료 시각(ISO 8601, 시간대 포함)')
     args = parser.parse_args()
+    if args.end and args.end.tzinfo is None:
+        parser.error('--end에는 시간대를 포함해야 합니다. 예: 2026-11-18T06:00:00+00:00')
     if args.delay < MIN_REQUEST_DELAY_SECONDS:
         parser.error('다른 로컬 조회의 여유를 위해 요청 간격은 최소 1.6초입니다.')
     asyncio.run(collect(args))
