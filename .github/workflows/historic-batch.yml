@@ -17,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      AIRFLOW_HOME: ${{ runner.temp }}/airflow
       AIRFLOW__CORE__DAGS_FOLDER: ${{ github.workspace }}/orchestration/riot/dags
       AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
     steps:
@@ -31,6 +30,8 @@ jobs:
           "$RUNNER_TEMP/service/bin/pip" install . pytest
           echo "SERVICE_PYTHON=$RUNNER_TEMP/service/bin/python" >> "$GITHUB_ENV"
           pip install apache-airflow==3.4.0 --constraint https://raw.githubusercontent.com/apache/airflow/constraints-3.4.0/constraints-3.11.txt
+          export AIRFLOW_HOME="$RUNNER_TEMP/airflow"
+          echo "AIRFLOW_HOME=$AIRFLOW_HOME" >> "$GITHUB_ENV"
           airflow db migrate
       - name: DAG 구성과 경기 집계 검사
         run: |
