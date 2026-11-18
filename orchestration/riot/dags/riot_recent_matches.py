@@ -19,8 +19,20 @@ def riot_recent_matches():
     def collect_matches():
         Path('service/data/current_meta.json').unlink(missing_ok=True)
         subprocess.run(
-            [os.environ['SERVICE_PYTHON'], 'scripts/collect_riot_meta.py', '--tiers', 'SILVER',
-             '--seeds', '8', '--per-seed', '5', '--matches', '40', '--max-calls', '55'],
+            [
+                os.environ['SERVICE_PYTHON'],
+                'scripts/collect_riot_meta.py',
+                '--tiers',
+                'SILVER',
+                '--seeds',
+                '8',
+                '--per-seed',
+                '5',
+                '--matches',
+                '40',
+                '--max-calls',
+                '55',
+            ],
             check=True,
         )
 
