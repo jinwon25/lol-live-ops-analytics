@@ -82,6 +82,8 @@ class MetaTests(unittest.TestCase):
         import argparse
         import asyncio
         import tempfile
+        import time
+        from datetime import UTC, datetime
         from pathlib import Path
         from unittest.mock import patch
 
@@ -127,6 +129,10 @@ class MetaTests(unittest.TestCase):
             patch_ver = '.'.join(catalogue()['version'].split('.')[:2])
             sample_match = game()
             sample_match['info']['gameVersion'] = f'{patch_ver}.123.1'
+            sample_match['info']['gameEndTimestamp'] = int(time.time() * 1000)
+            match_ids = ['KR_100001']
+            fetched: list[str] = []
+            windows: list[tuple[int, int]] = []
 
             async def fake_get(_self, _client, _host, path, _params=None):
                 if 'masterleagues' in path:
@@ -134,8 +140,10 @@ class MetaTests(unittest.TestCase):
                 if '/lol/league/v4/entries/' in path:
                     return [{'puuid': 'puuid-gold-1', 'wins': 30, 'losses': 20}]
                 if '/ids' in path:
-                    return ['KR_100001']
-                if '/lol/match/v5/matches/KR_100001' in path:
+                    windows.append((_params['startTime'], _params['endTime']))
+                    return match_ids
+                if '/lol/match/v5/matches/KR_' in path:
+                    fetched.append(path.rsplit('/', 1)[1])
                     return sample_match
                 return []
 
@@ -160,6 +168,18 @@ class MetaTests(unittest.TestCase):
                 self.assertEqual(report['games'], 1)
                 self.assertIn('snapshot_id', report)
                 self.assertTrue((tmp_path / 'service/data/current_meta.json').exists())
+
+                # 정기 배치는 복원된 체크포인트를 이어 누적하고, 이미 본 경기는 다시 조회하지 않는다.
+                match_ids = ['KR_100002', 'KR_100001']
+                args.fresh = False
+                end = datetime.fromtimestamp(time.time() // 21600 * 21600 + 21600, UTC)
+                args.end = end
+                windows.clear()
+                report = asyncio.run(collector.collect(args))
+                self.assertEqual(report['games'], 2)
+                self.assertEqual(fetched, ['KR_100001', 'KR_100002'])
+                self.assertEqual(report['collection']['window_end'], end.isoformat())
+                self.assertEqual(set(windows), {(int(end.timestamp()) - 7 * 86400, int(end.timestamp()))})
 
 
 if __name__ == '__main__':
