@@ -1,0 +1,59 @@
+name: 개인 계정 복기 점검
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/replay-review-window]
+    paths: ['.github/workflows/private-review-smoke.yml']
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install .
+      - name: 최근 경기와 첫 타임라인 확인
+        env:
+          RIOT_API_KEY: ${{ secrets.RIOT_API_KEY }}
+          TEST_ACCOUNT: ${{ secrets.RIOT_TEST_ACCOUNT }}
+        run: |
+          python - <<'PY'
+          import asyncio
+          import json
+          import logging
+          import os
+          import subprocess
+          from service.riot import RiotGateway
+
+          async def check():
+              logging.disable(logging.CRITICAL)
+              gateway = RiotGateway()
+              name, tag = os.environ['TEST_ACCOUNT'].rsplit('#', 1)
+              recent = await gateway.recent(name, tag, 5)
+              rows = recent['items']
+              cached = await gateway.recent(name, tag, 5)
+              if not rows or not cached['cached'] or not all(row.get('report') for row in rows):
+                  raise RuntimeError('최근 경기 리포트 또는 캐시 확인 실패')
+              item = next(row for row in rows if row.get('timeline_ref'))
+              timeline = await gateway.timeline(item['timeline_ref'])
+              if not timeline['available']:
+                  raise RuntimeError('타임라인 프레임 누락')
+              js = """
+              const vm = require('node:vm'), fs = require('node:fs');
+              const ctx = { $: () => ({addEventListener(){}}) };
+              vm.runInNewContext(fs.readFileSync('web/match_views.js','utf8'), ctx);
+              const result = ctx.reviewWindow(JSON.parse(fs.readFileSync(0,'utf8')));
+              console.log(result ? '복기 구간 확인' : '감소 구간 없음');
+              """
+              subprocess.run(['node', '-e', js], input=json.dumps(timeline['points']), text=True, check=True)
+              print(f"리포트 {len(rows)}건, 제외 {recent['skipped']}건, 타임라인 {len(timeline['points'])}프레임, 캐시 재조회 성공")
+
+          try:
+              asyncio.run(check())
+          except Exception as error:
+              raise SystemExit(f'개인 계정 점검 실패 ({type(error).__name__}, status={getattr(error, "status", None)})') from None
+          PY
