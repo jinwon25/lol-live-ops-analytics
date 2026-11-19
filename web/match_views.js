@@ -24,6 +24,19 @@ function renderMatchTeam(box,item) {
   });table.append(body);wrap.append(table);box.append(wrap,node('p','수치는 종료 시점의 기록입니다. 높은 수치만으로 기여도·팀운·실력을 판정하지 않습니다.','muted'));
 }
 
+function reviewWindow(points) {
+  let best = null;
+  for (let i = 1; i < points.length; i++) {
+    const start = points[i - 1], end = points[i];
+    const duration = end.minute - start.minute;
+    if (!Number.isFinite(duration) || duration < 0.95 || duration > 1.05 ||
+        !Number.isFinite(start.gold_difference) || !Number.isFinite(end.gold_difference)) continue;
+    const drop = start.gold_difference - end.gold_difference;
+    if (drop > 0 && (!best || drop > best.drop)) best = {start, end, drop};
+  }
+  return best;
+}
+
 async function renderMatchFlow(box,item,sequence) {
   box.replaceChildren();
   if (!item.timeline_ref) {box.append(node('p','이 경기의 흐름을 보려면 전적을 다시 불러와주세요. 경기 연결은 조회 후 30분 동안 유지됩니다.','empty-state'));return;}
@@ -33,6 +46,18 @@ async function renderMatchFlow(box,item,sequence) {
     if (sequence!==autoReportSequence) return;box.replaceChildren();
     if (!data.available) {box.append(node('p','표시할 타임라인 프레임이 없습니다.','empty-state'));return;}
     box.append(node('h3','같은 포지션 상대와 골드 차이'));
+    const windowToReview = reviewWindow(data.points);
+    if (windowToReview) {
+      const {start, end, drop} = windowToReview;
+      const formatTime = minute => {
+        const seconds = Math.round(minute * 60);
+        return Math.floor(seconds / 60) + ':' + String(seconds % 60).padStart(2, '0');
+      };
+      const deaths = data.deaths.filter(t => t > start.minute && t <= end.minute);
+      box.append(node('h3', '리플레이에서 다시 볼 1분'),
+        node('p', `${formatTime(start.minute)}–${formatTime(end.minute)} · 같은 포지션 상대 대비 골드 차이가 ${drop.toLocaleString('ko-KR')}G 줄었습니다.`),
+        node('p', `비교 가능한 1분 구간 중 감소 폭이 가장 큽니다. 이 구간의 내 데스 ${deaths.length}회. 당시 양쪽의 파밍과 교전 참여를 리플레이에서 확인해 보세요.`, 'muted'));
+    }
     const points=data.points.filter(p=>Number.isFinite(p.gold_difference));
     if (points.length>1) {
       const ns='http://www.w3.org/2000/svg', svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 720 220');svg.setAttribute('role','img');svg.setAttribute('aria-label','시간에 따른 같은 포지션 상대 대비 골드 차이');svg.classList.add('timeline-chart');
