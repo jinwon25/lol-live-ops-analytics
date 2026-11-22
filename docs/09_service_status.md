@@ -12,7 +12,7 @@
 4. 경기 복기에서 수치를 입력하다 새로고침하고 `남겨둔 경기 초안 이어쓰기`를 확인한다. 초안은 요약을 다시 확인한 뒤 경기로 저장한다.
 
 ```powershell
-cd D:\프로젝트\game
+# 저장소 루트에서 실행
 python -m uvicorn service.main:app --reload --host 127.0.0.1 --port 8001
 ```
 

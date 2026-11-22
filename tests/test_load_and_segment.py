@@ -493,7 +493,7 @@ class LoadAndSegmentTests(unittest.TestCase):
                         )
                         self.assertEqual(sync_create.status_code, 201)
                         self.assertEqual((await client.get("/api/reviews/sync?client_id=c1")).status_code, 200)
-                        self.assertEqual((await client.get("/api/reviews/sync/rec_1")).status_code, 200)
+                        self.assertEqual((await client.get("/api/reviews/sync/rec_1?client_id=c1")).status_code, 200)
                         self.assertEqual(
                             (
                                 await client.put(

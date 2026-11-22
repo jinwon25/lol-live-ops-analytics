@@ -1,4 +1,48 @@
 /* 전적과 챔피언 탐색의 정보 구조. Gen.G 테마 변수 공유. */
+.report-library-toolbar { display:flex; align-items:end; gap:16px; max-width:720px; }
+.report-library-toolbar>div { flex:1; min-width:0; }
+.report-library-toolbar input { width:100%; margin:0; }
+.report-library-toolbar button { flex-shrink:0; min-height:42px; }
+.saved-reports-card .library-storage-note { margin:14px 0 20px; max-width:75ch; font-size:14px; line-height:1.65; }
+.report-backup { margin-top:20px; padding-top:16px; border-top:1px solid var(--line); }
+.report-backup summary { font-size:14px; cursor:pointer; }
+.saved-reports-card .report-backup p { margin:12px 0; max-width:75ch; font-size:14px; line-height:1.65; }
+.report-backup input[type=file] { display:block; width:100%; max-width:560px; min-height:44px; margin-top:8px; }
+.report-restore-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:12px; }
+.report-restore-actions button,#undo-report-delete { min-height:44px; }
+.saved-report-row>div { min-width:0; overflow-wrap:anywhere; }
+.report-library-filters { display:flex; align-items:end; gap:16px; flex-wrap:wrap; margin-top:16px; }
+.report-library-filters select { width:100%; min-width:140px; min-height:44px; }
+.report-library-filters button,.saved-report-row button,.saved-report-comparison button { min-height:44px; }
+.saved-report-comparison { border-block:1px solid var(--line); padding:16px 0; margin-bottom:12px; }
+.saved-report-comparison .section-title { margin-bottom:8px; flex-wrap:wrap; gap:8px; }
+.saved-report-comparison p { max-width:75ch; line-height:1.65; overflow-wrap:anywhere; }
+.comparison-selection { list-style:none; padding:0; margin:12px 0; }
+.comparison-selection li { display:flex; align-items:center; gap:12px; }
+.comparison-selection span { flex:1; min-width:0; overflow-wrap:anywhere; }
+.comparison-selection button { flex-shrink:0; }
+.saved-report-comparison .table-scroll { max-width:100%; overflow-x:auto; }
+.saved-report-comparison table { min-width:460px; width:100%; font-variant-numeric:tabular-nums; }
+.saved-report-comparison caption { text-align:left; color:var(--muted); padding:12px 0; }
+.saved-report-comparison td { text-align:right; }
+.saved-report-row [aria-pressed=true] { color:var(--brand-gold); background:var(--brand-tint); }
+#practice-list li { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; }
+#practice-list li>span { flex:1 1 16rem; min-width:0; overflow-wrap:anywhere; }
+.practice-result-controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.practice-result-controls select { min-height:44px; max-width:100%; }
+#practice-list button,#undo-note-delete { min-height:44px; flex-shrink:0; }
+.note-backup { margin-bottom:12px; }
+.note-backup p { margin:12px 0; line-height:1.65; max-width:75ch; }
+@media(max-width:760px) {
+ .report-library-filters>div { flex:1; min-width:110px; }
+ .report-library-filters select { min-width:0; font-size:16px; }
+ .saved-report-row>div { flex-basis:calc(100% - 64px); }
+ .report-library-toolbar { align-items:stretch; flex-direction:column; gap:12px; }
+ .report-library-toolbar input { max-width:none; font-size:16px; }
+ .report-library-toolbar button { align-self:start; }
+ .report-restore-actions { flex-direction:column; align-items:stretch; }
+ .saved-reports-card>.section-title { flex-wrap:wrap; gap:8px; }
+}
 .insight-tabs,.report-tabs { display:flex; gap:24px; border-bottom:1px solid var(--line); margin-bottom:16px; }
 .insight-tabs button,.report-tabs button { color:var(--muted); border:0; border-radius:0; background:none; padding:10px 0; position:relative; }
 .insight-tabs [aria-pressed=true],.report-tabs [aria-selected=true] { color:var(--brand-gold); }
@@ -84,6 +128,13 @@ select:not([multiple]):not([size]) {
 .report-tabs { margin-bottom:0; }
 .report-tabs button { font-size:13px; }
 #auto-report [role=tabpanel] { padding-top:16px; }
+.next-game-practice { margin-bottom:16px; padding:16px; border:1px solid var(--line); border-left:3px solid var(--brand-gold); background:var(--surface-input); border-radius:4px; }
+.next-game-practice h3 { margin:0 0 8px; }
+.next-game-practice p { margin:0 0 8px; line-height:1.5; }
+.next-game-practice [role=status] { margin:8px 0 0; }
+.next-game-practice [role=status]:empty { margin:0; }
+.practice-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; }
+.practice-controls button { min-height:44px; }
 .report-insights { border-top:0; padding-top:0; }
 .auto-match-heading .text-button { font-size:11px; padding:0; }
 .scoreboard-champion { display:flex; align-items:center; gap:8px; min-width:160px; }

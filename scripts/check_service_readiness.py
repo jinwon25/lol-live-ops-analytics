@@ -100,9 +100,9 @@ def inspect_service(base, get):
         optional=True,
     )
     check(
-        '로컬 AI 설치 (실행·품질 미검증)',
+        '로컬 AI 서버 연결 (추론·품질 미검증)',
         '/api/riot/coach/status',
-        lambda r: r.json()['available'] is True,
+        lambda r: r.json()['available'] is True and r.json().get('runtime_status') == 'ready',
         optional=True,
     )
     state = (

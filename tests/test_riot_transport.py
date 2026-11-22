@@ -4,11 +4,78 @@ from unittest.mock import patch
 import httpx
 
 from service.riot import RiotError, RiotGateway
-from service.riot_transport import RequestBudget, windows
+from service.riot_transport import RequestBudget, SharedBudgetUnavailable, windows
 from service.timeline import timeline_summary
 
 
 class TransportTests(unittest.IsolatedAsyncioTestCase):
+    async def test_zero_limit_blocks_first_call_until_replaced(self):
+        budget = RequestBudget()
+        budget.update('asia', 'detail', httpx.Headers({'X-Method-Rate-Limit': '0:10'}))
+        self.assertEqual(await budget.reserve('asia', 'detail'), 10)
+        self.assertEqual(list(budget.calls['asia']), [])
+        self.assertIsNone(await budget.reserve('asia', 'timeline'))
+        budget.update('asia', 'detail', httpx.Headers({'X-Method-Rate-Limit': '2:10'}))
+        self.assertIsNone(await budget.reserve('asia', 'detail'))
+        budget.update('kr', 'league', httpx.Headers({'X-App-Rate-Limit': '0:60'}))
+        self.assertEqual(await budget.reserve('kr', 'league'), 60)
+
+    async def test_shared_cooldown_uses_atomic_extension_and_preserves_local_wait_on_failure(self):
+        from unittest.mock import AsyncMock
+
+        from service.riot_transport import EXTEND_COOLDOWN_LUA
+
+        redis = AsyncMock()
+        budget = RequestBudget(redis_client=redis)
+        with patch('service.riot_transport.time.monotonic', return_value=1000):
+            await budget.cooldown_async('asia', 30)
+            redis.eval.assert_awaited_once_with(EXTEND_COOLDOWN_LUA, 1, 'riot:cooldown:asia', 30000)
+            redis.eval.side_effect = ConnectionError('private-connection-detail')
+            with self.assertLogs('service.riot_transport', level='WARNING') as logs:
+                await budget.cooldown_async('asia', 1)
+            self.assertNotIn('private-connection-detail', str(logs.output))
+            self.assertEqual(await budget.reserve('asia', 'detail'), 30)
+            redis.set.assert_not_awaited()
+
+    async def test_shared_budget_outage_blocks_upstream_instead_of_multiplying_local_limits(self):
+        class UnavailableRedis:
+            async def get(self, key):
+                return None
+
+            async def eval(self, *args):
+                raise ConnectionError('synthetic Redis outage')
+
+        calls = []
+        gateway = RiotGateway(redis_client=UnavailableRedis())
+        async with httpx.AsyncClient(
+            transport=httpx.MockTransport(lambda request: calls.append(request) or httpx.Response(200, json={}))
+        ) as client:
+            for _ in range(2):
+                with self.assertRaises(RiotError) as raised:
+                    await gateway.get(client, 'asia', '/lol/match/v5/matches/KR_synthetic')
+                self.assertEqual(raised.exception.status, 503)
+                self.assertEqual(raised.exception.retry_after, 5)
+        self.assertEqual(calls, [])
+        self.assertEqual(dict(gateway.budget.calls), {})
+        gateway.set_redis(None, required=True)
+        with self.assertRaises(SharedBudgetUnavailable):
+            await gateway.budget.reserve('asia', 'detail')
+        gateway.set_redis(None)
+        self.assertIsNone(await gateway.budget.reserve('asia', 'detail'))
+
+    async def test_local_cooldown_remains_in_force_when_shared_reservation_succeeds(self):
+        from unittest.mock import AsyncMock
+
+        redis = AsyncMock()
+        redis.eval.return_value = 0
+        budget = RequestBudget(redis_client=redis)
+        with patch('service.riot_transport.time.monotonic', return_value=1000):
+            budget.cooldowns['asia'] = 1017
+            self.assertEqual(await budget.reserve('asia', 'detail'), 17)
+            redis.eval.assert_not_awaited()
+        with patch('service.riot_transport.time.monotonic', return_value=1018):
+            self.assertIsNone(await budget.reserve('asia', 'detail'))
+
     async def test_headers_reserve_remote_usage_and_regions_independently(self):
         b = RequestBudget()
         with patch('service.riot_transport.time.monotonic', return_value=1000):
@@ -82,7 +149,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
         from service.riot_transport import SLIDING_WINDOW_RESERVE_LUA, UPDATE_HEADERS_LUA
 
         class FakeAsyncRedis:
-            """In-memory async Redis emulator executing Lua scripts and TTL KV operations."""
+            """Simulate selected Redis behavior; real Lua execution has separate integration tests."""
 
             def __init__(self):
                 self.kv = {}
@@ -107,9 +174,10 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
             async def eval(self, script, numkeys, *keys_and_args):
                 keys = keys_and_args[:numkeys]
                 args = keys_and_args[numkeys:]
+                now_ms = int(time.time() * 1000)
                 if script == UPDATE_HEADERS_LUA:
                     limits_key, obs_prefix = keys[0], keys[1]
-                    now_ms, limits_raw, counts_raw = int(args[0]), str(args[1]), str(args[2])
+                    limits_raw, counts_raw = str(args[0]), str(args[1])
                     if limits_raw:
                         self.kv[limits_key] = (limits_raw, now_ms + 86400000)
                     for pair in counts_raw.split(','):
@@ -128,7 +196,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
                         app_obs_prefix,
                         method_obs_prefix,
                     ) = keys
-                    now_ms, req_id, default_app_raw = int(args[0]), str(args[1]), str(args[2])
+                    req_id, default_app_raw = str(args[0]), str(args[1])
                     max_wait_ms = 0
                     cd_raw = await self.get(cooldown_key)
                     if cd_raw and int(cd_raw) > now_ms:

@@ -250,7 +250,7 @@ class ReviewSyncStore:
             )
             return [self._serialize_row(row) for row in rows_cursor.fetchall()]
 
-    def get_review(self, record_id: str) -> dict[str, Any] | None:
+    def get_review(self, record_id: str, client_id: str = 'default') -> dict[str, Any] | None:
         self._ensure_schema()
         with closing(sqlite3.connect(self.db_path)) as connection:
             connection.row_factory = sqlite3.Row
@@ -259,9 +259,9 @@ class ReviewSyncStore:
                 SELECT record_id, client_id, context_json, metrics_json, focus,
                        scene, action, status, reflection, played_at, updated_at
                 FROM synced_reviews
-                WHERE record_id = ?
+                WHERE record_id = ? AND client_id = ?
                 """,
-                (record_id,),
+                (record_id, client_id),
             )
             row = cursor.fetchone()
             return self._serialize_row(row) if row is not None else None
@@ -284,7 +284,7 @@ class ReviewSyncStore:
         reflection = str(payload.get('reflection') or payload.get('note') or '').strip()
 
         with closing(sqlite3.connect(self.db_path)) as connection:
-            connection.execute(
+            cursor = connection.execute(
                 """
                 INSERT INTO synced_reviews (
                     record_id, client_id, context_json, metrics_json, focus,
@@ -300,6 +300,7 @@ class ReviewSyncStore:
                     reflection = excluded.reflection,
                     played_at = excluded.played_at,
                     updated_at = excluded.updated_at
+                WHERE synced_reviews.client_id = excluded.client_id
                 """,
                 (
                     resolved_id,
@@ -315,6 +316,8 @@ class ReviewSyncStore:
                     updated_at,
                 ),
             )
+            if cursor.rowcount != 1:
+                raise ValueError('다른 클라이언트의 복기 기록을 덮어쓸 수 없습니다.')
             connection.commit()
 
         result = {

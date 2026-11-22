@@ -24,6 +24,7 @@ from service.evidence import catalogue
 from service.match_report import match_report
 from service.riot_transport import (
     RequestBudget,
+    SharedBudgetUnavailable,
     method_key,
     record_cache_hit,
     record_riot_api_call,
@@ -99,10 +100,10 @@ class RiotGateway:
         """Bind a shared lifespan httpx.AsyncClient connection pool."""
         self.http_client = client
 
-    def set_redis(self, redis_client: Any | None) -> None:
+    def set_redis(self, redis_client: Any | None, *, required: bool = False) -> None:
         """Bind a shared async Redis client for distributed rate limits, caches, and timeline tokens."""
         self.redis_client = redis_client
-        self.budget.set_redis(redis_client)
+        self.budget.set_redis(redis_client, required=required)
 
     async def _redis_get_json(self, key: str) -> Any | None:
         if self.redis_client is None:
@@ -173,7 +174,12 @@ class RiotGateway:
         method = method_key(path)
         response = None
         for attempt in range(MAX_RETRY_ATTEMPTS):
-            retry_wait = await self.budget.reserve(host, method)
+            try:
+                retry_wait = await self.budget.reserve(host, method)
+            except SharedBudgetUnavailable:
+                raise RiotError(
+                    503, '공유 요청 제한 서버에 연결하지 못했습니다. 잠시 뒤 다시 조회해주세요.', 5
+                ) from None
             if retry_wait:
                 raise RiotError(429, '호출 제한에 도달했습니다. 잠시 뒤 다시 조회해주세요.', retry_wait)
             record_riot_api_call(1)

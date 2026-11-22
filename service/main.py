@@ -31,7 +31,7 @@ from service.evidence import (
     rows,
 )
 from service.local_coach import CoachInput, coach
-from service.local_coach import status as coach_status
+from service.local_coach import runtime_status as coach_status
 from service.meta import current_meta
 from service.public_data import public_flow, source_catalogue
 from service.review import FOCUSES, review_summary
@@ -103,11 +103,16 @@ async def lifespan(application: FastAPI):
             redis_client = aioredis.from_url(
                 current_settings.REDIS_URL,
                 decode_responses=True,
+                socket_connect_timeout=1,
+                socket_timeout=1,
+                retry_on_timeout=False,
             )
-            gateway.set_redis(redis_client)
         except Exception as error:
-            logger.warning('Failed to initialize Redis client (%s); using in-memory fallback.', error)
+            logger.warning(
+                'Redis initialization failed (%s); upstream requests will be unavailable.', type(error).__name__
+            )
             redis_client = None
+    gateway.set_redis(redis_client, required=bool(current_settings.REDIS_URL))
 
     async with httpx.AsyncClient(
         timeout=SHARED_HTTP_TIMEOUT_SECONDS,
@@ -173,12 +178,14 @@ async def guard_personal_api(request: Request, call_next):
     telemetry, context_token = init_request_telemetry(incoming_trace_id)
     started_at = time.perf_counter()
     try:
-        if request.url.path.startswith('/api/riot/'):
+        is_review_sync = request.url.path.startswith('/api/reviews/sync')
+        if request.url.path.startswith('/api/riot/') or is_review_sync:
             current_settings = get_settings()
             origin = request.headers.get('origin')
             normalized_origin = origin.rstrip('/') if origin else None
             base_origin = str(request.base_url).rstrip('/')
-            if current_settings.ALLOW_REMOTE_ACCESS:
+            # 복기 동기화는 인증을 갖추기 전까지 로컬·사설망에서만 허용한다.
+            if current_settings.ALLOW_REMOTE_ACCESS and not is_review_sync:
                 allowed_origin = not normalized_origin or (
                     urlparse(normalized_origin).scheme in {'http', 'https'}
                     and (normalized_origin == base_origin or normalized_origin in current_settings.ALLOWED_ORIGINS)
@@ -189,6 +196,7 @@ async def guard_personal_api(request: Request, call_next):
                         status_code=403,
                     )
                     blocked_response.headers['X-Trace-Id'] = telemetry['trace_id']
+                    blocked_response.headers['Cache-Control'] = 'no-store'
                     duration_ms = round((time.perf_counter() - started_at) * 1000, 3)
                     _emit_http_log(request, blocked_response.status_code, duration_ms, telemetry)
                     return blocked_response
@@ -202,10 +210,13 @@ async def guard_personal_api(request: Request, call_next):
                     or not allowed_origin
                 ):
                     blocked_response = JSONResponse(
-                        {'detail': '전적 연결은 이 컴퓨터의 로컬 화면에서만 사용할 수 있습니다.'},
+                        {'detail': '복기 동기화는 로컬·사설망의 같은 출처에서만 사용할 수 있습니다.'}
+                        if is_review_sync
+                        else {'detail': '전적 연결은 이 컴퓨터의 로컬 화면에서만 사용할 수 있습니다.'},
                         status_code=403,
                     )
                     blocked_response.headers['X-Trace-Id'] = telemetry['trace_id']
+                    blocked_response.headers['Cache-Control'] = 'no-store'
                     duration_ms = round((time.perf_counter() - started_at) * 1000, 3)
                     _emit_http_log(request, blocked_response.status_code, duration_ms, telemetry)
                     return blocked_response
@@ -227,6 +238,7 @@ async def guard_personal_api(request: Request, call_next):
             '/assets/draft.js',
             '/assets/analysis.js',
             '/assets/reports.js',
+            '/assets/notes.js',
             '/assets/workspace.css',
             '/assets/insights.js',
             '/assets/match_views.js',
@@ -253,8 +265,8 @@ def riot_status():
 
 
 @app.get('/api/riot/coach/status')
-def local_coach_status():
-    return coach_status()
+async def local_coach_status():
+    return await coach_status(coach.http_client)
 
 
 @app.post('/api/riot/coach')
@@ -508,8 +520,8 @@ async def list_synced_reviews(client_id: str = Query(default='default', min_leng
 
 
 @app.get('/api/reviews/sync/{record_id}')
-async def get_synced_review(record_id: str):
-    found = review_store.get_review(record_id=record_id)
+async def get_synced_review(record_id: str, client_id: str = Query(default='default', min_length=1, max_length=64)):
+    found = review_store.get_review(record_id=record_id, client_id=client_id)
     if found is None:
         raise HTTPException(404, '복기 기록을 찾지 못했습니다.')
     return found
@@ -517,12 +529,20 @@ async def get_synced_review(record_id: str):
 
 @app.post('/api/reviews/sync', status_code=201)
 async def create_synced_review(request: SyncedReviewRequest):
-    return review_store.upsert_review(request.model_dump())
+    try:
+        return review_store.upsert_review(request.model_dump())
+    except ValueError as error:
+        raise HTTPException(409, str(error)) from None
 
 
 @app.put('/api/reviews/sync/{record_id}')
 async def update_synced_review(record_id: str, request: SyncedReviewRequest):
-    return review_store.upsert_review(request.model_dump(), record_id=record_id)
+    if review_store.get_review(record_id=record_id, client_id=request.client_id) is None:
+        raise HTTPException(404, '복기 기록을 찾지 못했습니다.')
+    try:
+        return review_store.upsert_review(request.model_dump(), record_id=record_id)
+    except ValueError as error:
+        raise HTTPException(409, str(error)) from None
 
 
 @app.delete('/api/reviews/sync/{record_id}')

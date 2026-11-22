@@ -127,6 +127,10 @@ def participant_rows(match: dict, salt: str, region: str, bucket: int, hop: int)
     return rows
 
 
+class MatchIdentityMismatch(ValueError):
+    """상세 응답의 경기나 지역이 요청과 일치하지 않는다."""
+
+
 class Crawler:
     def __init__(self, args: argparse.Namespace):
         self.args = args
@@ -216,7 +220,13 @@ class Crawler:
     async def take(self, match_id: str, hop: int) -> bool:
         """경기를 받아 저장하고 참가자를 탐색 후보에 넣는다. 저장하면 True."""
         match = await self.fetch(f'/lol/match/v5/matches/{match_id}')
-        return self.store_match(match_id, match, hop)
+        try:
+            return self.store_match(match_id, match, hop)
+        except MatchIdentityMismatch:
+            if self.args.max_calls is not None:
+                raise
+            print(f'[{self.args.region}] 요청과 다른 경기 상세 응답 1건 제외', flush=True)
+            return False
 
     def store_match(self, match_id: str, match: dict | None, hop: int) -> bool:
         if match_id in self.seen:
@@ -228,7 +238,7 @@ class Crawler:
                 or f"{self.prefix}_{info.get('gameId')}" != match_id
                 or str(info.get('platformId')).upper() != self.prefix
             ):
-                raise ValueError('요청한 경기와 응답의 경기 키 또는 지역이 다릅니다.')
+                raise MatchIdentityMismatch('요청한 경기와 응답의 경기 키 또는 지역이 다릅니다.')
         self.seen.add(match_id)
         if not match or 'info' not in match:
             return False

@@ -14,7 +14,7 @@ class ServiceTests(unittest.TestCase):
             'service.main.abilities', new=AsyncMock(return_value={'available': False, 'skills': []})
         )
         cls.ability_patch.start()
-        cls.client = TestClient(app)
+        cls.client = TestClient(app, base_url='http://127.0.0.1')
 
     @classmethod
     def tearDownClass(cls):
@@ -206,7 +206,10 @@ class ServiceTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             temp_store = ReviewSyncStore(db_path=Path(tmpdir) / 'sync_test.db')
-            with patch('service.main.review_store', temp_store):
+            with (
+                patch('service.main.review_store', temp_store),
+                patch('service.main.is_trusted_client_request', return_value=True),
+            ):
                 created = self.client.post(
                     '/api/reviews/sync',
                     json={

@@ -2,6 +2,7 @@
 .git
 .gitignore
 .github
+.agents/
 
 # Environment and secret files
 .env

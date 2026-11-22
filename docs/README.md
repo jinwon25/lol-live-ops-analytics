@@ -1,24 +1,34 @@
-# 분석·복기 서비스 문서 안내
+# 서비스·분석 문서 안내
 
-이 프로젝트는 과거 경기 표본을 분석한 기록과 본인 랭크를 복기하는 웹서비스를 함께 담고 있습니다. [프로젝트 README](../README.md)에서 두 작업의 데이터·패치·구현 범위를 먼저 확인합니다.
+[프로젝트 README](../README.md)에서 서비스 대상과 주요 결과를 확인한 뒤, 필요한 주제로 이동합니다.
 
-## 목적에 따른 읽는 순서
+## 읽는 순서
 
-EUN·KR의 후속 수집 범위와 지역별 경기 시간 비교는 [패치별 표본 점검](26_backfill_sample.md)에서 확인한다.
+| 읽고 싶은 내용 | 문서 | 확인할 점 |
+| --- | --- | --- |
+| 직접 서비스 실행 | [웹서비스 안내](../service/README.md) → [Riot 연동](08_riot_integration.md) | 서버 시작, 키 설정, 최근 경기 조회, 행동 기록과 백업 |
+| 아브실골 복기 서비스 이해 | [서비스 방향과 검증 계획](24_project_review.md) → [보관함 경기 비교](23_service_references_and_match_comparison.md) | 지금 가능한 복기·연습과 근거를 활용하는 에이전트 개발 범위 |
+| 과거 데이터와 분석 결과 확인 | [데이터와 표본](01_phase1_notes.md) → [메타 분석](02_phase2_notes.md) → [경기 행동 군집](03_phase3_notes.md) | EUN 15.1·15.3의 비교 조건과 경기×참여자 단위 |
+| 수집·배치를 재현 | [데이터 파이프라인](25_data_pipeline.md) → [EUN·KR 백필](26_backfill_sample.md) | 스냅샷, 경기 격리, 집계 게시, 체크포인트 복구와 분석용 내보내기 |
 
-데이터 처리의 최신 검토는 [프로젝트 검토·고도화 순서](24_project_review.md), 새 배치 실행은 [과거 경기 데이터 파이프라인](25_data_pipeline.md)에서 확인한다. 기존 분석 결과와 별도 마트의 필터·분모, 실제 검증과 Airflow 실행 구성의 범위를 구분한다.
+## 주제별 문서
 
-최신 구현은 [전적 중심 흐름·서비스 기반 점검](18_service_foundation_and_api_only_flow.md), [경기 탐색·현재 메타·Riot 수집](17_match_explorer_and_riot_collection.md), [Gen.G 컬러·검색·챔피언 탐색](16_geng_theme_and_navigation.md), [상용 서비스 참고·넓은 화면 개선](15_commercial_ui_refinement.md), [공개 모델 비교 범위 재점검](14_model_selection_audit.md), [화면 구조·자동 리포트](12_structure_and_auto_reports.md), [공개 데이터셋 조사](11_public_data_research.md)을 먼저 읽는다. [초기 모델 비교·학습 실험](13_local_llm_research.md)과 아래 기획·현황 문서는 작성 시점의 기록이다.
+| 주제 | 문서 | 용도 |
+| --- | --- | --- |
+| 패치 분석과 시각화 | [패치 노트 대조](04_patch_notes_match.md) · [대시보드 설계](05_dashboard_plan.md) | 이미 공개된 패치와 관측치를 비교하고 BI용 지표 해석 |
+| 서비스의 출발점 | [복기 서비스 구상](06_companion_plan.md) · [상용 서비스 참고](07_service_benchmark.md) | 개인 복기 흐름과 근거 표시를 설계한 배경 |
+| 외부 데이터 | [공개 데이터 연구](11_public_data_research.md) · [별도 API 수집 예제](../api/README.md) | 출처·커버리지·라이선스와 SQLite 적재 예제 |
+| 로컬 AI | [모델 후보와 실측](14_model_selection_audit.md) · [초기 LoRA 실험](13_local_llm_research.md) | 실행 환경, 출력 검증, 모델 실험의 평가 범위 |
+| 저장과 운영 | [기록 보존과 로컬 보호](19_storage_and_local_service_hardening.md) · [AI 준비 상태와 행동 노트](20_runtime_and_notes_followup.md) · [Redis 요청 예산](22_shared_budget_followup.md) | 보관·복구, 로컬 실행과 장애 처리 |
 
-| 목적 | 순서 | 확인할 점 |
-|---|---|---|
-| 개인 복기 서비스를 사용하기 | [서비스 실행](../service/README.md) → [API 연결](08_riot_integration.md) | 키는 서버의 로컬 환경 파일에 둡니다. 개발 키·개인 키와 공개 운영 조건을 구분합니다. |
-| 현재 구현과 다음 작업 확인 | [2026-10-05 현황 점검](09_service_status.md) → [서비스 실행](../service/README.md) | 기록 검색·수정·백업·복원과 남은 개발 순서를 확인합니다. |
-| 개선된 화면과 개인 분석 확인 | [화면·개인 분석 개선](10_personal_analysis_ui.md) → [상용 서비스 참고](07_service_benchmark.md) | 공식 이미지, 조건별 추이와 질문, 이전 과제 재사용, 참고 사이트 접근 범위를 확인합니다. |
-| 서비스 기획과 차별점 보기 | [서비스 기획](06_companion_plan.md) → [상용 서비스 참고](07_service_benchmark.md) | 본인 행동 기록과 동일 조건 비교가 중심이며, 최신 승률 추천·자동 코칭 효과는 검증하지 않았습니다. |
-| 과거 분석의 근거 보기 | [적재·표본 점검](01_phase1_notes.md) → [메타 분석](02_phase2_notes.md) → [행동 군집](03_phase3_notes.md) | 패치 15.1·15.3의 EUN 표본입니다. 최신 KR 랭크 표본으로 해석하지 않습니다. |
-| 결과 전달 방식 보기 | [패치와 사후 대조](04_patch_notes_match.md) → [대시보드 설계](05_dashboard_plan.md) | 이미 공개된 패치와의 비교이며 사전 예측 성과가 아닙니다. 대시보드는 설계·CSV 범위입니다. |
-| 별도 수집 예제 보기 | [API 수집 PoC](../api/README.md) | 웹서비스의 본인 전적 선택 조회와 별도 경로입니다. |
+<details>
+<summary>초기 화면과 구현 기록</summary>
+
+- [개인 복기 기능](09_service_status.md) · [개인 분석 UI](10_personal_analysis_ui.md) · [자동 리포트와 내비게이션](12_structure_and_auto_reports.md)
+- [상용 UI 참고](15_commercial_ui_refinement.md) · [컬러·내비게이션](16_geng_theme_and_navigation.md)
+- [경기 탐색·메타 수집](17_match_explorer_and_riot_collection.md) · [전적 중심 흐름과 기반 점검](18_service_foundation_and_api_only_flow.md)
+
+</details>
 
 ## 먼저 이해할 용어
 

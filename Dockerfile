@@ -33,6 +33,8 @@ COPY --chown=appuser:appgroup src ./src
 COPY --chown=appuser:appgroup web ./web
 COPY --chown=appuser:appgroup outputs/*.csv ./outputs/
 
+RUN mkdir -p /app/data/processed && chown -R appuser:appgroup /app/data
+
 USER appuser
 
 EXPOSE 8001

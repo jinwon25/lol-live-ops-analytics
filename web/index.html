@@ -9,6 +9,7 @@
   <script defer src="/assets/journal.js"></script>
   <script defer src="/assets/analysis.js"></script>
   <script defer src="/assets/reports.js"></script>
+  <script defer src="/assets/notes.js"></script>
   <script defer src="/assets/app.js"></script>
   <script defer src="/assets/match_views.js"></script>
   <script defer src="/assets/insights.js"></script>
@@ -30,7 +31,33 @@
     <div class="heading board-heading"><div><h1>보관함</h1><p>경기 변화를 확인하고, 다음 행동 하나를 남기세요.</p></div><button class="primary with-icon" data-open="review"><img src="/assets/images/icons/swords.svg" alt="" class="button-icon">전적 불러와 분석하기</button></div>
     <div class="metrics" id="overview-metrics"></div>
     <p id="personal-context" class="muted">이 브라우저에 보관한 리포트와 기존 복기 기록을 확인하세요.</p>
-    <article class="card saved-reports-card"><div class="section-title"><h2>보관한 경기 리포트</h2><span id="saved-report-count">0경기</span></div><div id="saved-reports"></div><p id="report-library-status" class="muted" role="status"></p></article>
+    <article class="card saved-reports-card">
+      <div class="section-title"><h2>보관한 경기 리포트</h2><span id="saved-report-count" role="status">0 / 50경기</span></div>
+      <div class="report-library-toolbar">
+        <div><label class="search-label" for="report-search">보관한 리포트 검색</label><input id="report-search" class="search" type="search" aria-keyshortcuts="Control+K Meta+K" maxlength="100" placeholder="챔피언, 포지션, 패치 검색" aria-controls="saved-reports"></div>
+        <button id="export-reports" class="primary with-icon"><img src="/assets/images/icons/download.svg" alt="" class="button-icon">리포트 백업</button>
+      </div>
+      <div class="report-library-filters">
+        <div><label class="search-label" for="report-role">포지션</label><select id="report-role" aria-controls="saved-reports"><option value="">전체 포지션</option value="TOP">탑</option><option value="JUNGLE">정글</option><option value="MID">미드</option><option value="BOT">원딜</option><option value="SUPPORT">서포터</option></select></div>
+        <div><label class="search-label" for="report-outcome">경기 결과</label><select id="report-outcome" aria-controls="saved-reports"><option value="">전체 결과</option><option value="win">승리</option><option value="loss">패배</option><option value="unknown">결과 미확인</option></select></div>
+        <button id="reset-report-filters" class="text-button">검색·필터 초기화</button>
+      </div>
+      <p class="muted library-storage-note">이 브라우저에만 보관됩니다. 브라우저 데이터를 지우거나 다른 기기로 옮기기 전에 백업하세요.</p>
+      <section class="saved-report-comparison" aria-labelledby="saved-comparison-heading">
+        <div class="section-title"><h3 id="saved-comparison-heading">두 경기 비교</h3><button id="clear-report-comparison" class="text-button" disabled>비교 선택 초기화</button></div>
+        <p id="report-comparison-status" class="muted" role="status">아래 목록에서 같은 챔피언·포지션·패치의 경기 두 개를 선택하세요.</p>
+        <div id="report-comparison"></div>
+      </section>
+      <div id="saved-reports"></div>
+      <p id="report-library-status" class="muted" role="status"></p><button id="undo-report-delete" class="text-button" hidden>방금 삭제한 리포트 되돌리기</button>
+      <details class="report-backup"><summary>리포트 백업 파일 복원</summary>
+        <p class="muted" id="report-import-help">자동 경기 리포트만 포함한 JSON 파일을 합칩니다. 같은 경기는 현재 보관함의 내용을 유지합니다. 기존 복기 기록과 행동 노트는 포함하지 않습니다.</p>
+        <label class="search-label" for="import-reports">복원할 리포트 백업 파일 (최대 4MB)</label><input id="import-reports" type="file" accept=".json,application/json" aria-describedby="report-import-help">
+        <p id="report-import-preview" class="muted" role="status"></p>
+        <div class="report-restore-actions"><button id="restore-reports" class="primary" disabled>미리보기 확인 · 리포트 합치기</button><button id="cancel-report-import" class="text-button" hidden>취소</button></div>
+        <p id="report-backup-status" class="muted" role="status"></p>
+      </details>
+    </article>
     <div class="board-layout">
       <article class="card journal-card"><div class="section-title"><h2>최근 복기 기록</h2><span>최신 경기부터</span></div>
         <div class="journal-toolbar"><div><label class="search-label" for="journal-search">저장한 복기 검색</label><input id="journal-search" class="search" type="search" maxlength="100" placeholder="챔피언, 장면, 다음 행동 검색"></div><div><label class="search-label" for="journal-state">행동 진행 상태</label><select id="journal-state"><option value="">전체 상태</option><option value="planned">시도 전</option><option value="tried">시도함</option><option value="reviewed">돌아봄</option></select></div></div>
@@ -75,7 +102,7 @@
     </details>
   </section>
   <section id="review" role="tabpanel" aria-labelledby="tab-review">
-    <div class="heading board-heading"><div><h1>내 전적·리포트</h1><p>전적을 불러오고, 경기별 수치와 다음 플레이를 확인하세요.</p></div><button class="text-button" data-open="overview">보관한 리포트 보기 →</button></div>
+    <div class="heading board-heading"><div><h1>내 전적·리포트</h1><p>아이언부터 골드까지, 내 경기에서 복기할 장면과 다음 경기에서 연습할 행동을 찾아보세요.</p></div><button class="text-button" data-open="overview">보관한 리포트 보기 →</button></div>
     <article class="card notebook riot-card">
       <h2>전적 불러오기</h2><p id="riot-status" class="muted">연결 설정 확인 중</p>
       <form id="riot-form" class="form-grid">
@@ -90,7 +117,22 @@
     <div class="match-workspace"><article class="card match-list-panel"><div class="section-title"><h2>최근 경기</h2><span>솔로듀오</span></div><label class="search-label match-role-control">포지션<select id="recent-role"><option value="">전체 포지션</option><option value="TOP">탑</option><option value="JUNGLE">정글</option><option value="MID">미드</option><option value="BOT">원딜</option><option value="SUPPORT">서포터</option></select></label><div id="riot-matches" aria-live="polite"><p class="muted">Riot ID를 조회하면 경기 목록이 표시됩니다.</p></div><p class="mobile-match-hint muted">경기 목록을 좌우로 넘겨 선택하세요.</p></article>
     <article class="card auto-report-card" id="auto-report-card"><div class="section-title"><div><h2>경기 분석 리포트</h2></div><span class="tag">공식 전적 기반</span></div><div id="auto-report" aria-live="polite"><div class="report-start"><img src="/assets/images/icons/target.svg" alt="" width="28" height="28"><h3>경기를 불러오면 리포트가 열립니다</h3><p>전적을 불러오면 최신 경기의 리포트가 열립니다.<br>최근 경기 목록에서 다른 경기를 선택할 수 있습니다.</p></div></div></article>
     </div>
-    <article class="card notebook"><div class="section-title"><h2>다음 경기에서 확인할 행동</h2><span>이 브라우저에만 저장</span></div><form id="note-form"><label class="search-label" for="practice-note">복기 질문 또는 행동 한 가지</label><div class="note-input"><input id="practice-note" maxlength="200" required placeholder="예: 첫 드래곤 전 시야를 확보한 시점과 경로를 되짚기"><button class="primary" type="submit">기록</button></div></form><ul id="practice-list"></ul><p id="note-status" role="status" class="muted"></p><button id="clear-notes" class="text-button">이 브라우저의 복기 기록 지우기</button></article>
+    <article class="card notebook">
+      <div class="section-title"><h2 id="practice-log-heading" tabindex="-1">연습 행동과 결과</h2><span id="note-count">0 / 10개</span></div>
+      <p class="muted">다음 경기에서 해볼 행동을 하나 기록하세요. 경기 후에는 시도 여부를 직접 남길 수 있습니다. 이 브라우저에 최대 10개를 보관합니다.</p>
+      <form id="note-form"><label class="search-label" for="practice-note">복기 질문 또는 행동 한 가지</label><div class="note-input"><input id="practice-note" name="practice_note" maxlength="200" required autocomplete="off" placeholder="예: 첫 드래곤 전 시야를 확보한 시점과 경로를 되짚기…"><button class="primary" type="submit">기록</button></div></form>
+      <ul id="practice-list"></ul><p id="note-status" role="status" class="muted"></p>
+      <button id="undo-note-delete" class="text-button" hidden>방금 삭제한 행동 노트 되돌리기</button>
+      <details class="report-backup note-backup"><summary>행동 노트 백업·복원</summary>
+        <p class="muted">행동 노트만 JSON으로 보관합니다. 경기 리포트·기존 복기·초안과는 별도입니다. 파일은 서버에 전송하지 않습니다.</p>
+        <button id="export-notes" class="text-button">행동 노트 JSON 내보내기</button>
+        <label class="search-label" for="import-notes">복원할 행동 노트 백업 (최대 16KB)</label><input id="import-notes" name="notes_backup" type="file" accept=".json,application/json">
+        <p id="note-import-preview" class="muted" role="status"></p>
+        <div class="report-restore-actions"><button id="restore-notes" class="primary" disabled>미리보기 확인 · 노트 합치기</button><button id="cancel-note-import" class="text-button" hidden>취소</button></div>
+        <p id="note-backup-status" class="muted" role="status"></p>
+      </details>
+      <button id="clear-notes" class="text-button">행동 노트 전체 지우기</button>
+    </article>
   </section>
 
   <details class="data-drawer"><summary>자료 기준</summary><div id="data-status" class="data-status" role="status">자료 기준을 확인하는 중입니다.</div></details>

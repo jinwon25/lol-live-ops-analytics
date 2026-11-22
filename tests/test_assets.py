@@ -23,6 +23,7 @@ class AssetsTest(unittest.TestCase):
             '/assets/journal.js',
             '/assets/draft.js',
             '/assets/analysis.js',
+            '/assets/notes.js',
         ]:
             response = client.get(path)
             self.assertEqual(response.status_code, 200)

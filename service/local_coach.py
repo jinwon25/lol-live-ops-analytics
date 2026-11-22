@@ -37,6 +37,7 @@ MAX_WORKER_STDOUT_LENGTH = 4096
 MAX_COMPLETION_TOKENS = 64
 WORKER_TIMEOUT_SECONDS = 75
 MAX_CONCURRENT_COACH_REQUESTS = 4
+HEALTH_TIMEOUT_SECONDS = 2.0
 SENSITIVE_ENV_KEYS = (
     'RIOT_API_KEY',
     'HF_TOKEN',
@@ -154,6 +155,50 @@ def status():
         'description': '로컬 실험 모델 · 요청할 때만 실행'
         if ready
         else '로컬 모델 준비 중 · 기본 리포트는 바로 이용 가능',
+    }
+
+
+async def runtime_status(client: httpx.AsyncClient | None = None) -> dict:
+    """Probe llama-server readiness without submitting a prompt or exposing its response."""
+    result = {**status(), 'runtime_checked': False, 'inference_validated': False}
+    result['configured'] = result['available']
+    if not result['configured']:
+        return {**result, 'runtime_status': 'not_configured'}
+    if result['model'] != 'Qwen3-4B-Q4_K_M':
+        return {**result, 'runtime_status': 'worker_not_checked'}
+    if client is None:
+        async with httpx.AsyncClient(trust_env=False) as scoped_client:
+            return await runtime_status(scoped_client)
+    endpoint = get_settings().LLAMA_SERVER_URL + '/health'
+    runtime_state = 'unreachable'
+    try:
+        response = await asyncio.wait_for(
+            client.get(endpoint, timeout=HEALTH_TIMEOUT_SECONDS, follow_redirects=False),
+            timeout=HEALTH_TIMEOUT_SECONDS,
+        )
+        if response.status_code == 503:
+            runtime_state = 'loading'
+        elif response.status_code == 200:
+            data = response.json()
+            runtime_state = 'ready' if isinstance(data, dict) and data.get('status') == 'ok' else 'invalid_response'
+        else:
+            runtime_state = 'unavailable'
+    except (httpx.HTTPError, TimeoutError, ValueError):
+        pass
+    ready = runtime_state == 'ready'
+    descriptions = {
+        'ready': '로컬 실험 모델 · 서버 연결 확인 · 추론 품질 미검증',
+        'loading': '로컬 모델을 불러오는 중입니다. 잠시 뒤 연결 상태를 다시 확인해주세요.',
+    }
+    return {
+        **result,
+        'available': ready,
+        'runtime_checked': True,
+        'runtime_status': runtime_state,
+        'stage': 'experimental' if ready else 'unavailable',
+        'description': descriptions.get(
+            runtime_state, '로컬 AI 서버에 연결할 수 없습니다. 기본 리포트는 이용 가능합니다.'
+        ),
     }
 
 

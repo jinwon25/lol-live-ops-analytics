@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import httpx
 
-from service.local_coach import CoachInput, LocalCoach, messages, validate_choice
+from service.local_coach import CoachInput, LocalCoach, messages, runtime_status, validate_choice
 from service.main import app
 
 
@@ -13,6 +13,56 @@ def metrics():
 
 
 class LocalCoachTests(unittest.IsolatedAsyncioTestCase):
+    async def test_runtime_health_only_marks_a_ready_server_available(self):
+        cases = [
+            (200, {'status': 'ok'}, 'ready', True),
+            (503, {'error': {'message': 'Loading model'}}, 'loading', False),
+            (200, {'status': 'unknown'}, 'invalid_response', False),
+            (302, {}, 'unavailable', False),
+            (500, {}, 'unavailable', False),
+        ]
+        observed = []
+        for code, body, state, available in cases:
+
+            def respond(request, code=code, body=body):
+                observed.append((request.method, request.url.path))
+                return httpx.Response(code, json=body)
+
+            async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
+                with patch('service.local_coach.selection', return_value={'model': 'Qwen3-4B-Q4_K_M'}):
+                    result = await runtime_status(client)
+            self.assertEqual(result['runtime_status'], state)
+            self.assertEqual(result['available'], available)
+            self.assertTrue(result['configured'])
+            self.assertTrue(result['runtime_checked'])
+            self.assertFalse(result['inference_validated'])
+            self.assertNotIn('http', str(result))
+        self.assertEqual(observed, [('GET', '/health')] * len(cases))
+
+    async def test_runtime_health_timeout_invalid_json_and_missing_configuration(self):
+        import asyncio
+
+        async def stalled(request):
+            await asyncio.sleep(1)
+            return httpx.Response(200, json={'status': 'ok'})
+
+        with patch('service.local_coach.selection', return_value={'model': 'Qwen3-4B-Q4_K_M'}):
+            async with httpx.AsyncClient(transport=httpx.MockTransport(stalled)) as client:
+                with patch('service.local_coach.HEALTH_TIMEOUT_SECONDS', 0.01):
+                    result = await runtime_status(client)
+                    self.assertFalse(result['available'])
+                    self.assertEqual(result['runtime_status'], 'unreachable')
+            async with httpx.AsyncClient(
+                transport=httpx.MockTransport(lambda request: httpx.Response(200, text='private malformed body'))
+            ) as client:
+                result = await runtime_status(client)
+                self.assertFalse(result['available'])
+                self.assertNotIn('private', str(result))
+        with patch('service.local_coach.selection', return_value=None):
+            result = await runtime_status()
+            self.assertFalse(result['configured'])
+            self.assertFalse(result['runtime_checked'])
+
     def test_verified_focus_uses_canonical_questions_and_known_evidence(self):
         payload = CoachInput(role='BOT', metrics=metrics())
         result = validate_choice(

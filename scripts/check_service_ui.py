@@ -123,7 +123,32 @@ def main():
             assert '<img' in page.locator('#practice-list').inner_text()
             assert '보존할 노트' in page.locator('#practice-list').inner_text()
             page.locator('#clear-notes').click()
-            assert page.locator('#practice-list li').count() == 0
+            assert page.locator('#note-count').inner_text() == '0 / 10개'
+            page.locator('#undo-note-delete').click()
+            assert '<img' in page.locator('#practice-list').inner_text()
+            page.locator('.note-backup > summary').click()
+            with page.expect_download() as notes_downloaded:
+                page.locator('#export-notes').click()
+            notes_backup = Path(notes_downloaded.value.path()).read_bytes()
+            page.locator('#clear-notes').click()
+            page.locator('#import-notes').set_input_files(
+                {'name': 'notes.json', 'mimeType': 'application/json', 'buffer': notes_backup}
+            )
+            page.wait_for_function("!document.getElementById('restore-notes').disabled")
+            assert page.locator('#note-count').inner_text() == '0 / 10개'
+            page.locator('#restore-notes').click()
+            assert '보존할 노트' in page.locator('#practice-list').inner_text()
+            assert '복원 완료' in page.locator('#note-backup-status').inner_text()
+            page.locator('.note-backup > summary').click()
+            # 손상된 저장소에서는 새 입력을 유지하고 기존 원문을 덮어쓰지 않는다.
+            before_notes = page.evaluate("localStorage.getItem('lol-insight-notes-v1')")
+            page.evaluate("localStorage.setItem('lol-insight-notes-v1', 'broken')")
+            page.locator('#practice-note').fill('실패 시 유지할 입력')
+            page.locator('#note-form button').click()
+            assert page.locator('#practice-note').input_value() == '실패 시 유지할 입력'
+            assert page.evaluate("localStorage.getItem('lol-insight-notes-v1')") == 'broken'
+            page.evaluate('(raw)=>localStorage.setItem("lol-insight-notes-v1",raw)', before_notes)
+            page.locator('#practice-note').fill('')
             # 저장 순서와 경기 일시가 다르고 다른 챔피언·패치가 섞인 모의 기록.
             result = page.evaluate('''() => {
               const j = window.ReviewJournal;
@@ -330,9 +355,113 @@ def main():
             assert '0승 0패' in page.locator('.recent-summary').inner_text()
             assert '승률 —' in page.locator('.recent-summary').inner_text()
             assert '결과 미확인 1경기' in page.locator('.recent-summary').inner_text()
+            practice = page.locator('#auto-report .next-game-practice')
+            assert practice.get_by_role('heading', name='견제하기 전 막타부터 보기').is_visible()
+            assert practice.get_by_role('button', name='첫 15분 복기 장면 보기').count() == 0
+            page.locator('#practice-note').fill('작성 중인 테스트 노트')
+            practice.get_by_role('button', name='행동 노트에 저장').click()
+            assert '곧 쓰러질 미니언' in page.locator('#practice-list').inner_text()
+            assert page.locator('#practice-note').input_value() == '작성 중인 테스트 노트'
+            practice.get_by_role('button', name='행동 노트에 저장').click()
+            assert page.locator('#practice-list li').filter(has_text='곧 쓰러질 미니언').count() == 1
+            practice.get_by_role('button', name='지난 연습 돌아보기').click()
+            assert page.locator('#practice-log-heading').evaluate('(el)=>el===document.activeElement')
+            practice_record = page.locator('#practice-list li').filter(has_text='곧 쓰러질 미니언')
+            practice_record.get_by_role('combobox').select_option('tried')
+            assert '연습 결과를 기록했습니다' in page.locator('#note-status').inner_text()
+            assert (
+                page.evaluate("window.PracticeNotes.read().find(note=>note.text.includes('곧 쓰러질 미니언')).result")
+                == 'tried'
+            )
+            page.locator('#practice-note').fill('')
+            actions = page.evaluate(
+                """['TOP','JUNGLE','MID','BOT','SUPPORT'].map(role =>
+                    renderNextGamePractice(role, null).querySelector('h3').textContent)"""
+            )
+            assert len(set(actions)) == 5
             page.locator('#auto-report').get_by_role('button', name='이 리포트 보관', exact=True).click()
             assert page.evaluate("JSON.parse(localStorage.getItem('lol-match-reports-v1')).length") == 1
             assert 'synthetic-name' not in page.evaluate("localStorage.getItem('lol-match-reports-v1')")
+            # 자동 리포트 백업은 기존 수동 복기 백업과 별개이며 복원 전 미리보기를 거친다.
+            page.locator('#tab-overview').click()
+            page.locator('#report-search').fill('없는 챔피언')
+            assert page.locator('.saved-report-row').count() == 0
+            assert '검색한 리포트가 없습니다' in page.locator('#saved-reports').inner_text()
+            page.locator('#report-search').fill('Ezreal')
+            assert page.locator('.saved-report-row').count() == 1
+            page.locator('#report-search').fill('')
+            with page.expect_download() as report_downloaded:
+                page.locator('#export-reports').click()
+            report_backup = Path(report_downloaded.value.path()).read_bytes()
+            assert b'synthetic-name' not in report_backup
+            page.locator('.saved-report-row button').last.click()
+            assert page.locator('.saved-report-row').count() == 0
+            page.locator('#undo-report-delete').click()
+            assert page.locator('.saved-report-row').count() == 1
+            page.locator('#overview .report-backup > summary').click()
+            page.locator('#import-reports').set_input_files(
+                {'name': 'reports.json', 'mimeType': 'application/json', 'buffer': report_backup}
+            )
+            page.wait_for_function("!document.getElementById('restore-reports').disabled")
+            assert '기존 유지 1개' in page.locator('#report-import-preview').inner_text()
+            page.locator('#cancel-report-import').click()
+            assert page.locator('#restore-reports').is_disabled()
+            page.locator('.saved-report-row button').last.click()
+            page.locator('#import-reports').set_input_files(
+                {'name': 'reports.json', 'mimeType': 'application/json', 'buffer': report_backup}
+            )
+            page.wait_for_function("!document.getElementById('restore-reports').disabled")
+            assert page.locator('.saved-report-row').count() == 0
+            page.locator('#restore-reports').click()
+            assert page.locator('.saved-report-row').count() == 1
+            assert '복원 완료' in page.locator('#report-backup-status').inner_text()
+            # 합성 경기 세 개로 필터·선택 유지·조건별 비교와 다른 탭의 삭제를 확인한다.
+            older = dict(imported, played_at='2026-09-24T12:00:00Z', win=False, duration_minutes=40, gold=14000)
+            older['report'] = match_report(older)
+            different = dict(imported, played_at='2026-09-23T12:00:00Z', role='MID', win=True)
+            different['report'] = match_report(different)
+            page.evaluate('(rows) => rows.forEach(row => window.MatchReports.save(row))', [older, different])
+            page.evaluate("window.dispatchEvent(new StorageEvent('storage', {key:'lol-match-reports-v1'}))")
+            page.locator('#report-outcome').select_option('unknown')
+            assert page.locator('.saved-report-row').count() == 1
+            page.locator('[data-compare-report]').click()
+            page.locator('#report-outcome').select_option('')
+            page.locator('#report-role').select_option('MID')
+            assert '필터 밖 1경기' in page.locator('#report-comparison-status').inner_text()
+            page.locator('[data-compare-report]').click()
+            assert '달라 지표 차이를 계산하지 않았습니다' in page.locator('#report-comparison').inner_text()
+            assert page.locator('#report-comparison table').count() == 0
+            page.locator('#clear-report-comparison').click()
+            page.locator('#reset-report-filters').click()
+            page.locator('[data-compare-report]').nth(0).click()
+            page.locator('[data-compare-report]').nth(1).click()
+            assert page.locator('[data-compare-report]').nth(1).evaluate('(el) => el === document.activeElement')
+            assert page.locator('[data-compare-report]').nth(2).is_disabled()
+            assert page.locator('#report-comparison tbody tr').count() == 6
+            assert '같은 플레이어인지 확인할 수 없습니다' in page.locator('#report-comparison').inner_text()
+            assert page.locator('#report-comparison tbody tr').nth(4).locator('td').all_text_contents() == ['—'] * 3
+            page.locator('#report-search').fill('없는 챔피언')
+            assert page.locator('.saved-report-row').count() == 0
+            assert '필터 밖 2경기' in page.locator('#report-comparison-status').inner_text()
+            assert page.locator('#report-comparison tbody tr').count() == 6
+            page.locator('#reset-report-filters').click()
+            for width in [320, 390, 768, 1440, 2560]:
+                page.set_viewport_size({'width': width, 'height': 844})
+                assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'), ('report-comparison', width)
+            other = page.context.new_page()
+            other.route('**/api/riot/preferences', lambda route: route.fulfill(json={}))
+            other.goto(base)
+            other.wait_for_function('Boolean(window.MatchReports)')
+            other.evaluate('(row) => window.MatchReports.remove(row)', older)
+            page.wait_for_function("document.getElementById('report-comparison-status').textContent.includes('1 / 2')")
+            assert page.locator('#report-comparison table').count() == 0
+            other.close()
+            page.evaluate('(row) => window.MatchReports.remove(row)', different)
+            page.evaluate("window.dispatchEvent(new StorageEvent('storage', {key:'lol-match-reports-v1'}))")
+            page.locator('#clear-report-comparison').click()
+            assert page.locator('.saved-report-row').count() == 1
+            page.locator('#overview .report-backup > summary').click()
+            page.locator('#tab-review').click()
             # 모델 실행은 모의 응답으로 격리하고 실제 평가와 구분한다.
             model_requests = []
 
@@ -529,7 +658,7 @@ def main():
             assert page.locator('#riot-form input[name=game_name]').evaluate('(el)=>el===document.activeElement')
             page.locator('#tab-overview').click()
             page.keyboard.press('Control+k')
-            assert page.locator('#journal-search').evaluate('(el)=>el===document.activeElement')
+            assert page.locator('#report-search').evaluate('(el)=>el===document.activeElement')
             page.locator('#tab-overview').focus()
             page.keyboard.press('End')
             assert page.locator('#tab-champions').get_attribute('aria-selected') == 'true'
@@ -670,7 +799,7 @@ def main():
                                 'cs_difference': -10,
                             },
                         ],
-                        'deaths': [9.999],
+                        'deaths': [18, 10.5, 9.999],
                         'caveat': '실제 시각을 흉내 낸 합성 프레임',
                     }
                 )
@@ -683,9 +812,12 @@ def main():
             page.wait_for_function("document.querySelectorAll('.match-select').length===1")
             page.get_by_role('tab', name='팀 비교', exact=True).click()
             assert page.locator('.scoreboard-self').is_visible()
-            page.get_by_role('tab', name='시간대별 흐름', exact=True).click()
+            page.get_by_role('tab', name='핵심 요약', exact=True).click()
+            assert not timeline_requests
+            page.get_by_role('button', name='첫 15분 복기 장면 보기', exact=True).click()
             page.wait_for_selector('.timeline-chart')
-            assert '10:00' in page.locator('#auto-report').inner_text(), '데스 분·초는 반올림 이월한다'
+            assert page.get_by_role('heading', name='첫 데스 · 10:00', exact=True).is_visible()
+            assert page.get_by_role('tab', name='시간대별 흐름', exact=True).get_attribute('aria-selected') == 'true'
             page.get_by_role('tab', name='핵심 요약', exact=True).click()
             assert page.locator('.report-insights').is_visible()
             page.get_by_role('tab', name='시간대별 흐름', exact=True).click()

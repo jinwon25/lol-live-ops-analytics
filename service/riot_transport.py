@@ -1,4 +1,4 @@
-"""Distributed (Redis Lua sliding-window) and in-memory fallback Riot API request budget."""
+"""Redis Lua request budgets, with in-memory mode only when Redis is not configured."""
 
 from __future__ import annotations
 
@@ -103,9 +103,10 @@ local method_limits_key = KEYS[5]
 local app_obs_prefix = KEYS[6]
 local method_obs_prefix = KEYS[7]
 
-local now_ms = tonumber(ARGV[1])
-local request_id = ARGV[2]
-local default_app_limits_raw = ARGV[3]
+local clock = redis.call('TIME')
+local now_ms = tonumber(clock[1]) * 1000 + math.floor(tonumber(clock[2]) / 1000)
+local request_id = ARGV[1]
+local default_app_limits_raw = ARGV[2]
 
 local function parse_pairs(raw)
     local parsed = {}
@@ -146,6 +147,9 @@ local function check_scope(calls_key, limits_table, obs_prefix)
     redis.call('ZREMRANGEBYSCORE', calls_key, '-inf', now_ms - (max_sec * 1000))
     for sec, limit in pairs(limits_table) do
         local window_ms = sec * 1000
+        if limit == 0 then
+            max_wait_ms = math.max(max_wait_ms, window_ms)
+        end
         local window_start = now_ms - window_ms
         local recent_count = redis.call('ZCOUNT', calls_key, window_start + 1, '+inf')
         if recent_count >= limit then
@@ -217,9 +221,10 @@ return 0
 UPDATE_HEADERS_LUA = """
 local limits_key = KEYS[1]
 local obs_prefix = KEYS[2]
-local now_ms = tonumber(ARGV[1])
-local limits_raw = ARGV[2]
-local counts_raw = ARGV[3]
+local clock = redis.call('TIME')
+local now_ms = tonumber(clock[1]) * 1000 + math.floor(tonumber(clock[2]) / 1000)
+local limits_raw = ARGV[1]
+local counts_raw = ARGV[2]
 
 if limits_raw and limits_raw ~= '' then
     redis.call('SET', limits_key, limits_raw, 'EX', 86400)
@@ -255,6 +260,17 @@ return 1
 """
 
 
+# Keep the longest outstanding Retry-After across workers in one atomic operation.
+EXTEND_COOLDOWN_LUA = """
+local clock = redis.call('TIME')
+local now_ms = tonumber(clock[1]) * 1000 + math.floor(tonumber(clock[2]) / 1000)
+local previous_until = tonumber(redis.call('GET', KEYS[1]) or '0')
+local cooldown_until = math.max(previous_until, now_ms + tonumber(ARGV[1]))
+redis.call('SET', KEYS[1], tostring(cooldown_until), 'PX', math.max(1, cooldown_until - now_ms))
+return cooldown_until
+"""
+
+
 def windows(value: str) -> dict[int, int]:
     result = {}
     for pair in value.split(','):
@@ -279,8 +295,12 @@ def method_key(path: str) -> str:
     return re.sub(r'/by-(?:puuid|riot-id)/.*', '/by-identity', path)
 
 
+class SharedBudgetUnavailable(RuntimeError):
+    """A configured shared budget cannot safely authorize an upstream request."""
+
+
 class RequestBudget:
-    """Hybrid Rate Limit budget supporting Redis Lua sliding-window with in-memory fallback."""
+    """Request budget that blocks upstream traffic when a configured shared store fails."""
 
     def __init__(self, redis_client: Any | None = None):
         self.calls: dict[str, deque[float]] = defaultdict(deque)
@@ -290,16 +310,22 @@ class RequestBudget:
         self.cooldowns: dict[str, float] = {}
         self.lock = asyncio.Lock()
         self.redis_client = redis_client
+        self.shared_required = redis_client is not None
 
-    def set_redis(self, redis_client: Any | None) -> None:
+    def set_redis(self, redis_client: Any | None, *, required: bool = False) -> None:
         """Bind or detach a shared async Redis client."""
         self.redis_client = redis_client
+        self.shared_required = required or redis_client is not None
 
     async def reserve(self, host: str, method: str) -> int | None:
+        local_wait = self.cooldowns.get(host, 0) - time.monotonic()
+        if local_wait > 0:
+            return max(1, math.ceil(local_wait))
+        if self.shared_required and self.redis_client is None:
+            raise SharedBudgetUnavailable('Shared request budget is unavailable')
         if self.redis_client is not None:
             try:
-                now_ms = int(time.time() * 1000)
-                request_id = f'{now_ms}:{uuid.uuid4().hex[:8]}'
+                request_id = uuid.uuid4().hex
                 keys = [
                     f'riot:cooldown:{host}',
                     f'riot:calls:app:{host}',
@@ -310,7 +336,6 @@ class RequestBudget:
                     f'riot:obs:method:{host}:{method}',
                 ]
                 args = [
-                    now_ms,
                     request_id,
                     _serialize_windows(DEFAULT_APP_LIMITS),
                 ]
@@ -323,7 +348,8 @@ class RequestBudget:
                 wait_int = int(wait_seconds or 0)
                 return wait_int if wait_int > 0 else None
             except Exception as error:
-                logger.warning('Redis RequestBudget.reserve failed, falling back to in-memory: %s', error)
+                logger.warning('Shared request budget failed (%s); upstream request blocked.', type(error).__name__)
+                raise SharedBudgetUnavailable('Shared request budget is unavailable') from None
 
         return await self._reserve_in_memory(host, method)
 
@@ -340,6 +366,8 @@ class RequestBudget:
                 while calls and now - calls[0] >= max(limits.keys(), default=DEFAULT_MAX_WINDOW_SECONDS):
                     calls.popleft()
                 for seconds, limit in limits.items():
+                    if limit == 0:
+                        waits.append(seconds)
                     recent = [stamp for stamp in calls if now - stamp < seconds]
                     if len(recent) >= limit and recent:
                         waits.append(seconds - (now - recent[0]))
@@ -392,7 +420,6 @@ class RequestBudget:
         self._update_in_memory(host, method, headers)
         if self.redis_client is None:
             return
-        now_ms = int(time.time() * 1000)
         scope_configs = [
             (f'riot:limits:app:{host}', f'riot:obs:app:{host}', 'X-App'),
             (f'riot:limits:method:{host}:{method}', f'riot:obs:method:{host}:{method}', 'X-Method'),
@@ -408,12 +435,11 @@ class RequestBudget:
                     2,
                     limits_key,
                     obs_prefix,
-                    now_ms,
                     _serialize_windows(parsed_limits),
                     _serialize_windows(parsed_counts),
                 )
         except Exception as error:
-            logger.warning('Redis RequestBudget.update_async failed: %s', error)
+            logger.warning('Redis RequestBudget.update_async failed (%s).', type(error).__name__)
 
     def cooldown(self, host: str, retry: int) -> None:
         self.cooldowns[host] = max(self.cooldowns.get(host, 0), time.monotonic() + retry)
@@ -429,11 +455,9 @@ class RequestBudget:
         if self.redis_client is None:
             return
         try:
-            cooldown_until_ms = int((time.time() + retry) * 1000)
-            ttl_ms = max(1000, retry * 1000)
-            await self.redis_client.set(f'riot:cooldown:{host}', str(cooldown_until_ms), px=ttl_ms)
+            await self.redis_client.eval(EXTEND_COOLDOWN_LUA, 1, f'riot:cooldown:{host}', max(1000, retry * 1000))
         except Exception as error:
-            logger.warning('Redis RequestBudget.cooldown_async failed: %s', error)
+            logger.warning('Redis RequestBudget.cooldown_async failed (%s).', type(error).__name__)
 
     def remaining_budget(self, host: str = 'asia') -> int:
         """Compute remaining request budget for the given host in the current window."""

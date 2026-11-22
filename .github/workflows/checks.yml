@@ -11,6 +11,16 @@ permissions:
 jobs:
   service:
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -20,6 +30,10 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: Install dependencies from pyproject.toml
         run: python -m pip install -e ".[analytics,dev]"
+      - name: Verify real Redis concurrency and cooldown recovery
+        env:
+          TEST_REDIS_URL: redis://127.0.0.1:6379/15
+        run: python -m pytest tests/test_redis_integration.py -q
       - name: Run Ruff lint and format checks
         run: |
           ruff check .
@@ -32,10 +46,16 @@ jobs:
         with:
           node-version: '20'
       - name: Run Frontend JS unit tests
-        run: node --test tests/test_journal.cjs tests/test_analysis.cjs tests/test_reports.cjs
+        run: node --test tests/test_journal.cjs tests/test_analysis.cjs tests/test_reports.cjs tests/test_notes.cjs
       - name: Install Playwright Chromium
         run: python -m playwright install --with-deps chromium
       - name: Run UI verification
         run: python scripts/check_service_ui.py
+      - name: Validate Docker Compose configuration
+        run: docker compose config --quiet
       - name: Build Docker image
-        run: docker build .
+        run: docker build --tag lol-insight-check .
+      - name: Verify non-root database writes and persistent storage
+        run: |
+          docker run --rm --volume lol-service-ci:/app/data/processed --entrypoint python lol-insight-check -c "from service.evidence import review_store; review_store.upsert_review({'record_id': 'ci-smoke', 'client_id': 'ci', 'scene': 'persistent-check'})"
+          docker run --rm --volume lol-service-ci:/app/data/processed --entrypoint python lol-insight-check -c "from service.evidence import review_store; assert review_store.get_review('ci-smoke', client_id='ci')['scene'] == 'persistent-check'"

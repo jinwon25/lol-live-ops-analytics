@@ -1,4 +1,77 @@
 'use strict';
+const rolePractice = {
+  TOP: {
+    title: '첫 귀환 전 다음 웨이브 확인',
+    action: '탑에서 첫 귀환을 누르기 전에 미니맵으로 다음 미니언 웨이브 위치를 확인한다.',
+    check: '첫 귀환 직전, 다음 웨이브가 내 포탑에 닿을 때 내가 어디 있었는지 돌아보세요.',
+  },
+  JUNGLE: {
+    title: '첫 드래곤 전에 아군 합류 확인',
+    action: '첫 드래곤을 치기 전에 미니맵으로 미드와 바텀 아군이 합류할 수 있는 위치인지 확인한다.',
+    check: '첫 드래곤을 시도했다면, 시작 직전 미드와 바텀 아군이 어디 있었는지 확인하세요.',
+  },
+  MID: {
+    title: '강가로 움직이기 전 내 웨이브 확인',
+    action: '미드에서 처음 강가로 움직이기 전에 내 포탑 쪽으로 들어오는 미니언이 있는지 확인한다.',
+    check: '첫 강가 이동 직전, 떠나는 동안 포탑에 닿은 미니언이 있었는지 돌아보세요.',
+  },
+  BOT: {
+    title: '견제하기 전 막타부터 보기',
+    action: '원딜로 첫 5분 동안 상대를 견제하기 전에 곧 쓰러질 미니언이 있는지 확인한다.',
+    check: '첫 5분 리플레이에서 견제할 때 놓친 막타가 있었는지 한 장면을 확인하세요.',
+  },
+  SUPPORT: {
+    title: '와드하러 가기 전 가까운 아군 확인',
+    action: '서포터로 첫 드래곤 전 와드를 설치하러 이동할 때 미니맵에서 가까운 아군의 위치를 확인한다.',
+    check: '와드를 설치하러 갔다면, 그때 가까운 아군이 함께 움직일 수 있었는지 돌아보세요.',
+  },
+};
+
+function renderNextGamePractice(role, openFlow) {
+  const practice = Object.hasOwn(rolePractice, role) ? rolePractice[role] : null;
+  if (!practice) return null;
+  const section = node('section', undefined, 'next-game-practice');
+  section.append(
+    node('p', '다음 경기에서 연습할 행동', 'section-kicker'),
+    node('h3', practice.title),
+    node('p', practice.action),
+    node('p', practice.check, 'muted'),
+  );
+  const controls = node('div', undefined, 'practice-controls');
+  const save = node('button', '행동 노트에 저장', 'primary');
+  const status = node('p', '', 'muted');
+  status.setAttribute('role', 'status');
+  save.addEventListener('click', () => {
+    try {
+      practiceNotes.save(practice.action);
+      renderNotes();
+      status.textContent = '이 브라우저의 행동 노트에 저장했습니다.';
+    } catch (error) {
+      status.textContent = error.message || '행동 노트를 저장하지 못했습니다.';
+    }
+  });
+  controls.append(save);
+  const history = node('button', '지난 연습 돌아보기', 'text-button');
+  history.addEventListener('click', () => {
+    const heading = $('practice-log-heading');
+    heading.scrollIntoView({block:'start'});
+    heading.focus({preventScroll:true});
+  });
+  controls.append(history);
+  if (openFlow) {
+    const review = node('button', '첫 15분 복기 장면 보기', 'text-button');
+    review.addEventListener('click', openFlow);
+    controls.append(review);
+  }
+  section.append(controls, status);
+  return section;
+}
+
+function matchClock(minute) {
+  const seconds = Math.round(minute * 60);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+
 function renderAccountSummary(data) {
   const box=$('account-summary');box.replaceChildren();box.hidden=false;
   const rank=node('div',undefined,'account-rank'); rank.append(node('small','현재 솔로랭크'));
@@ -32,6 +105,17 @@ async function renderMatchFlow(box,item,sequence) {
     const data=await api(`/api/riot/timeline/${encodeURIComponent(item.timeline_ref)}`);
     if (sequence!==autoReportSequence) return;box.replaceChildren();
     if (!data.available) {box.append(node('p','표시할 타임라인 프레임이 없습니다.','empty-state'));return;}
+    const earlyDeaths = data.deaths.filter(t => Number.isFinite(t) && t >= 0 && t < 15);
+    if (earlyDeaths.length) {
+      const scene = node('section', undefined, 'next-game-practice');
+      scene.append(
+        node('h3', `첫 데스 · ${matchClock(Math.min(...earlyDeaths))}`),
+        node('p', '리플레이에서 이 시각으로 이동해 데스 직전 내 위치와 가까운 아군의 위치를 살펴보세요.', 'muted'),
+      );
+      box.append(scene);
+    } else {
+      box.append(node('p', '공식 타임라인에 15분 전 본인 데스 기록이 없습니다. 아래 표에서 초반 흐름을 살펴보세요.', 'muted'));
+    }
     box.append(node('h3','같은 포지션 상대와 골드 차이'));
     const points=data.points.filter(p=>Number.isFinite(p.gold_difference));
     if (points.length>1) {
@@ -47,7 +131,7 @@ async function renderMatchFlow(box,item,sequence) {
     ['시점','내 골드','상대 골드','골드 차이','내 CS','상대 CS','CS 차이'].forEach(t=>{const th=node('th',t);th.scope='col';header.append(th);});const head=node('thead');head.append(header);table.append(head);const body=node('tbody');
     const milestones=data.points.filter(p=>p.minute>0 && Math.abs(p.minute/5-Math.round(p.minute/5))<.02);const last=data.points.at(-1);if (last&&!milestones.includes(last)) milestones.push(last);
     milestones.forEach(p=>{const row=node('tr');[`${p.minute}분`,p.gold,p.opponent_gold,p.gold_difference,p.cs,p.opponent_cs,p.cs_difference].forEach((v,i)=>row.append(node('td',v===null?'—':i===0?v:`${[3,6].includes(i)&&v>0?'+':''}${Number(v).toLocaleString()}`)));body.append(row);});table.append(body);const wrap=node('div',undefined,'table-scroll');wrap.append(table);box.append(wrap);
-    box.append(node('p',`데스 시점: ${data.deaths.length?data.deaths.map(t=>{const seconds=Math.round(t*60);return `${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;}).join(' · '):'기록 없음'}`,'muted'),node('p',data.caveat,'muted'));
+    box.append(node('p',`데스 시점: ${data.deaths.length ? data.deaths.map(matchClock).join(' · ') : '기록 없음'}`,'muted'),node('p',data.caveat,'muted'));
   } catch(error) {if(sequence===autoReportSequence){box.replaceChildren(node('p',error.message,'error-text'));const retry=node('button','흐름 다시 불러오기','text-button');retry.addEventListener('click',()=>renderMatchFlow(box,item,sequence));box.append(retry);}}
 }
 

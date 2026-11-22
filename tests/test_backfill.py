@@ -175,6 +175,29 @@ class BackfillComparisonTest(unittest.TestCase):
 
 
 class BackfillFailureTest(unittest.IsolatedAsyncioTestCase):
+    async def test_until_complete_skips_wrong_match_and_accepts_later_valid_response(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = Namespace(
+                region='EUN',
+                out_dir=Path(tmp),
+                start='2025-01-06',
+                end='2025-03-03',
+                bucket_days=7,
+                rng_seed=25,
+                max_calls=None,
+                per_bucket=500,
+            )
+            crawler = Crawler(args)
+            sample = match()
+            sample['metadata']['matchId'] = 'EUN1_1'
+            wrong = copy.deepcopy(sample)
+            wrong['info']['platformId'] = 'KR'
+            crawler.fetch = AsyncMock(side_effect=[wrong, sample])
+            self.assertFalse(await crawler.take('EUN1_1', 1))
+            self.assertNotIn('EUN1_1', crawler.seen)
+            self.assertFalse((crawler.dir / 'participants.csv').exists())
+            self.assertTrue(await crawler.take('EUN1_1', 1))
+
     async def test_until_complete_retries_and_publishes_last_checkpoint(self):
         with tempfile.TemporaryDirectory() as tmp:
             args = Namespace(

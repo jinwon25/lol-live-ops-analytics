@@ -64,7 +64,7 @@ function page(name) {
 document.addEventListener('keydown', event => {
   if ((!event.ctrlKey && !event.metaKey) || event.altKey || event.shiftKey || event.key.toLowerCase() !== 'k') return;
   event.preventDefault();
-  const target = !$('champions').hidden ? ($('champion-guide-panel').hidden ? $('meta-search') : $('champion-search')) : !$('overview').hidden ? $('journal-search') : $('riot-form').elements.game_name;
+  const target = !$('champions').hidden ? ($('champion-guide-panel').hidden ? $('meta-search') : $('champion-search')) : !$('overview').hidden ? $('report-search') : $('riot-form').elements.game_name;
   target.focus(); target.select();
 });
 document.querySelectorAll('[data-page]').forEach(button => button.addEventListener('click', () => page(button.dataset.page)));
@@ -189,14 +189,90 @@ $('assistant-form').addEventListener('submit', async event => {
     const caveats = node('ul'); data.caveats.forEach(caveat => caveats.append(node('li', caveat))); box.append(caveats, node('div', data.next_step, 'answer-step'));
   } catch(error) { $('assistant-error').textContent = error.message; } finally {button.disabled = false;}
 });
-const NOTE_KEY = 'lol-insight-notes-v1';
-function notes() { try {const saved = JSON.parse(localStorage.getItem(NOTE_KEY) || '[]'); return Array.isArray(saved) ? saved.filter(item => item && typeof item.text === 'string' && item.text.length <= 200).slice(-10) : [];} catch {return [];} }
-function renderNotes() { $('practice-list').replaceChildren(); notes().forEach(item => $('practice-list').append(node('li', `${item.date || ''} · ${item.text}`))); }
+const practiceNotes = window.PracticeNotes, NOTE_KEY = practiceNotes.KEY;
+let deletedNotes = null, noteImportPreview = null, noteImportSequence = 0;
+function offerNoteUndo(removed) {
+  deletedNotes = removed; $('undo-note-delete').hidden = !removed.length;
+  if (removed.length) $('undo-note-delete').focus();
+}
+function renderNotes() {
+  $('practice-list').replaceChildren();
+  try {
+    const items = practiceNotes.read(); $('note-count').textContent = `${items.length} / 10개`;
+    if (!items.length) {$('practice-list').append(node('li','다음 경기에서 확인할 행동을 하나 남겨보세요.','muted')); return;}
+    items.forEach(item => {
+      const row = node('li'), remove = node('button','삭제','text-button');
+      const result = node('select');
+      result.setAttribute('aria-label', `연습 결과: ${item.text}`);
+      for (const [value, label] of [['', '아직 기록 없음'], ['tried', '시도했어요'], ['missed', '이번엔 못 했어요']]) {
+        const option = node('option', label);
+        option.value = value;
+        result.append(option);
+      }
+      result.value = item.result;
+      result.addEventListener('change', () => {
+        try {
+          practiceNotes.setResult(item, result.value);
+          item.result = result.value;
+          $('note-status').textContent = result.value ? '연습 결과를 기록했습니다.' : '연습 결과를 지웠습니다.';
+        } catch (error) {
+          result.value = item.result;
+          $('note-status').textContent = error.message || '연습 결과를 저장하지 못했습니다.';
+        }
+      });
+      remove.setAttribute('aria-label',`행동 노트 삭제: ${item.text}`);
+      remove.addEventListener('click', () => {
+        try {const removed = practiceNotes.remove(item); renderNotes(); offerNoteUndo(removed); $('note-status').textContent = '행동 노트를 삭제했습니다. 새로고침 전까지 되돌릴 수 있습니다.';}
+        catch(error) {$('note-status').textContent = error.message || '행동 노트를 삭제하지 못했습니다.';}
+      });
+      const controls = node('div', undefined, 'practice-result-controls');
+      controls.append(result, remove);
+      row.append(node('span',`${item.date} · ${item.text}`), controls);
+      $('practice-list').append(row);
+    });
+  } catch(error) {$('note-count').textContent = '저장소 확인 필요'; $('note-status').textContent = error.message;}
+}
 $('note-form').addEventListener('submit', event => {
   event.preventDefault(); const text = $('practice-note').value.trim(); if (!text) return;
-  try {localStorage.setItem(NOTE_KEY, JSON.stringify([...notes(),{date:new Date().toLocaleDateString('ko-KR'),text}].slice(-10))); $('practice-note').value = ''; $('note-status').textContent = '이 브라우저에 기록했습니다. 서버로 전송하지 않습니다.'; renderNotes();} catch {$('note-status').textContent = '브라우저 저장이 제한되어 기록하지 못했습니다.';}
+  try {practiceNotes.save(text); $('practice-note').value = ''; $('note-status').textContent = '이 브라우저에 기록했습니다. 서버로 전송하지 않습니다.'; renderNotes();} catch(error) {$('note-status').textContent = error.message || '브라우저 저장이 제한되어 기록하지 못했습니다.';}
 });
-$('clear-notes').addEventListener('click', () => {try {localStorage.removeItem(NOTE_KEY); renderNotes(); $('note-status').textContent = '이 브라우저의 복기 기록을 지웠습니다.';} catch {$('note-status').textContent = '브라우저 저장소에 접근하지 못했습니다.';}});
+$('clear-notes').addEventListener('click', () => {try {const removed = practiceNotes.clear(); renderNotes(); offerNoteUndo(removed); $('note-status').textContent = '행동 노트를 모두 지웠습니다. 새로고침 전까지 되돌릴 수 있습니다.';} catch(error) {$('note-status').textContent = error.message || '브라우저 저장소에 접근하지 못했습니다.';}});
+$('undo-note-delete').addEventListener('click', () => {
+  if (!deletedNotes) return;
+  try {practiceNotes.restore({incoming:deletedNotes}); deletedNotes = null; $('undo-note-delete').hidden = true; renderNotes(); $('note-status').textContent = '행동 노트를 복원했습니다.'; $('practice-note').focus();}
+  catch(error) {$('note-status').textContent = error.message || '행동 노트를 복원하지 못했습니다.';}
+});
+$('export-notes').addEventListener('click', () => {
+  try {
+    if (!practiceNotes.read().length) throw new Error('내보낼 행동 노트가 없습니다.');
+    const url = URL.createObjectURL(new Blob([practiceNotes.backup()],{type:'application/json'}));
+    const link = node('a'); link.href = url; link.download = `lol-notes-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.append(link); link.click(); link.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $('note-backup-status').textContent = '행동 노트 백업 파일을 내려받았습니다.';
+  } catch(error) {$('note-backup-status').textContent = error.message || '행동 노트를 내보내지 못했습니다.';}
+});
+function cancelNoteImport() {
+  noteImportSequence++; noteImportPreview = null; $('import-notes').value = '';
+  $('note-import-preview').textContent = ''; $('restore-notes').disabled = true; $('cancel-note-import').hidden = true;
+}
+$('import-notes').addEventListener('change', async event => {
+  const sequence = ++noteImportSequence, file = event.target.files[0]; noteImportPreview = null;
+  $('restore-notes').disabled = true; $('cancel-note-import').hidden = !file; $('note-import-preview').textContent = ''; $('note-backup-status').textContent = '';
+  if (!file) return;
+  try {
+    if (file.size > practiceNotes.MAX_BACKUP_BYTES) throw new Error('행동 노트 백업 파일은 16KB 이하여야 합니다.');
+    const raw = await file.text(); if (sequence !== noteImportSequence) return;
+    noteImportPreview = practiceNotes.prepareImport(raw);
+    $('note-import-preview').textContent = `추가 ${noteImportPreview.added}개 · 기존 유지 ${noteImportPreview.duplicates}개 · 복원 후 ${noteImportPreview.count} / 10개`;
+    $('restore-notes').disabled = false;
+  } catch(error) {if (sequence === noteImportSequence) $('note-backup-status').textContent = error.message || '행동 노트 백업을 확인하지 못했습니다.';}
+});
+$('cancel-note-import').addEventListener('click', () => {cancelNoteImport(); $('note-backup-status').textContent = '복원을 취소했습니다. 기존 노트는 유지했습니다.'; $('import-notes').focus();});
+$('restore-notes').addEventListener('click', () => {
+  if (!noteImportPreview) return;
+  try {const result = practiceNotes.restore(noteImportPreview); cancelNoteImport(); renderNotes(); $('note-backup-status').textContent = `복원 완료: 추가 ${result.added}개 · 기존 유지 ${result.duplicates}개 · 현재 ${result.count}개`; $('import-notes').focus();}
+  catch(error) {$('note-backup-status').textContent = error.message || '행동 노트를 저장하지 못했습니다. 기존 노트는 유지했습니다.';}
+});
 const journal = window.ReviewJournal;
 let importPreview = null, importSequence = 0, deletedRecord = null, sessionLimit = 20;
 $('export-journal').addEventListener('click', () => {
@@ -412,7 +488,15 @@ async function loadRiotStatus() {
   try { const data = await api('/api/riot/status'); $('riot-status').textContent = data.configured ? 'KR 솔로듀오 전적 연결 · 조회 시 연결 상태를 확인합니다.' : '전적 연결 설정이 필요합니다. 아래 연결 안내를 확인해주세요.'; }
   catch(error) { $('riot-status').textContent = error.message; }
 }
-let recentReportItems = [], autoReportSequence=0, localCoachAvailable=false;
+let recentReportItems = [], autoReportSequence=0, localCoachAvailable=false, localCoachDescription='로컬 AI 연결 확인 중…';
+async function loadCoachStatus() {
+  try {
+    const data = await api('/api/riot/coach/status'); localCoachAvailable = data.available === true;
+    localCoachDescription = data.description || (localCoachAvailable ? '로컬 AI 서버 연결 확인 · 추론 품질 미검증' : '로컬 AI를 사용할 수 없습니다. 기본 리포트는 이용 가능합니다.');
+  } catch {localCoachAvailable=false; localCoachDescription='AI 연결 상태를 확인하지 못했습니다. 기본 리포트는 이용 가능합니다.';}
+  document.querySelectorAll('[data-local-coach]').forEach(button=>{button.hidden=!localCoachAvailable;});
+  document.querySelectorAll('[data-coach-state]').forEach(element=>{element.textContent=localCoachDescription;});
+}
 function reportOutcome(item) {return item.win === true ? '승리' : item.win === false ? '패배' : '결과 미확인';}
 function renderAutoReport(item, peers = []) {
   const sequence=++autoReportSequence;
@@ -435,6 +519,12 @@ function renderAutoReport(item, peers = []) {
   });
   tabs.addEventListener('keydown',event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const buttons=[...tabs.querySelectorAll('button')],i=buttons.indexOf(document.activeElement),next=event.key==='Home'?0:event.key==='End'?2:(i+(event.key==='ArrowRight'?1:-1)+3)%3;buttons[next].focus();buttons[next].click();});
   box.append(tabs,overviewPane,teamPane,flowPane); renderMatchTeam(teamPane,item);
+  const practice = renderNextGamePractice(item.role, item.timeline_ref ? () => {
+    const flowTab = tabs.querySelectorAll('button')[2];
+    flowTab.focus();
+    flowTab.click();
+  } : null);
+  if (practice) overviewPane.append(practice);
   const grid = node('div',undefined,'report-insights'), facts = node('section'), questions = node('section');
   facts.append(node('h3','수치에서 확인한 사실'));
   const list = node('ul'); report.facts.forEach(text => list.append(node('li',text))); facts.append(list);
@@ -464,23 +554,135 @@ function renderAutoReport(item, peers = []) {
       result.questions.forEach(text=>aiResult.append(node('p',text))); aiResult.append(node('div',result.next_step,'answer-step'));
     } catch(error) {if (sequence===autoReportSequence) aiResult.replaceChildren(node('p',error.message,'muted'));}
     finally {aiButton.disabled=false;}
-  }); ai.append(aiButton,aiResult); overviewPane.append(ai);
+  });
+  const coachState=node('p',localCoachDescription,'muted'), refreshCoach=node('button','AI 연결 다시 확인','text-button');
+  coachState.dataset.coachState='true'; coachState.setAttribute('role','status');
+  refreshCoach.addEventListener('click',async()=>{refreshCoach.disabled=true; try {await loadCoachStatus();} finally {refreshCoach.disabled=false;}});
+  ai.append(coachState,aiButton,refreshCoach,aiResult); overviewPane.append(ai);
   const tools=node('div',undefined,'auto-report-tools'), keep=node('button','이 리포트 보관','primary'), status=node('p','별도 입력 없이 보관할 수 있습니다. 이 브라우저에 최대 50경기 보관하며, Riot ID·PUUID는 저장하지 않습니다.','muted'); status.setAttribute('role','status');
   keep.addEventListener('click',()=> {try {window.MatchReports.save(item); status.textContent='경기 리포트를 보관했습니다. 보관함에서 다시 열 수 있습니다.'; renderSavedReports();} catch(error) {status.textContent=error.message || '브라우저 저장 공간을 확인해주세요.';}});
   tools.append(keep); box.append(tools,status); const limits=node('details',undefined,'report-method'); limits.append(node('summary','분석 기준과 확인 범위')); report.limitations.forEach(text=>limits.append(node('p',text,'muted'))); box.append(limits);
 }
+let reportImportPreview = null, reportImportSequence = 0, deletedReport = null;
+const comparedReports = new Set();
+$('export-reports').addEventListener('click', () => {
+  try {
+    if (!window.MatchReports.read().length) throw new Error('내보낼 리포트가 없습니다. 전적을 조회한 뒤 리포트를 보관해주세요.');
+    const url = URL.createObjectURL(new Blob([window.MatchReports.backup()], {type:'application/json'}));
+    const link = node('a'); link.href = url; link.download = `lol-report-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.append(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    $('report-library-status').textContent = '리포트 백업 파일을 내려받았습니다. 복원 파일은 서버에 전송하지 않습니다.';
+  } catch(error) {$('report-library-status').textContent = error.message || '리포트를 내보내지 못했습니다.';}
+});
+function cancelReportImport() {
+  reportImportSequence++; reportImportPreview = null;
+  $('import-reports').value = ''; $('restore-reports').disabled = true; $('cancel-report-import').hidden = true;
+  $('report-import-preview').textContent = '';
+}
+$('import-reports').addEventListener('change', async event => {
+  const sequence = ++reportImportSequence, file = event.target.files[0]; reportImportPreview = null;
+  $('restore-reports').disabled = true; $('report-backup-status').textContent = ''; $('report-import-preview').textContent = '';
+  $('cancel-report-import').hidden = !file;
+  if (!file) return;
+  try {
+    if (file.size > window.MatchReports.MAX_BACKUP_BYTES) throw new Error('리포트 백업 파일은 4MB 이하여야 합니다.');
+    const raw = await file.text(); if (sequence !== reportImportSequence) return;
+    reportImportPreview = window.MatchReports.prepareImport(raw);
+    $('report-import-preview').textContent = `추가 ${reportImportPreview.added}개 · 기존 유지 ${reportImportPreview.duplicates}개 · 복원 후 ${reportImportPreview.count} / 50경기`;
+    $('restore-reports').disabled = false;
+  } catch(error) {if (sequence === reportImportSequence) $('report-backup-status').textContent = error.message || '리포트 백업 파일을 확인하지 못했습니다.';}
+});
+$('cancel-report-import').addEventListener('click', () => {
+  cancelReportImport(); $('report-backup-status').textContent = '복원을 취소했습니다. 보관함은 변경하지 않았습니다.'; $('import-reports').focus();
+});
+$('restore-reports').addEventListener('click', () => {
+  if (!reportImportPreview) return;
+  try {
+    const result = window.MatchReports.restore(reportImportPreview);
+    cancelReportImport(); renderSavedReports();
+    $('report-backup-status').textContent = `복원 완료: 추가 ${result.added}개 · 기존 유지 ${result.duplicates}개 · 현재 ${result.count}경기`;
+    $('import-reports').focus();
+  } catch(error) {$('report-backup-status').textContent = error.message || '저장 공간이 부족해 복원하지 못했습니다. 기존 자료는 유지했습니다.';}
+});
+$('report-search').addEventListener('input', () => {
+  $('report-library-status').textContent = ''; renderSavedReports();
+});
+['report-role','report-outcome'].forEach(id => $(id).addEventListener('change',renderSavedReports));
+$('reset-report-filters').addEventListener('click',()=>{
+  ['report-search','report-role','report-outcome'].forEach(id=>$(id).value='');
+  renderSavedReports(); $('report-search').focus();
+});
+$('clear-report-comparison').addEventListener('click',()=>{
+  comparedReports.clear(); renderSavedReports(); $('report-search').focus();
+});
+function renderReportComparison(items, visible) {
+  const box=$('report-comparison'); box.replaceChildren();
+  const selected=items.filter(item=>comparedReports.has(window.MatchReports.identity(item)));
+  const hidden=selected.filter(item=>!visible.includes(item)).length;
+  $('clear-report-comparison').disabled=!selected.length;
+  $('report-comparison-status').textContent=selected.length ? `비교 선택 ${selected.length} / 2경기${hidden ? ` · 현재 검색·필터 밖 ${hidden}경기` : ''}` : '아래 목록에서 같은 챔피언·포지션·패치의 경기 두 개를 선택하세요.';
+  if (!selected.length) return;
+  const selection=node('ul',undefined,'comparison-selection');
+  selected.forEach(item=>{
+    const li=node('li'), remove=node('button','선택 해제','text-button');
+    const description=`${item.champion_name} · ${item.role} · ${item.patch} · ${new Date(item.played_at).toLocaleString('ko-KR')}`;
+    remove.setAttribute('aria-label',`${description} 비교 선택 해제`);
+    remove.addEventListener('click',()=>{comparedReports.delete(window.MatchReports.identity(item)); renderSavedReports(); $('report-search').focus();});
+    li.append(node('span',description),remove); selection.append(li);
+  });
+  box.append(selection);
+  if (selected.length<2) {box.append(node('p','비교할 경기를 하나 더 선택하세요. 검색·필터를 바꿔도 선택은 유지됩니다.','muted')); return;}
+  const comparison=window.MatchReports.compare(...selected);
+  if (!comparison.compatible) {box.append(node('p','챔피언·포지션·패치가 달라 지표 차이를 계산하지 않았습니다. 같은 조건의 경기를 다시 선택하세요.','muted')); return;}
+  const {older,newer}=comparison;
+  box.append(node('p',`이전 경기: ${new Date(older.played_at).toLocaleString('ko-KR')} · ${reportOutcome(older)} · ${older.duration_minutes}분 / 이후 경기: ${new Date(newer.played_at).toLocaleString('ko-KR')} · ${reportOutcome(newer)} · ${newer.duration_minutes}분`,'muted'));
+  const labels={gpm:'분당 골드',dpm:'분당 챔피언 피해',vision_per_minute:'분당 시야',kill_participation:'킬 관여율',cs_per_minute:'분당 CS',damage_share:'팀 내 피해 비중'};
+  const table=node('table'), head=node('thead'), headings=node('tr'), body=node('tbody');
+  table.append(node('caption','선택한 두 경기의 종료 지표 · 차이는 이후 − 이전'));
+  ['지표','이전 경기','이후 경기','차이'].forEach(text=>{const th=node('th',text); th.scope='col'; headings.append(th);}); head.append(headings); table.append(head);
+  comparison.metrics.forEach(({key,before,after,delta})=>{
+    const percentage=['kill_participation','damage_share'].includes(key), digits=percentage ? 1 : 2;
+    const format=value=>value===null ? '—' : `${Number((value*(percentage ? 100 : 1)).toFixed(digits)).toLocaleString('ko-KR')}${percentage ? '%' : ''}`;
+    const change=delta===null ? null : Number((delta*(percentage ? 100 : 1)).toFixed(digits));
+    const row=node('tr'), label=node('th',labels[key]); label.scope='row'; row.append(label);
+    [format(before),format(after),change===null ? '—' : `${change>0 ? '+' : ''}${change.toLocaleString('ko-KR')}${percentage ? '%p' : ''}`].forEach(text=>row.append(node('td',text))); body.append(row);
+  });
+  table.append(body);
+  const wrap=node('div',undefined,'table-scroll'); wrap.tabIndex=0; wrap.setAttribute('role','region'); wrap.setAttribute('aria-label','두 경기 지표 비교 표, 좁은 화면에서 가로 스크롤'); wrap.append(table); box.append(wrap);
+  box.append(node('p','—는 계산할 자료가 없는 값입니다. 계정 식별자를 저장하지 않아 같은 플레이어인지 확인할 수 없습니다. 경기 길이·상대·조합·당시 티어도 다를 수 있으며, 두 경기의 차이가 실력 변화나 승패 원인을 뜻하지는 않습니다.','muted'));
+}
+$('undo-report-delete').addEventListener('click', () => {
+  if (!deletedReport) return;
+  try {
+    window.MatchReports.undoRemove(deletedReport); deletedReport = null; $('undo-report-delete').hidden = true;
+    renderSavedReports(); $('report-library-status').textContent = '삭제한 리포트를 복원했습니다.'; $('report-search').focus();
+  } catch(error) {$('report-library-status').textContent = error.message || '삭제한 리포트를 복원하지 못했습니다.';}
+});
 function renderSavedReports() {
   const box=$('saved-reports'); box.replaceChildren();
   try {
-    const items=window.MatchReports.read(); $('saved-report-count').textContent=`${items.length} / 50경기`;
+    const items=window.MatchReports.read(), filters={query:$('report-search').value,role:$('report-role').value,outcome:$('report-outcome').value};
+    const visible=window.MatchReports.filter(items,filters), identities=new Set(items.map(window.MatchReports.identity));
+    for (const key of comparedReports) if (!identities.has(key)) comparedReports.delete(key);
+    renderReportComparison(items,visible);
+    $('saved-report-count').textContent=Object.values(filters).some(value=>value.trim()) ? `검색 ${visible.length}개 · 전체 ${items.length} / 50경기` : `${items.length} / 50경기`;
     if (!items.length) {box.append(node('p','전적을 불러오고 리포트를 보관하면, 다음 방문에도 여기에서 다시 볼 수 있습니다.','muted')); return;}
-    items.forEach(item=>{
-      const row=node('div',undefined,'saved-report-row'), text=node('div'); text.append(node('strong',`${item.champion_name} · ${item.role}`),node('small',`${new Date(item.played_at).toLocaleString('ko-KR')} · ${reportOutcome(item)}`));
-      const open=node('button','리포트 보기','text-button'); open.addEventListener('click',()=>{page('review'); $('riot-matches').querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed','false')); renderAutoReport(item); $('auto-report-card').scrollIntoView({block:'start'});});
-      const remove=node('button','삭제','text-button'); remove.setAttribute('aria-label',`${item.champion_name} ${new Date(item.played_at).toLocaleString('ko-KR')} 리포트 삭제`); remove.addEventListener('click',()=>{try {window.MatchReports.remove(item); renderSavedReports(); $('report-library-status').textContent='선택한 리포트를 삭제했습니다.';} catch(error) {$('report-library-status').textContent=error.message;}});
-      row.append(championPortrait(item.champion_id),text,open,remove); box.append(row);
+    if (!visible.length) {box.append(node('p','검색한 리포트가 없습니다. 검색·필터 초기화로 전체 경기를 다시 볼 수 있습니다.','muted')); return;}
+    visible.forEach(item=>{
+      const row=node('div',undefined,'saved-report-row'), text=node('div'); text.append(node('strong',`${item.champion_name} · ${item.role}`),node('small',`${new Date(item.played_at).toLocaleString('ko-KR')} · ${reportOutcome(item)} · ${item.duration_minutes}분 · 패치 ${item.patch}`));
+      const key=window.MatchReports.identity(item), compare=node('button',comparedReports.has(key)?'비교 선택됨':'비교 선택','text-button');
+      compare.dataset.compareReport=key; compare.setAttribute('aria-pressed',String(comparedReports.has(key)));
+      compare.setAttribute('aria-label',`${item.champion_name} ${new Date(item.played_at).toLocaleString('ko-KR')} 비교 선택`);
+      compare.disabled=comparedReports.size===2 && !comparedReports.has(key);
+      compare.addEventListener('click',()=>{
+        if (comparedReports.has(key)) comparedReports.delete(key); else if (comparedReports.size<2) comparedReports.add(key);
+        renderSavedReports(); [...box.querySelectorAll('[data-compare-report]')].find(button=>button.dataset.compareReport===key)?.focus();
+      });
+      const open=node('button','리포트 보기','text-button'); open.setAttribute('aria-label',`${item.champion_name} ${new Date(item.played_at).toLocaleString('ko-KR')} 리포트 보기`); open.addEventListener('click',()=>{page('review'); $('riot-matches').querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed','false')); renderAutoReport(item); $('auto-report-card').scrollIntoView({block:'start'});});
+      const remove=node('button','삭제','text-button'); remove.setAttribute('aria-label',`${item.champion_name} ${new Date(item.played_at).toLocaleString('ko-KR')} 리포트 삭제`); remove.addEventListener('click',()=>{try {window.MatchReports.remove(item); deletedReport=item; renderSavedReports(); $('report-library-status').textContent='선택한 리포트를 삭제했습니다. 새로고침 전까지 되돌릴 수 있습니다.'; $('undo-report-delete').hidden=false; $('undo-report-delete').focus();} catch(error) {$('report-library-status').textContent=error.message;}});
+      row.append(championPortrait(item.champion_id),text,compare,open,remove); box.append(row);
     });
-  } catch(error) {$('report-library-status').textContent=error.message || '보관한 리포트를 읽지 못했습니다.';}
+  } catch(error) {comparedReports.clear(); renderReportComparison([],[]); $('report-library-status').textContent=error.message || '보관한 리포트를 읽지 못했습니다.';}
 }
 $('riot-form').addEventListener('submit', async event => {
   event.preventDefault(); const button = event.submitter; button.disabled = true; $('riot-error').textContent = ''; $('riot-matches').replaceChildren();
@@ -523,7 +725,7 @@ $('riot-form').addEventListener('submit', async event => {
   } catch(error) { $('riot-error').textContent = error.message; $('riot-matches').replaceChildren(node('p','경기를 불러오지 못했습니다. 연결 상태를 확인하고 다시 조회해주세요.','muted')); $('auto-report').replaceChildren(node('p','전적을 불러오지 못했습니다. 위의 연결 안내를 확인하고 다시 조회해주세요.','empty-state')); } finally {button.disabled = false;}
 });
 window.addEventListener('storage',event=>{if (event.key==='lol-match-reports-v1' || event.key===null) renderSavedReports();});
-  api('/api/riot/coach/status').then(data=>{localCoachAvailable=data.available; document.querySelectorAll('[data-local-coach]').forEach(button=>{button.hidden=!localCoachAvailable;});}).catch(()=>{});
+loadCoachStatus();
 let publicFlowData = null;
 function renderPublicFlow() {
   if (!publicFlowData) return;

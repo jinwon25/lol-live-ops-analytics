@@ -14,6 +14,22 @@
 - PK 중복 0건
 - KP 1 초과 비정상값 0건, NULL은 팀킬 합 0인 경기뿐(15.1=332행, 15.3=15행)
 
+## 원본을 사용한 분석 재현
+
+이용 권한이 있는 원본을 `data/raw/2024.xlsx`의 `league_data.csv` 시트와 `data/raw/2025.csv`로 준비한다. 두 파일명은 원본 이름이며 분석 범위는 2025년 초 게임 버전 15.1과 15.3이다. 저장소 루트에서 아래 순서로 실행한다.
+
+```powershell
+python -m pip install -r requirements.txt
+python src/load.py
+python src/run_validate.py
+python src/run_meta.py
+python src/segment.py
+python src/build_dashboard_csv.py
+python src/add_kr_names.py
+```
+
+저장된 집계와 차트는 [산출물 폴더](../outputs/)에 있다. 입력 품질 검사를 거쳐 별도 Parquet·CSV를 게시하는 경로는 [데이터 파이프라인](25_data_pipeline.md)에서 설명한다.
+
 ## 의사결정 로그
 
 - **패치 라벨**: `game_version` 앞 두 자리. 각 파일 주력 패치만 남겨 두 그룹을 깨끗하게 분리.
